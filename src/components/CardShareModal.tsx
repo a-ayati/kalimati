@@ -4,6 +4,7 @@ import { useKalimati } from '../context/KalimatiContext';
 import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
 import { pickDialect } from '../utils/dialects';
+import { quoteColors } from './QuoteText';
 import { 
   X, 
   Download, 
@@ -240,10 +241,24 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.textAlign = 'center';
     let y = startY;
 
+    // نفس ألوان المقولة في الصفحة: تتبع المظهر وحده، أياً كان الخط
+    const palette = quoteColors({ themeId: selectedTheme, tashkeelColor: customStyle.tashkeelColor });
+    const drawTwoTone = (line: string, letters: string, marks: string, atY: number) => {
+      if (isInk) {
+        // خطوط الحبر المجهّزة تحمل ألوانها مسبقاً
+        ctx.fillStyle = letters;
+        ctx.fillText(line, config.width / 2, atY);
+        return;
+      }
+      ctx.fillStyle = marks;
+      ctx.fillText(line, config.width / 2, atY);
+      ctx.fillStyle = letters;
+      ctx.fillText(stripTashkeel(line), config.width / 2, atY);
+    };
+
     fushaLines.forEach((line) => {
       ctx.font = fushaFont;
-      ctx.fillStyle = textColor;
-      ctx.fillText(line, config.width / 2, y);
+      drawTwoTone(line, palette.fushaLetters, palette.fushaMarks, y);
       y += fushaLH;
     });
 
@@ -262,8 +277,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     darjaLines.forEach((line) => {
       ctx.font = darjaFont;
-      ctx.fillStyle = selectedTheme === 'dark' ? '#aaa49c' : '#6b645c';
-      ctx.fillText(line, config.width / 2, y);
+      drawTwoTone(line, palette.dialectLetters, palette.dialectMarks, y);
       y += darjaLH;
     });
     const textBottom = y;
@@ -292,7 +306,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.fillStyle = subtleColor;
     ctx.font = '18px "Cairo", sans-serif';
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
-  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect]);
+  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor]);
 
   useEffect(() => {
     renderCanvas();
