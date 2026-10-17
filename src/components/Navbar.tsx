@@ -11,24 +11,26 @@ import {
   User, 
   Moon, 
   Lock,
-  Feather
+  Feather,
+  type LucideIcon
 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export const Navbar: React.FC = () => {
   const { activeTab, setActiveTab, savedItems, setIsZenActive } = useKalimati();
 
-  const NAV_ITEMS: { id: ActiveTab; label: string; icon: React.FC<{ className?: string }> }[] = [
-    { id: 'today', label: 'اليوم', icon: Sparkles },
-    { id: 'library', label: 'مكتبة الكلمات', icon: BookOpen },
-    { id: 'saved', label: 'وصلتني في وقتها', icon: Heart },
-    { id: 'customize', label: 'على ذوقك', icon: Palette },
-    { id: 'account', label: 'حسابي', icon: User },
+  const NAV_ITEMS: { id: ActiveTab; label: string; short: string; icon: LucideIcon }[] = [
+    { id: 'today', label: 'اليوم', short: 'اليوم', icon: Sparkles },
+    { id: 'library', label: 'مكتبة الكلمات', short: 'المكتبة', icon: BookOpen },
+    { id: 'saved', label: 'وصلتني في وقتها', short: 'وصلتني', icon: Heart },
+    { id: 'customize', label: 'على ذوقك', short: 'ذوقي', icon: Palette },
+    { id: 'account', label: 'حسابي', short: 'حسابي', icon: User },
   ];
 
   return (
     <>
       {/* Top Desktop/Tablet Header */}
-      <header className="sticky top-0 z-40 w-full bg-[#0d0e11]/90 backdrop-blur-md border-b border-white/10">
+      <header className="glass-header sticky top-0 z-40 w-full">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           
           {/* Brand Logo & Slogan */}
@@ -39,31 +41,38 @@ export const Navbar: React.FC = () => {
             <HeaderLogo />
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* روابط الحاسوب: كبسولة زجاجية بمؤشر ينزلق */}
+          <nav className="hidden md:flex glass-bar rounded-full p-1 items-center" aria-label="التنقل الرئيسي">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               const isSavedTab = item.id === 'saved';
 
               return (
-                <button
+                <motion.button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer relative ${
-                    isActive
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-xs'
-                      : 'text-stone-300 hover:text-white hover:bg-white/5 border border-transparent'
+                  whileTap={{ scale: 0.94 }}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`relative flex items-center gap-1.5 px-3.5 h-9 rounded-full text-xs cursor-pointer transition-colors ${
+                    isActive ? 'text-[#e8b931] font-bold' : 'text-stone-300 hover:text-white font-semibold'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : 'text-stone-400'}`} />
-                  <span>{item.label}</span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="desk-pill"
+                      className="glass-pill absolute inset-0 rounded-full"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <Icon className="relative w-4 h-4" strokeWidth={isActive ? 2.2 : 1.8} />
+                  <span className="relative">{item.label}</span>
                   {isSavedTab && savedItems.length > 0 && (
-                    <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-rose-500/20 text-rose-300 font-bold">
+                    <span className="relative min-w-[18px] h-[18px] px-1 rounded-full bg-[#ff453a] text-white text-[10px] font-bold leading-[18px] text-center">
                       {savedItems.length}
                     </span>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </nav>
@@ -74,7 +83,7 @@ export const Navbar: React.FC = () => {
 
             <button
               onClick={() => setIsZenActive(true)}
-              className="p-2 rounded-xl text-stone-400 hover:text-amber-400 hover:bg-white/5 border border-white/5 transition-colors cursor-pointer"
+              className="glass-bar w-10 h-10 rounded-full flex items-center justify-center text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
               title="لحظة سكون — تأمل في هدوء"
             >
               <Moon className="w-4 h-4 text-amber-400" />
@@ -84,35 +93,58 @@ export const Navbar: React.FC = () => {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation Bar (Section 3 requirement) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0e0f11]/95 backdrop-blur-lg border-t border-white/10 px-2 py-1.5 flex items-center justify-around shadow-2xl">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          const isSavedTab = item.id === 'saved';
+      {/* شريط التنقل العائم بزجاج ضبابي (أسلوب iOS) */}
+      <nav
+        className="md:hidden fixed inset-x-0 z-40 flex justify-center px-3 pointer-events-none"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 10px)' }}
+        aria-label="التنقل الرئيسي"
+      >
+        <div className="glass-bar pointer-events-auto w-full max-w-[440px] rounded-full p-1.5 flex items-stretch">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            const isSavedTab = item.id === 'saved';
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all relative ${
-                isActive
-                  ? 'text-amber-400 font-bold scale-105'
-                  : 'text-stone-400 hover:text-stone-200'
-              }`}
-            >
-              <div className="relative">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-stone-400'}`} />
-                {isSavedTab && savedItems.length > 0 && (
-                  <span className="absolute -top-1 -right-2 px-1 text-[9px] rounded-full bg-rose-500 text-white font-bold leading-none">
-                    {savedItems.length}
-                  </span>
+            return (
+              <motion.button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                aria-current={isActive ? 'page' : undefined}
+                className="relative flex-1 min-w-0 h-[54px] flex flex-col items-center justify-center gap-[3px] rounded-full cursor-pointer"
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="tab-pill"
+                    className="glass-pill absolute inset-0 rounded-full"
+                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                  />
                 )}
-              </div>
-              <span className="mt-1 leading-tight">{item.label}</span>
-            </button>
-          );
-        })}
+                <span className="relative">
+                  <Icon
+                    className={`w-[22px] h-[22px] transition-colors ${isActive ? 'text-[#e8b931]' : 'text-stone-300'}`}
+                    strokeWidth={isActive ? 2.2 : 1.8}
+                    fill={isActive ? 'currentColor' : 'none'}
+                    fillOpacity={isActive ? (isSavedTab ? 1 : 0.22) : 0}
+                  />
+                  {isSavedTab && savedItems.length > 0 && (
+                    <span className="absolute -top-1.5 -left-2.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#ff453a] text-white text-[10px] font-bold leading-[17px] text-center">
+                      {savedItems.length}
+                    </span>
+                  )}
+                </span>
+                <span
+                  className={`relative text-[10.5px] leading-none whitespace-nowrap transition-colors ${
+                    isActive ? 'text-[#e8b931] font-bold' : 'text-stone-300 font-medium'
+                  }`}
+                >
+                  {item.short}
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
       </nav>
     </>
   );

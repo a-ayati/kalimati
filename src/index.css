@@ -47,6 +47,33 @@
 @font-palette-values --logo-dark { font-family: 'KalimatiInk'; override-colors: 0 #f3ead8, 1 #f3ead8, 2 #e5483b, 3 #e5483b, 4 #e5483b; }
 .logo-ink { font-family: 'KalimatiInk', 'Aref Ruqaa Ink', serif; font-weight: 700; font-palette: --logo-dark; letter-spacing: 0; }
 
+/* ———— زجاج iOS: ضبابية قوية، حافة داكنة، ولمعة علوية ———— */
+.glass-bar {
+  background: rgba(30, 30, 34, 0.58);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 0.5px rgba(0, 0, 0, 0.55),
+    0 12px 32px rgba(0, 0, 0, 0.45);
+}
+.glass-pill {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.07));
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.glass-header {
+  background: rgba(13, 13, 15, 0.62);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-bar, .glass-header { background: rgba(24, 24, 27, 0.96); }
+}
+
 /* بريق ذهبي خفيف يمرّ على مربع الشعار بين حين وآخر */
 .logo-sheen::after {
   content: '';

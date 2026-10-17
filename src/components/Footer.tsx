@@ -6,17 +6,17 @@ export const Footer: React.FC = () => {
   const { setActiveTab, author } = useKalimati();
 
   return (
-    <footer className="w-full bg-[#0b0c0e] border-t border-white/10 mt-16 pb-20 md:pb-8 text-right text-xs text-stone-400">
+    <footer className="w-full bg-[#0b0c0e] border-t border-white/10 mt-16 pb-32 md:pb-8 text-right text-xs text-stone-400">
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         
         {/* Top footer row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-cairo font-bold text-xs border border-amber-500/30">
-              ك
+            <div className="w-9 h-9 rounded-[10px] bg-[#0d0d0f] border border-[#c9a227]/45 flex items-center justify-center">
+              <span className="logo-ink text-[22px] leading-none">كَ</span>
             </div>
             <div>
-              <div className="font-bold text-stone-200 text-sm font-cairo">كَلِمَاتِي</div>
+              <div className="logo-ink text-[19px] leading-none mb-1">كَلِمَاتِي</div>
               <div className="text-[10px] text-amber-500/80 font-cairo">كَلِمَةٌ تَصِلُ فِي وَقْتِهَا</div>
             </div>
           </div>
