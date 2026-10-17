@@ -19,18 +19,12 @@
 - `/sitemap.xml` و`/robots.txt` — يُبنيان تلقائياً.
 - `/api/admin/*` — لوحة الكاتب على `/admin`، بكلمة مرور تُحفظ سرّاً على Cloudflare فقط، مع قفل لمدة 15 دقيقة بعد 5 محاولات خاطئة.
 
-## النشر (مرة واحدة)
+## النشر
 
-أضف هذه الأسرار في المستودع: **Settings → Secrets and variables → Actions → New repository secret**
-
-| الاسم | القيمة |
-|---|---|
-| `CLOUDFLARE_ACCOUNT_ID` | معرّف حسابك في Cloudflare (يظهر في لوحة Workers) |
-| `CLOUDFLARE_API_TOKEN` | رمز API بصلاحيات: Workers Scripts (Edit)، D1 (Edit)، Account Settings (Read) |
-| `ADMIN_PASSWORD` | كلمة مرور لوحة الكاتب — طويلة وقوية |
-
-بعدها كل رفع إلى `main` يبني الموقع ويُنشئ قاعدة البيانات (أول مرة) ويطبّق التحديثات وينشر.
-تغيير `ADMIN_PASSWORD` ثم إعادة النشر يُخرج كل الجلسات القديمة.
+المستودع مربوط بـ Cloudflare Workers Builds: كل رفع إلى `main` يُنشر تلقائياً.
+- الواجهة تُبنى تلقائياً (`build.command` في `wrangler.jsonc`).
+- قاعدة البيانات تُنشأ تلقائياً عند أول نشر، والخادم يجهّز الجداول والأقوال الأولى بنفسه عند أول طلب.
+- كلمة مرور لوحة الكاتب: في Cloudflare ← kalimati ← Settings ← Variables and Secrets، أضف سرّاً باسم `ADMIN_PASSWORD`. بدونها يبقى الموقع مفتوحاً للقراء وتبقى لوحة الكاتب مغلقة.
 
 ## التشغيل محلياً
 

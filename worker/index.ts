@@ -9,6 +9,8 @@
  * - /sitemap.xml         خريطة موقع تُبنى تلقائياً من الأقوال المنشورة.
  */
 
+import { SEED } from './seed';
+
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -518,6 +520,43 @@ function handleRobots(req: Request): Response {
 }
 
 // ---------------------------------------------------------------------------
+// تجهيز قاعدة البيانات تلقائياً عند أول تشغيل (لا حاجة لأي خطوة يدوية)
+// ---------------------------------------------------------------------------
+
+let schemaReady: Promise<void> | null = null;
+
+function ensureSchema(env: Env): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = (async () => {
+      await env.DB.batch([
+        env.DB.prepare(`CREATE TABLE IF NOT EXISTS quotes (
+          id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, status TEXT NOT NULL DEFAULT 'draft',
+          published_at TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, data TEXT NOT NULL,
+          reads INTEGER NOT NULL DEFAULT 0, saves INTEGER NOT NULL DEFAULT 0, shares INTEGER NOT NULL DEFAULT 0)`),
+        env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_quotes_visible ON quotes (status, published_at)'),
+        env.DB.prepare(`CREATE TABLE IF NOT EXISTS stat_events (
+          visitor TEXT NOT NULL, quote_id TEXT NOT NULL, kind TEXT NOT NULL, day TEXT NOT NULL,
+          PRIMARY KEY (visitor, quote_id, kind, day))`),
+        env.DB.prepare(`CREATE TABLE IF NOT EXISTS login_attempts (
+          visitor TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, window_start INTEGER NOT NULL)`),
+      ]);
+      const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM quotes').first<{ n: number }>();
+      if (!count || count.n === 0) {
+        await env.DB.batch(
+          SEED.map((q) =>
+            env.DB.prepare(
+              'INSERT OR IGNORE INTO quotes (id, slug, status, published_at, created_at, updated_at, data) VALUES (?, ?, ?, ?, ?, ?, ?)'
+            ).bind(q.id, q.slug, q.status, q.publishedAt, q.createdAt, q.createdAt, JSON.stringify(q.data))
+          )
+        );
+      }
+    })().catch((e) => {
+      schemaReady = null; // نعيد المحاولة في الطلب التالي
+      throw e;
+    });
+  }
+  return schemaReady;
+}
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
@@ -525,6 +564,8 @@ export default {
     const path = url.pathname;
 
     try {
+      const needsDb = path.startsWith('/api/') || path === '/sitemap.xml' || path.startsWith('/q/');
+      if (needsDb) await ensureSchema(env);
       if (path.startsWith('/api/admin/')) return await handleAdmin(req, env, path);
       if (path === '/api/quotes' && req.method === 'GET') return await handlePublicQuotes(env);
       if (path === '/api/events' && req.method === 'POST') return await handleEvent(req, env);

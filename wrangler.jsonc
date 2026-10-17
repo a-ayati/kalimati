@@ -4,6 +4,8 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
+  // تُبنى الواجهة تلقائياً قبل كل نشر (لا حاجة لضبط أمر البناء في Cloudflare)
+  "build": { "command": "npm run build" },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -14,8 +16,7 @@
     {
       "binding": "DB",
       "database_name": "kalimati",
-      // يُستبدل تلقائياً بالمعرّف الحقيقي أثناء النشر عبر GitHub Actions
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // بلا معرّف: تُنشئ Cloudflare قاعدة البيانات تلقائياً عند أول نشر، والخادم يجهّز الجداول بنفسه
       "migrations_dir": "migrations"
     }
   ],
