@@ -11,13 +11,13 @@ export function mergePairs(quotes: Quote[]): Quote[] {
   for (const q of quotes) {
     if (absorbed.has(q.id)) continue;
     const pair = q.pairedQuoteId ? byId.get(q.pairedQuoteId) : undefined;
-    if (pair && !q.darja && q.language !== pair.language) {
+    if (pair && !q.darja && !q.dialects?.dz && q.language !== pair.language) {
       const fusha = q.language === 'fusha' ? q : pair;
       const darja = q.language === 'fusha' ? pair : q;
       absorbed.add(darja.id);
       absorbed.add(fusha.id);
       const { pairedQuoteId: _drop, ...rest } = fusha;
-      result.push({ ...rest, darja: { text: darja.text, plainText: darja.plainText } });
+      result.push({ ...rest, dialects: { dz: { text: darja.text, plainText: darja.plainText } } });
       continue;
     }
     result.push(q);
@@ -27,5 +27,5 @@ export function mergePairs(quotes: Quote[]): Quote[] {
 
 /** كل النص القابل للبحث في القول (الفصحى والدارجة) بلا تشكيل */
 export function searchableText(q: Quote): string {
-  return `${q.plainText} ${q.darja?.plainText || ''}`;
+  return [q.plainText, q.darja?.plainText, ...Object.values(q.dialects || {}).map((v) => v?.plainText)].filter(Boolean).join(' ');
 }

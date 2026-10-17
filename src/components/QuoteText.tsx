@@ -1,5 +1,7 @@
 import React from 'react';
-import { CustomStyle, FontId, Quote, ThemeId } from '../types';
+import { CustomStyle, DialectId, FontId, Quote, ThemeId } from '../types';
+import { useKalimati } from '../context/KalimatiContext';
+import { dialectInfo, pickDialect } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
 
 /** اسم الخط الفعلي لكل اختيار */
@@ -42,7 +44,9 @@ function fushaPalette(style: CustomStyle): string {
 }
 
 interface Props {
-  quote: Pick<Quote, 'text' | 'language' | 'darja'>;
+  quote: Pick<Quote, 'text' | 'language' | 'darja' | 'dialects'>;
+  /** اللهجة المعروضة تحت الفصحى (افتراضياً: لهجة القارئ) */
+  dialect?: DialectId;
   style: CustomStyle;
   /** حجم خط الفصحى بالبكسل؛ الدارجة تُعرض بنحو 70% منه */
   fontSize?: number;
@@ -52,10 +56,11 @@ interface Props {
 }
 
 /**
- * يعرض القول كما في البطاقة الرسمية: الفصحى بخط الرقعة الحبري بحروف داكنة وتشكيل أحمر،
- * وتحتها الصيغة الجزائرية بألوان الحبر (أحمر متدرّج وشدّة زرقاء) — في آنٍ واحد.
+ * يعرض القول: الفصحى بحروف بيضاء وتشكيل أحمر، وتحتها صيغته باللهجة التي اختارها القارئ
+ * بحروف رمادية وتشكيل ذهبي — في آنٍ واحد.
  */
-export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, showDivider = true, className = '' }) => {
+export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, showDivider = true, className = '' }) => {
+  const { preferredDialect } = useKalimati();
   const size = fontSize ?? style.fontSize;
   const family = FONT_FAMILIES[style.fontId] || FONT_FAMILIES['ruqaa-ink'];
   const weight = FONT_WEIGHTS[style.fontId] ?? 400;
@@ -66,7 +71,9 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, showDivider
 
   // إن كان القول بالدارجة وحدها نعرضه بأسلوب الدارجة وبالحجم الكامل
   const fushaText = quote.language === 'fusha' ? quote.text : null;
-  const darjaText = quote.language === 'darja' ? quote.text : quote.darja?.text || null;
+  const picked = pickDialect(quote, dialect ?? preferredDialect);
+  const darjaText = quote.language === 'darja' ? quote.text : picked?.variant.text || null;
+  const darjaLang = quote.language === 'darja' ? 'ar-DZ' : picked ? dialectInfo(picked.id).lang : 'ar';
 
   const fushaStyle: React.CSSProperties = {
     fontFamily: family,
@@ -104,7 +111,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, showDivider
       )}
 
       {darjaText && (
-        <p lang="ar-DZ" style={darjaStyle} className="m-0">
+        <p lang={darjaLang} style={darjaStyle} className="m-0">
           {show(darjaText)}
         </p>
       )}

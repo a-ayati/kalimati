@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { ALL_TOPICS } from '../data/seedQuotes';
+import { allQuoteText } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
 import { Search, Filter, BookOpen, Sparkles, X } from 'lucide-react';
 import { Language } from '../types';
@@ -35,7 +36,7 @@ export const LibraryView: React.FC = () => {
 
       // Search query
       if (cleanQuery) {
-        const cleanQuoteText = stripTashkeel(`${quote.text} ${quote.darja?.text || ''}`.toLowerCase());
+        const cleanQuoteText = stripTashkeel(allQuoteText(quote).toLowerCase());
         const cleanAuthor = stripTashkeel(quote.author.toLowerCase());
         const cleanBehind = stripTashkeel((quote.behindTheWords || '').toLowerCase());
         const matchesTopic = quote.topics.some((t) => stripTashkeel(t.toLowerCase()).includes(cleanQuery));

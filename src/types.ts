@@ -9,6 +9,8 @@ export interface QuoteRevision {
   textSnippet: string;
 }
 
+export type DialectId = 'dz' | 'ma' | 'tn' | 'eg' | 'gulf' | 'sham';
+
 export interface QuoteVariant {
   text: string; // مع التشكيل
   plainText: string;
@@ -27,7 +29,8 @@ export interface Quote {
   topics: string[];
   behindTheWords?: string; // الشرح من الكاتب «وراء الكلمات»
   pairedQuoteId?: string; // (قديم) رابط بصيغة مقابلة — استُبدل بالحقل darja
-  darja?: QuoteVariant; // الصيغة الجزائرية التي تُعرض مع الفصحى في آنٍ واحد
+  darja?: QuoteVariant; // (قديم) الصيغة الجزائرية — صارت dialects.dz
+  dialects?: Partial<Record<DialectId, QuoteVariant>>; // الصيغ باللهجات، تُعرض تحت الفصحى حسب اختيار القارئ
   calligraphyManuscriptUrl?: string; // مخطوطة فنية مستقبلية
   audioRecitationUrl?: string; // تسجيل صوتي مستقبلي
   stats: {

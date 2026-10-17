@@ -7,12 +7,14 @@ import {
   NotificationSettings, 
   AuthorProfile, 
   ActiveTab, 
-  EmotionTag 
+  EmotionTag,
+  DialectId
 } from '../types';
 import { SEED_QUOTES, INITIAL_AUTHOR, ALL_TOPICS } from '../data/seedQuotes';
 import confetti from 'canvas-confetti';
 import { fetchPublicQuotes, trackEvent } from '../lib/api';
 import { mergePairs } from '../utils/pairs';
+import { DEFAULT_DIALECT, isDialectId } from '../utils/dialects';
 
 // ---------------------------------------------------------------------------
 // الروابط: كل صفحة وكل قول لها عنوان حقيقي في المتصفح
@@ -95,6 +97,8 @@ interface KalimatiContextType {
   shareModalQuote: Quote | null;
   postSaveNotice: { show: boolean; quoteText: string } | null;
   quotesSource: QuotesSource;
+  preferredDialect: DialectId;
+  setPreferredDialect: (d: DialectId) => void;
   // Actions
   refreshQuotes: () => Promise<void>;
   setActiveTab: (tab: ActiveTab) => void;
@@ -156,6 +160,7 @@ const STORAGE_KEYS = {
   NOTIFICATIONS: 'kalimati_notifications_v1',
   AUTHOR: 'kalimati_author_v1',
   TOPICS: 'kalimati_preferred_topics_v1',
+  DIALECT: 'kalimati_dialect_v1',
 };
 
 export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -282,6 +287,25 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     return ALL_TOPICS.slice(0, 4); // Default 4 topics
   });
+
+  // لهجة القارئ التي تُعرض تحت الفصحى
+  const [preferredDialect, setPreferredDialectState] = useState<DialectId>(() => {
+    try {
+      const v = localStorage.getItem(STORAGE_KEYS.DIALECT);
+      if (isDialectId(v)) return v;
+    } catch {
+      // تجاهل
+    }
+    return DEFAULT_DIALECT;
+  });
+  const setPreferredDialect = useCallback((d: DialectId) => {
+    setPreferredDialectState(d);
+    try {
+      localStorage.setItem(STORAGE_KEYS.DIALECT, d);
+    } catch {
+      // تجاهل
+    }
+  }, []);
 
   // UI state
   const [route, setRoute] = useState<Route>(() => parseRoute(window.location.pathname));
@@ -550,6 +574,8 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         postSaveNotice,
         quotesSource,
         refreshQuotes,
+        preferredDialect,
+        setPreferredDialect,
         setActiveTab,
         setSelectedQuoteId,
         openShareModal,

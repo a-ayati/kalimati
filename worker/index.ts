@@ -107,6 +107,11 @@ function getCookie(req: Request, name: string): string | null {
 
 function rowToQuote(row: QuoteRow, includeAll = false) {
   const data = JSON.parse(row.data);
+  // الحقل القديم darja صار dialects.dz
+  if (data.darja) {
+    data.dialects = { dz: data.darja, ...(data.dialects || {}) };
+    delete data.darja;
+  }
   const quote = {
     ...data,
     id: row.id,
@@ -209,8 +214,10 @@ interface QuoteInput {
   pairedQuoteId?: string;
   calligraphyManuscriptUrl?: string;
   audioRecitationUrl?: string;
-  darja?: { text: string; plainText: string };
+  dialects?: Record<string, { text: string; plainText: string }>;
 }
+
+const DIALECT_IDS = ['dz', 'ma', 'tn', 'eg', 'gulf', 'sham'];
 
 function stripMarks(text: string): string {
   return text.replace(/[\u0617-\u061A\u064B-\u0652\u0657-\u065E\u0670]/g, '');
@@ -235,10 +242,22 @@ function validateQuote(body: any): QuoteInput | string {
   const topics = Array.isArray(body.topics)
     ? body.topics.filter((t: unknown) => typeof t === 'string' && t.trim()).map((t: string) => t.trim().slice(0, 60)).slice(0, 12)
     : [];
-  // الصيغة الجزائرية المرافقة (اختيارية)
-  const darjaText = str(body?.darjaText ?? body?.darja?.text, 4000);
+  // الصيغ باللهجات (اختيارية): { dz: "…", eg: "…" } — مع دعم الحقل القديم darjaText
+  const rawDialects: Record<string, unknown> = {};
+  // من النسخة الاحتياطية: { dialects: { dz: { text } } }
+  if (body?.dialects && typeof body.dialects === 'object') {
+    for (const [k, v] of Object.entries(body.dialects as Record<string, any>)) rawDialects[k] = v?.text;
+  }
+  if (body?.darja?.text && !rawDialects.dz) rawDialects.dz = body.darja.text;
+  Object.assign(rawDialects, body?.dialectTexts || {});
+  if (body?.darjaText && !rawDialects.dz) rawDialects.dz = body.darjaText;
+  const dialects: Record<string, { text: string; plainText: string }> = {};
+  for (const id of DIALECT_IDS) {
+    const t = str(rawDialects[id], 4000);
+    if (t) dialects[id] = { text: t, plainText: stripMarks(t) };
+  }
   return {
-    darja: darjaText ? { text: darjaText, plainText: stripMarks(darjaText) } : undefined,
+    dialects: Object.keys(dialects).length ? dialects : undefined,
     text,
     plainText,
     author,

@@ -3,6 +3,7 @@ import { Quote, ThemeId, FontId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
 import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
+import { pickDialect } from '../utils/dialects';
 import { 
   X, 
   Download, 
@@ -66,7 +67,7 @@ const CANVAS_FONTS: Record<FontId, string> = {
 };
 
 export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }) => {
-  const { author, customStyle } = useKalimati();
+  const { author, customStyle, preferredDialect } = useKalimati();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [selectedFormat, setSelectedFormat] = useState<CardFormat>('story');
@@ -196,7 +197,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     const darjaFamily = isInk ? (selectedTheme === 'dark' ? '"KalimatiDarjaLight", serif' : '"KalimatiDarjaDark", serif') : CANVAS_FONTS[selectedFont];
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
-    const darjaText = quote.language === 'darja' ? quote.text : quote.darja?.text || null;
+    const darjaText = quote.language === 'darja' ? quote.text : pickDialect(quote, preferredDialect)?.variant.text || null;
     const maxWidth = config.width - 240;
 
     const wrap = (text: string, font: string): string[] => {
@@ -291,7 +292,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.fillStyle = subtleColor;
     ctx.font = '18px "Cairo", sans-serif';
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
-  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author]);
+  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect]);
 
   useEffect(() => {
     renderCanvas();
@@ -340,7 +341,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
                 title: 'كلماتي — كلمة تصل في وقتها',
-                text: `${stripTashkeel(quote.text)}${quote.darja ? '\n' + stripTashkeel(quote.darja.text) : ''}\n\n— بقلم: ${quote.author}\nمنصة كلماتي: ${quoteUrl(quote)}`,
+                text: `${stripTashkeel(quote.text)}${pickDialect(quote, preferredDialect) ? '\n' + stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text) : ''}\n\n— بقلم: ${quote.author}\nمنصة كلماتي: ${quoteUrl(quote)}`,
                 files: [file],
               });
             } else {

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { EmotionTag } from '../types';
+import { allQuoteText } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
 import { 
   Heart, 
@@ -53,7 +54,7 @@ export const SavedView: React.FC = () => {
 
       // Search text
       if (cleanQuery) {
-        const textMatch = stripTashkeel(`${entry.quote.text} ${entry.quote.darja?.text || ''}`.toLowerCase()).includes(cleanQuery);
+        const textMatch = stripTashkeel(allQuoteText(entry.quote).toLowerCase()).includes(cleanQuery);
         const noteMatch = stripTashkeel((entry.privateNote || '').toLowerCase()).includes(cleanQuery);
         const topicMatch = entry.quote.topics.some((t) => stripTashkeel(t.toLowerCase()).includes(cleanQuery));
         return textMatch || noteMatch || topicMatch;

@@ -1,4 +1,4 @@
-import { Quote } from '../types';
+import { DialectId, Quote } from '../types';
 
 export type StatKind = 'read' | 'save' | 'share';
 
@@ -45,10 +45,10 @@ export function trackEvent(quoteId: string, kind: StatKind): void {
 
 // ---- لوحة الكاتب ----
 
-export type QuoteInput = Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions' | 'darja'> & {
+export type QuoteInput = Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions' | 'darja' | 'dialects'> & {
   revisionNote?: string;
-  /** الصيغة الجزائرية المرافقة للفصحى */
-  darjaText?: string;
+  /** الصيغ باللهجات المرافقة للفصحى: معرّف اللهجة ← النص بالتشكيل */
+  dialectTexts?: Partial<Record<DialectId, string>>;
 };
 
 export const adminApi = {

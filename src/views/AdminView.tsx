@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
-import { Quote, Language, QuoteStatus } from '../types';
+import { Quote, Language, QuoteStatus, DialectId } from '../types';
 import { ALL_TOPICS } from '../data/seedQuotes';
 import { stripTashkeel } from '../utils/tashkeel';
 import { adminApi, ApiError, QuoteInput } from '../lib/api';
+import { DIALECTS, quoteDialects } from '../utils/dialects';
 import { 
   Lock, 
   Unlock, 
@@ -96,7 +97,7 @@ export const AdminView: React.FC = () => {
 
   // Form fields
   const [formText, setFormText] = useState('');
-  const [formDarja, setFormDarja] = useState('');
+  const [formDialects, setFormDialects] = useState<Partial<Record<DialectId, string>>>({});
   const [formAuthor, setFormAuthor] = useState(author.name);
   const [formLanguage, setFormLanguage] = useState<Language>('fusha');
   const [formTopics, setFormTopics] = useState<string[]>(['الطمأنينة']);
@@ -180,7 +181,7 @@ export const AdminView: React.FC = () => {
     setIsCreatingNew(true);
     setEditingQuoteId(null);
     setFormText('');
-    setFormDarja('');
+    setFormDialects({});
     setFormAuthor(author.name);
     setFormLanguage('fusha');
     setFormTopics(['الطمأنينة']);
@@ -196,7 +197,9 @@ export const AdminView: React.FC = () => {
     setEditingQuoteId(quote.id);
     setIsCreatingNew(false);
     setFormText(quote.text);
-    setFormDarja(quote.darja?.text || '');
+    setFormDialects(
+      Object.fromEntries(Object.entries(quoteDialects(quote)).map(([k, v]) => [k, v?.text || '']))
+    );
     setFormAuthor(quote.author);
     setFormLanguage(quote.language);
     setFormTopics(quote.topics);
@@ -218,7 +221,7 @@ export const AdminView: React.FC = () => {
       // الرابط يُولَّد على الخادم للقول الجديد، ويُحفظ كما هو عند التعديل حتى لا تنكسر الروابط المشاركة
       slug: existing?.slug || plainText,
       text: formText,
-      darjaText: formLanguage === 'fusha' ? formDarja.trim() || undefined : undefined,
+      dialectTexts: formLanguage === 'fusha' ? formDialects : undefined,
       plainText,
       author: formAuthor,
       language: formLanguage,
@@ -645,19 +648,26 @@ export const AdminView: React.FC = () => {
                 />
               </div>
 
-              {/* الصيغة الجزائرية: تُعرض تحت الفصحى في آنٍ واحد */}
+              {/* الصيغ باللهجات: تظهر تحت الفصحى حسب لهجة القارئ — اترك الحقل فارغاً إن لم تكتبها بعد */}
               {formLanguage === 'fusha' && (
-                <div>
-                  <label className="block text-stone-300 font-semibold mb-1">
-                    الصيغة بالدارجة الجزائرية (تظهر تحت الفصحى):
-                  </label>
-                  <textarea
-                    value={formDarja}
-                    onChange={(e) => setFormDarja(e.target.value)}
-                    placeholder="اللّي ما يدّيش عليّا، ما ندّيش عليه"
-                    rows={2}
-                    className="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-stone-100 font-serif text-sm leading-relaxed focus:outline-none focus:border-amber-500 resize-none"
-                  />
+                <div className="space-y-2.5 p-3 rounded-2xl bg-white/5 border border-white/10">
+                  <div className="text-stone-300 font-semibold">
+                    الصيغ باللهجات (يرى كل قارئ لهجته تحت الفصحى):
+                  </div>
+                  {DIALECTS.map((d) => (
+                    <div key={d.id}>
+                      <label className="block text-stone-400 mb-1" htmlFor={`dialect-${d.id}`}>
+                        {d.name}
+                      </label>
+                      <textarea
+                        id={`dialect-${d.id}`}
+                        value={formDialects[d.id] || ''}
+                        onChange={(e) => setFormDialects((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                        rows={2}
+                        className="w-full p-2.5 rounded-xl bg-black/50 border border-white/10 text-stone-100 font-serif text-sm leading-relaxed focus:outline-none focus:border-amber-500 resize-none"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -681,7 +691,7 @@ export const AdminView: React.FC = () => {
                     onChange={(e) => setFormLanguage(e.target.value as Language)}
                     className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
                   >
-                    <option value="fusha">فصحى مع صيغتها الجزائرية</option>
+                    <option value="fusha">فصحى (مع صيغها باللهجات)</option>
                     <option value="darja">دارجة جزائرية فقط</option>
                   </select>
                 </div>

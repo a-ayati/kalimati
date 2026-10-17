@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { quoteUrl as quoteLink } from '../lib/links';
+import { pickDialect } from '../utils/dialects';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { stripTashkeel } from '../utils/tashkeel';
@@ -25,7 +26,8 @@ export const QuoteDetailView: React.FC = () => {
     setSelectedQuoteId, 
     author, 
     openShareModal,
-    quotesSource
+    quotesSource,
+    preferredDialect
   } = useKalimati();
 
   const [copiedLink, setCopiedLink] = useState(false);
@@ -76,7 +78,8 @@ export const QuoteDetailView: React.FC = () => {
 
   const handleCopyCleanText = async () => {
     try {
-      const darjaLine = quote.darja ? `\n"${stripTashkeel(quote.darja.text)}"` : '';
+      const picked = pickDialect(quote, preferredDialect);
+      const darjaLine = picked ? `\n"${stripTashkeel(picked.variant.text)}"` : '';
       const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}\n\n— بقلم: ${quote.author}\nالمصدر: منصة كلماتي (${quoteUrl})`;
       await navigator.clipboard.writeText(fullCitation);
       setCopiedText(true);
@@ -162,10 +165,10 @@ export const QuoteDetailView: React.FC = () => {
           <div className="text-xs font-semibold text-stone-400">النص الفعلي القابل للقراءة والنسخ:</div>
           <p className="text-base sm:text-lg font-cairo text-stone-200 leading-relaxed select-all">
             {stripTashkeel(quote.text)}
-            {quote.darja && (
+            {pickDialect(quote, preferredDialect) && (
               <>
                 <br />
-                {stripTashkeel(quote.darja.text)}
+                {stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text)}
               </>
             )}
           </p>

@@ -4,6 +4,7 @@ import { quoteUrl } from '../lib/links';
 import { useKalimati } from '../context/KalimatiContext';
 import { stripTashkeel } from '../utils/tashkeel';
 import { QuoteText } from './QuoteText';
+import { availableDialects, dialectInfo, pickDialect } from '../utils/dialects';
 import { 
   Heart, 
   Share2, 
@@ -49,7 +50,9 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
     quotes, 
     setSelectedQuoteId, 
     setActiveTab,
-    customStyle 
+    customStyle,
+    preferredDialect,
+    setPreferredDialect
   } = useKalimati();
 
   const [copied, setCopied] = useState(false);
@@ -82,7 +85,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   const handleCopyText = async () => {
     try {
-      const darjaLine = currentQuote.darja ? `\n${stripTashkeel(currentQuote.darja.text)}` : '';
+      const picked = pickDialect(currentQuote, preferredDialect);
+      const darjaLine = picked ? `\n${stripTashkeel(picked.variant.text)}` : '';
       const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}\n\n— بقلم: ${currentQuote.author}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
@@ -123,6 +127,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
       : 'border-amber-500/20';
 
   const isDarja = currentQuote.language === 'darja';
+  const dialects = isDarja ? [] : availableDialects(currentQuote);
+  const shownDialect = pickDialect(currentQuote, preferredDialect)?.id ?? null;
 
   return (
     <div className="relative group transition-all duration-300 w-full max-w-2xl mx-auto">
@@ -146,7 +152,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
                   : 'bg-rose-500/15 text-rose-400 border-rose-500/40'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isDarja ? 'bg-amber-400' : 'bg-rose-400'}`} />
-                {currentQuote.darja ? 'فصحى ودارجة' : isDarja ? 'دارجة جزائرية' : 'عربية فصحى'}
+                {isDarja ? 'دارجة جزائرية' : shownDialect ? `فصحى · ${dialectInfo(shownDialect).name}` : 'عربية فصحى'}
               </span>
 
               {/* Topics */}
@@ -189,6 +195,27 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             </div>
 
             <QuoteText quote={currentQuote} style={customStyle} className="py-3 sm:py-4 transition-all duration-300" />
+
+            {/* اختيار اللهجة: يظهر عند توفّر أكثر من صيغة، والاختيار يُحفظ لكل المقولات */}
+            {dialects.length > 0 && (
+              <div className="flex items-center justify-center gap-1.5 flex-wrap mt-4" role="group" aria-label="لهجة الصيغة المرافقة">
+                {dialects.map((id) => {
+                  const active = id === shownDialect;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setPreferredDialect(id)}
+                      aria-pressed={active}
+                      className={`px-3 h-7 rounded-full text-[11px] transition-all cursor-pointer ${
+                        active ? 'glass-pill text-[#e8b931] font-bold' : 'text-stone-400 hover:text-stone-200 border border-white/10'
+                      }`}
+                    >
+                      {dialectInfo(id).name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Bottom flourish */}
             <div className="flex items-center justify-center gap-2 mt-5 text-amber-500/40 select-none">

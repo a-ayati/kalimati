@@ -10,14 +10,16 @@ import {
   Sparkles, 
   Check, 
   Layers, 
-  Eye 
+  Eye,
+  Languages
 } from 'lucide-react';
+import { DIALECTS } from '../utils/dialects';
 
 export const CustomizeView: React.FC = () => {
-  const { customStyle, setCustomStyle, resetToOfficialStyle, quotes } = useKalimati();
+  const { customStyle, setCustomStyle, resetToOfficialStyle, quotes, preferredDialect, setPreferredDialect } = useKalimati();
 
   // Sample quote for live preview
-  const previewQuote = quotes.find((q) => q.darja) || quotes[0];
+  const previewQuote = quotes.find((q) => q.dialects || q.darja) || quotes[0];
 
   const FONTS: { id: FontId; name: string; desc: string; sample: string }[] = [
     { id: 'ruqaa-ink', name: 'الرقعة الحبري (Aref Ruqaa Ink) — المطابق للبطاقة الرسمية', desc: 'خط رقعة حبري غني بالتشكيل المطابق تمامًا للصورة المرجعية الرسمية', sample: 'مَا لِي أُبَالِي بِمَنْ لَا يُبَالِي' },
@@ -160,6 +162,36 @@ export const CustomizeView: React.FC = () => {
                     </div>
                   </div>
                   {active && <Check className="w-4 h-4 text-amber-400 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* لهجتي: الصيغة التي تظهر تحت الفصحى */}
+        <div className="bg-[#141518] p-5 rounded-3xl border border-white/10 space-y-3.5">
+          <div className="flex items-center gap-2 text-sm font-bold text-white">
+            <Languages className="w-4 h-4 text-amber-400" />
+            <span>لهجتي</span>
+          </div>
+          <p className="text-stone-400 text-[11px]">
+            الفصحى دائماً في الأعلى، وتحتها صيغة القول بلهجتك متى كتبها الكاتب.
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {DIALECTS.map((d) => {
+              const active = preferredDialect === d.id;
+              return (
+                <button
+                  key={d.id}
+                  onClick={() => setPreferredDialect(d.id)}
+                  aria-pressed={active}
+                  className={`h-11 rounded-2xl text-xs transition-all cursor-pointer ${
+                    active
+                      ? 'glass-pill text-[#e8b931] font-bold'
+                      : 'bg-white/5 text-stone-300 border border-white/10 hover:border-white/20 font-medium'
+                  }`}
+                >
+                  {d.name}
                 </button>
               );
             })}
