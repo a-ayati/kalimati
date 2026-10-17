@@ -36,4 +36,7 @@ for w in ('400','700'):
 # نسختان للفصحى في بطاقة المشاركة (اللوحة لا تدعم تبديل الألوان): حروف فاتحة أو داكنة، وتشكيل أحمر
 palette(fix(TTFont(D+'aref-ruqaa-ink-arabic-700-normal.woff')), '#f3ead8', '#e5483b').save(OUT+'kalimati-fusha-light2-700.woff2')
 palette(fix(TTFont(D+'aref-ruqaa-ink-arabic-700-normal.woff')), '#17120e', '#c62828').save(OUT+'kalimati-fusha-dark2-700.woff2')
+# الدارجة في بطاقة المشاركة: حروف رمادية وتشكيل ذهبي
+palette(fix(TTFont(D+'aref-ruqaa-ink-arabic-400-normal.woff')), '#aaa49c', '#d4a72c').save(OUT+'kalimati-darja-light2-400.woff2')
+palette(fix(TTFont(D+'aref-ruqaa-ink-arabic-400-normal.woff')), '#6b645c', '#a87f12').save(OUT+'kalimati-darja-dark2-400.woff2')
 print('ok')

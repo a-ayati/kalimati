@@ -16,7 +16,7 @@ const T_END = 2.85; // اختفاء المقدّمة
 
 const STORAGE_KEY = 'kalimati_intro_seen';
 
-function shouldPlay(): boolean {
+export function shouldPlay(): boolean {
   try {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
     return sessionStorage.getItem(STORAGE_KEY) !== '1';

@@ -9,7 +9,7 @@
 | الواجهة | React 19 + Vite + Tailwind | `src/` |
 | الخادم | Cloudflare Worker | `worker/index.ts` |
 | قاعدة البيانات | Cloudflare D1 (يجهّزها الخادم بنفسه) | `worker/seed.ts` |
-| النشر | GitHub Actions | `.github/workflows/deploy.yml` |
+| النشر | Cloudflare Workers Builds (تلقائي عند كل رفع) | `wrangler.jsonc` |
 
 ### ما يقدّمه الخادم
 

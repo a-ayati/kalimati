@@ -83,8 +83,8 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, showDivider
     fontSize: `${fushaText ? Math.round(size * 0.72) : size}px`,
     lineHeight: Math.max(1.9, lineHeight - 0.2),
     letterSpacing: 0,
-    // الخط الحبري يحمل ألوانه الأصلية (الأحمر والأزرق)؛ وغيره يأخذ لون الدارجة
-    ...(ink ? {} : { color: light ? '#b4231a' : '#f08a70' }),
+    // الدارجة: حروف رمادية وتشكيل ذهبي (في الخطوط الأخرى: رمادي فقط)
+    ...(ink ? { fontPalette: light ? '--darja-light' : '--darja-dark' } : { color: light ? '#6b645c' : '#aaa49c' }),
   };
 
   return (

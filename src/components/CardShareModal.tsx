@@ -193,8 +193,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     const isInk = selectedFont === 'ruqaa-ink';
     // خطوط مستضافة بتشكيل لا يتداخل مع الحروف؛ للفصحى نسخة ملوّنة مسبقاً لأن اللوحة لا تبدّل ألوان الخط
     const fushaFamily = isInk ? (selectedTheme === 'dark' ? '"KalimatiFushaLight", serif' : '"KalimatiFushaDark", serif') : CANVAS_FONTS[selectedFont];
-    const darjaFamily = isInk ? '"KalimatiInk", "Aref Ruqaa Ink", serif' : CANVAS_FONTS[selectedFont];
-    const accent = selectedTheme === 'dark' ? '#ef5350' : '#c62828';
+    const darjaFamily = isInk ? (selectedTheme === 'dark' ? '"KalimatiDarjaLight", serif' : '"KalimatiDarjaDark", serif') : CANVAS_FONTS[selectedFont];
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
     const darjaText = quote.language === 'darja' ? quote.text : quote.darja?.text || null;
@@ -262,7 +261,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     darjaLines.forEach((line) => {
       ctx.font = darjaFont;
-      ctx.fillStyle = isInk ? textColor : accent;
+      ctx.fillStyle = selectedTheme === 'dark' ? '#aaa49c' : '#6b645c';
       ctx.fillText(line, config.width / 2, y);
       y += darjaLH;
     });
@@ -302,7 +301,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     Promise.all(
       [
         `bold 40px ${CANVAS_FONTS[selectedFont]}`,
-        '40px "KalimatiInk"',
+        '40px "KalimatiDarjaLight"',
+        '40px "KalimatiDarjaDark"',
         'bold 40px "KalimatiFushaLight"',
         'bold 40px "KalimatiFushaDark"',
         'bold 26px "Cairo"',

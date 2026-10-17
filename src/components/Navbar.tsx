@@ -2,6 +2,7 @@ import React from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { ActiveTab } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
+import { HeaderLogo } from './HeaderLogo';
 import { 
   Sparkles, 
   BookOpen, 
@@ -35,20 +36,7 @@ export const Navbar: React.FC = () => {
             onClick={() => setActiveTab('today')}
             className="flex items-center gap-3 cursor-pointer group select-none"
           >
-            <div className="w-10 h-10 rounded-[11px] bg-[#0d0d0f] border border-[#c9a227]/45 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="logo-ink text-[25px] leading-none">كَ</span>
-            </div>
-            <div className="flex flex-col justify-center">
-              <div className="font-cairo text-base font-bold text-white tracking-wide flex items-center gap-2 leading-tight">
-                <span className="logo-ink text-[22px] leading-none">كَلِمَاتِي</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-cairo hidden sm:inline-block">
-                  أصيلة
-                </span>
-              </div>
-              <div className="text-[11px] text-amber-500/90 font-medium tracking-normal mt-1 hidden sm:block">
-                كَلِمَةٌ تَصِلُ فِي وَقْتِهَا
-              </div>
-            </div>
+            <HeaderLogo />
           </div>
 
           {/* Desktop Nav Links */}
