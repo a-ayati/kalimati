@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-cairo: 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-amiri: 'Amiri', serif;
+    --font-ruqaa: 'Aref Ruqaa', serif;
+    --font-kufi: 'Reem Kufi', sans-serif;
+    --font-naskh: 'Noto Naskh Arabic', serif;
+  }
+
+  *, *::before, *::after {
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  html, body {
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    direction: rtl;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, input, textarea, select {
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+  }
+}
+
+.font-cairo { font-family: 'Cairo', system-ui, -apple-system, sans-serif !important; }
+.font-ruqaa-ink { font-family: 'Aref Ruqaa Ink', 'Aref Ruqaa', serif; font-weight: 700; }
+.font-rakkas { font-family: 'Rakkas', 'Aref Ruqaa Ink', cursive; }
+.font-kufi-ink { font-family: 'Reem Kufi Ink', 'Reem Kufi', sans-serif; font-weight: 600; }
+.font-amiri { font-family: 'Amiri', serif; }
+.font-ruqaa { font-family: 'Aref Ruqaa', serif; }
+.font-kufi { font-family: 'Reem Kufi', sans-serif; }
+.font-naskh { font-family: 'Noto Naskh Arabic', serif; }
+
+/* Subtle textured patterns */
+.bg-grain-dark {
+  background-color: #0c0d0f;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.07) 0%, transparent 60%),
+    radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0);
+  background-size: 100% 100%, 28px 28px;
+}
+
+.bg-grain-vintage {
+  background-color: #f7f3e8;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(180, 83, 9, 0.06) 0%, transparent 70%),
+    radial-gradient(rgba(92, 64, 40, 0.04) 1px, transparent 0);
+  background-size: 100% 100%, 24px 24px;
+}
+
+.bg-grain-white {
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(15, 23, 42, 0.03) 0%, transparent 70%),
+    radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 0);
+  background-size: 100% 100%, 28px 28px;
+}
+
+/* Tashkeel coloring helper classes */
+.tashkeel-red mark,
+.tashkeel-red .t-fusha {
+  color: #ef4444;
+}
+
+.tashkeel-yellow mark,
+.tashkeel-yellow .t-darja {
+  color: #f59e0b;
+}
+
+/* Elegant scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(180, 140, 60, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(180, 140, 60, 0.45);
+}
