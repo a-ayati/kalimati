@@ -11,6 +11,8 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        // التسجيل من main.tsx (يعيد تحميل الصفحة تلقائياً عند صدور نسخة جديدة)
+        injectRegister: false,
         includeAssets: ['favicon.ico', 'favicon-64.png', 'apple-touch-icon.png', 'og.png'],
         manifest: {
           id: '/',
@@ -47,6 +49,9 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
+          skipWaiting: true,
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           // نسخ بطاقة المشاركة تُحمَّل عند الحاجة فقط
           globIgnores: ['**/*-gold.woff2'],
