@@ -30,7 +30,7 @@
 }
 
 .font-cairo { font-family: 'Cairo', system-ui, -apple-system, sans-serif !important; }
-.font-ruqaa-ink { font-family: 'KQ-ruqaaink', 'Aref Ruqaa', serif; font-weight: 700; }
+.font-ruqaa-ink { font-family: 'KQL-ruqaaink', 'Aref Ruqaa', serif; font-weight: 700; }
 .font-rakkas { font-family: 'Rakkas', 'Aref Ruqaa', cursive; }
 .font-kufi-ink { font-family: 'Reem Kufi Ink', 'Reem Kufi', sans-serif; font-weight: 600; }
 .font-amiri { font-family: 'Amiri', serif; }
@@ -39,7 +39,7 @@
 .font-naskh { font-family: 'Noto Naskh Arabic', serif; }
 
 /* خطوط المقولات بلونين في طبقة واحدة: انظر quote-fonts.css (مستورد في أعلى الملف) */
-.logo-ink { font-family: 'KQ-ruqaaink', 'Aref Ruqaa', serif; font-weight: 700; color: #f3ead8; font-palette: --kq-ruqaaink-red-dark; letter-spacing: 0; }
+.logo-ink { font-family: 'KQL-ruqaaink', 'Aref Ruqaa', serif; font-weight: 700; color: #f3ead8; letter-spacing: 0; }
 
 /* ———— زجاج iOS: ضبابية قوية، حافة داكنة، ولمعة علوية ———— */
 .glass-bar {

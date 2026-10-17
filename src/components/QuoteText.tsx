@@ -3,7 +3,8 @@ import { CustomStyle, DialectId, FontId, Quote, ThemeId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
 import { dialectInfo, pickDialect } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
-import { QUOTE_FONTS, fontFamilyCss, paletteName, quoteFont } from '../lib/quoteFonts';
+import { QUOTE_FONTS, fontFamilyCss, quoteFont } from '../lib/quoteFonts';
+import { TwoLayerText } from './InkText';
 
 /** اسم الخط لكل اختيار (للمعاينات في صفحة التخصيص) */
 export const FONT_FAMILIES: Record<FontId, string> = Object.fromEntries(
@@ -52,13 +53,12 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
   const { preferredDialect } = useKalimati();
   const size = fontSize ?? style.fontSize;
   const font = quoteFont(style.fontId);
-  const family = fontFamilyCss(style.fontId);
+  const family = fontFamilyCss(style.fontId, 'L');
   const light = isLightTheme(style.themeId);
   const lineHeight = Math.max(2, style.lineHeight);
-  const show = (t: string) => (style.showTashkeel ? t : stripTashkeel(t));
   const colors = quoteColors(style);
-  const themeKey = light ? 'light' : 'dark';
-  const fushaAccent = style.tashkeelColor === 'inherit' ? 'plain' : style.tashkeelColor;
+  const lettersFont = fontFamilyCss(style.fontId, 'L');
+  const marksFont = fontFamilyCss(style.fontId, 'M');
 
   // إن كان القول بالدارجة وحدها نعرضه بأسلوب الدارجة وبالحجم الكامل
   const fushaText = quote.language === 'fusha' ? quote.text : null;
@@ -72,9 +72,6 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
     fontSize: `${size}px`,
     lineHeight,
     letterSpacing: 0, // أي تباعد بين الحروف يفسد اتصال الخط العربي
-    // طبقة واحدة: الحروف بلون النص، والتشكيل بلون لوحة الخط
-    color: colors.fushaLetters,
-    fontPalette: paletteName(style.fontId, `${fushaAccent}-${themeKey}`),
   };
 
   const darjaStyle: React.CSSProperties = {
@@ -83,15 +80,13 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
     fontSize: `${fushaText ? Math.round(size * 0.72) : size}px`,
     lineHeight: Math.max(1.9, lineHeight - 0.2),
     letterSpacing: 0,
-    color: colors.dialectLetters,
-    fontPalette: paletteName(style.fontId, `dial-${themeKey}`),
   };
 
   return (
     <div className={`text-center ${className}`} dir="rtl">
       {fushaText && (
         <p lang="ar" style={fushaStyle} className="m-0">
-          {show(fushaText)}
+          <TwoLayerText text={fushaText} letters={colors.fushaLetters} marks={colors.fushaMarks} lettersFont={lettersFont} marksFont={marksFont} showMarks={style.showTashkeel} />
         </p>
       )}
 
@@ -105,7 +100,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
 
       {darjaText && (
         <p lang={darjaLang} style={darjaStyle} className="m-0">
-          {show(darjaText)}
+          <TwoLayerText text={darjaText} letters={colors.dialectLetters} marks={colors.dialectMarks} lettersFont={lettersFont} marksFont={marksFont} showMarks={style.showTashkeel} />
         </p>
       )}
     </div>

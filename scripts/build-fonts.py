@@ -1,18 +1,20 @@
-# يبني خطوط المقولات بلونين في طبقة واحدة (COLRv0) — تعمل في كل المتصفحات بما فيها Safari على الآيفون:
-#   - الحروف بلون النص (لون CSS / fillStyle)، والتشكيل بلون من لوحة الخط يُبدَّل عبر font-palette.
-#   - خط الرقعة: يرتفع التشكيل العلوي فوق قمم الحروف حتى لا يتداخل معها.
+# يبني خطوط المقولات على شكل نسختين متطابقتين القياسات من كل خط:
+#   KQL-*  الحروف وحدها (التشكيل فارغ)   ←  تُلوَّن بلون الحروف
+#   KQM-*  التشكيل وحده (الحروف فارغة)   ←  تُلوَّن بلون التشكيل
+# الطبقتان تحملان نفس النص ونفس العروض ونفس قواعد التشكيل والاتصال، فتُصفّان حرفاً بحرف
+# في كل المتصفحات (Safari وChrome وشاشة توقف الـ Mac) ولا يمكن أن تنزاحا.
+# خط الرقعة: يرتفع التشكيل العلوي فوق قمم الحروف حتى لا يتداخل معها.
 # يُنتج: public/fonts/kq-*.woff2  و  src/quote-fonts.css
 # التشغيل: python3 scripts/build-fonts.py  (يتطلب: pip install fonttools brotli)
 import os, statistics
 from fontTools.ttLib import TTFont
-from fontTools.colorLib.builder import buildCOLR, buildCPAL
+from fontTools.ttLib.tables._g_l_y_f import Glyph
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FS = ROOT + '/node_modules/@fontsource/'
 OUT = ROOT + '/public/fonts/'
 CSS = ROOT + '/src/quote-fonts.css'
 
-# العائلة ← [(الوزن، الملف)]
 FAMILIES = {
     'ruqaaink': [('400', 'aref-ruqaa-ink/files/aref-ruqaa-ink-arabic-400-normal.woff'),
                  ('700', 'aref-ruqaa-ink/files/aref-ruqaa-ink-arabic-700-normal.woff')],
@@ -25,25 +27,8 @@ FAMILIES = {
     'cairo': [('700', 'cairo/files/cairo-arabic-700-normal.woff2')],
 }
 
-# ألوان التشكيل (تطابق quoteColors في QuoteText.tsx)
-MARK_COLORS = {
-    'red-dark': '#e5483b', 'red-light': '#c62828',
-    'yellow-dark': '#f59e0b', 'yellow-light': '#d97706',
-    'gold-dark': '#c9a227', 'gold-light': '#a87f12',
-    'plain-dark': '#f3ead8', 'plain-light': '#1a1410',
-    'dial-dark': '#d4a72c', 'dial-light': '#a87f12',
-}
-DEFAULT_MARK = '#e5483b'
-CARD_GOLD = '#d4a72c'  # نسخة للوحة بطاقة المشاركة (اللوحة لا تدعم font-palette)
-
-
-def rgba(h):
-    h = h.lstrip('#')
-    return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)) + (1.0,)
-
 
 def raise_marks(f, top=900, down=30):
-    """خط الرقعة: رفع التشكيل العلوي إلى خط موحّد فوق قمم الحروف."""
     st = f['GPOS'].table.LookupList.Lookup[2].SubTable[0]
     avg = {c: statistics.mean([r.BaseAnchor[c].YCoordinate for r in st.BaseArray.BaseRecord if r.BaseAnchor[c]] or [0])
            for c in range(st.ClassCount)}
@@ -56,25 +41,57 @@ def raise_marks(f, top=900, down=30):
             a.YCoordinate = max(a.YCoordinate, top) if avg[c] > 200 else a.YCoordinate - down
 
 
-def colorize(f, mark_color):
-    for t in ('COLR', 'CPAL', 'SVG ', 'sbix', 'CBDT', 'CBLC'):
-        if t in f:
-            del f[t]
+def mark_glyphs(f):
+    """علامات التشكيل: صنف «علامة» في GDEF + كل ما يُغطّى كعلامة في جداول GPOS."""
     marks = set()
     gdef = f['GDEF'].table if 'GDEF' in f else None
     if gdef and gdef.GlyphClassDef:
-        marks = {g for g, c in gdef.GlyphClassDef.classDefs.items() if c == 3}
-    glyf = f['glyf'] if 'glyf' in f else None
-    layers = {}
+        marks |= {g for g, c in gdef.GlyphClassDef.classDefs.items() if c == 3}
+    if 'GPOS' in f:
+        for lk in f['GPOS'].table.LookupList.Lookup:
+            for st in lk.SubTable:
+                st = getattr(st, 'ExtSubTable', st)
+                for attr in ('MarkCoverage', 'Mark1Coverage'):
+                    cov = getattr(st, attr, None)
+                    if cov is not None:
+                        marks |= set(cov.glyphs)
+    return marks
+
+
+# الحركات وحدها (لا نقاط الحروف): فتحة، ضمة، كسرة، تنوين، شدة، سكون، مدة، همزات فوقية/تحتية، ألف خنجرية
+HARAKAT = list(range(0x064B, 0x0660)) + [0x0670, 0x06E1]
+# كل ما عداها من الحروف العربية والأرقام وعلامات الترقيم
+NON_HARAKAT = [u for u in list(range(0x0600, 0x0700)) + list(range(0x0750, 0x0780)) + list(range(0xFB50, 0xFE00)) + list(range(0xFE70, 0xFF00)) + list(range(0x20, 0x7F))
+               if u not in HARAKAT]
+
+
+def reachable_glyphs(f, unicodes):
+    """كل الرسوم التي يمكن أن تنتج عن هذه الحروف (عبر جداول الاستبدال)."""
+    from fontTools import subset
+    opts = subset.Options()
+    opts.layout_features = ['*']
+    sub = subset.Subsetter(opts)
+    cmap = f.getBestCmap()
+    sub.populate(unicodes=[u for u in unicodes if u in cmap])
+    sub._closure_glyphs(f)
+    return set(sub.glyphs_retained)
+
+
+def harakat_glyphs(f):
+    """رسوم الحركات = العلامات التي لا تنتج عن الحروف وحدها (فنقاط الحروف تبقى مع الحروف)."""
+    return mark_glyphs(f) - reachable_glyphs(f, NON_HARAKAT)
+
+
+def strip(f, keep_marks):
+    for t in ('COLR', 'CPAL', 'SVG ', 'sbix', 'CBDT', 'CBLC'):
+        if t in f:
+            del f[t]
+    marks = harakat_glyphs(f)
+    glyf = f['glyf']
     for g in f.getGlyphOrder():
-        if glyf is not None:
-            gl = glyf[g]
-            if gl.numberOfContours == 0:
-                continue
-        # 0xFFFF = لون النص؛ 0 = لون التشكيل من لوحة الخط
-        layers[g] = [(g, 0 if g in marks else 0xFFFF)]
-    f['COLR'] = buildCOLR(layers, version=0)
-    f['CPAL'] = buildCPAL([[rgba(mark_color)]])
+        is_mark = g in marks
+        if is_mark != keep_marks:
+            glyf[g] = Glyph()  # رسم فارغ؛ العرض (hmtx) وقواعد التموضع تبقى كما هي
     return len(marks)
 
 
@@ -85,17 +102,15 @@ for name in os.listdir(OUT):
 css = ['/* مولَّد آلياً بواسطة scripts/build-fonts.py — لا تعدّله يدوياً */']
 for fam, faces in FAMILIES.items():
     for weight, path in faces:
-        for suffix, color in (('', DEFAULT_MARK), ('-gold', CARD_GOLD)):
+        for layer, keep_marks in (('l', False), ('m', True)):
             f = TTFont(FS + path)
             if fam == 'ruqaaink':
                 raise_marks(f)
-            n = colorize(f, color)
+            n = strip(f, keep_marks)
             f.flavor = 'woff2'
-            f.save(OUT + f'kq-{fam}-{weight}{suffix}.woff2')
+            f.save(OUT + f'kq-{fam}-{weight}-{layer}.woff2')
+            css.append(f"@font-face {{ font-family: 'KQ{layer.upper()}-{fam}'; src: url('/fonts/kq-{fam}-{weight}-{layer}.woff2') format('woff2'); "
+                       f"font-weight: {weight}; font-display: block; }}")
         print(fam, weight, 'marks:', n)
-        css.append(f"@font-face {{ font-family: 'KQ-{fam}'; src: url('/fonts/kq-{fam}-{weight}.woff2') format('woff2'); "
-                   f"font-weight: {weight}; font-display: swap; }}")
-    for key, color in MARK_COLORS.items():
-        css.append(f"@font-palette-values --kq-{fam}-{key} {{ font-family: 'KQ-{fam}'; override-colors: 0 {color}; }}")
 open(CSS, 'w').write('\n'.join(css) + '\n')
 print('ok')
