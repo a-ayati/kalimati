@@ -48,9 +48,19 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          // الخادم يتولى هذه المسارات — لا يجب أن يجيب عنها التطبيق المخزّن
+          navigateFallbackDenylist: [/^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
+          runtimeCaching: [
+            {
+              // أحدث الأقوال من الشبكة أولاً، وآخر نسخة عند انقطاع الاتصال
+              urlPattern: ({ url }) => url.pathname === '/api/quotes',
+              handler: 'NetworkFirst',
+              options: { cacheName: 'kalimati-quotes', networkTimeoutSeconds: 4 },
+            },
+          ],
         },
         devOptions: {
-          enabled: true,
+          enabled: false,
         },
       }),
     ],
@@ -60,6 +70,8 @@ export default defineConfig(() => {
       },
     },
     server: {
+      // أثناء التطوير: تمرير طلبات /api إلى خادم wrangler المحلي (npm run preview)
+      proxy: { '/api': 'http://localhost:8787', '/sitemap.xml': 'http://localhost:8787' },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

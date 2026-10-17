@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { Quote, Language, QuoteStatus } from '../types';
 import { ALL_TOPICS } from '../data/seedQuotes';
 import { stripTashkeel } from '../utils/tashkeel';
+import { adminApi, ApiError, QuoteInput } from '../lib/api';
 import { 
   Lock, 
   Unlock, 
@@ -24,25 +25,70 @@ import {
   Link2,
   Calendar,
   Mic,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Loader2,
+  LogOut
 } from 'lucide-react';
 
-export const AdminView: React.FC = () => {
-  const { 
-    quotes, 
-    addQuote, 
-    updateQuote, 
-    deleteQuote, 
-    author, 
-    exportBackupJson, 
-    importBackupJson, 
-    openShareModal 
-  } = useKalimati();
+/** تحويل تاريخ ISO إلى قيمة حقل datetime-local بالتوقيت المحلي */
+function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
-  // Authentication: simple writer PIN
+export const AdminView: React.FC = () => {
+  const { author, openShareModal, refreshQuotes } = useKalimati();
+
+  // الدخول: كلمة مرور يتحقق منها الخادم، وجلسة في ملف تعريف آمن لا تصل إليه الصفحة
+  const [authState, setAuthState] = useState<'checking' | 'out' | 'in' | 'unconfigured' | 'offline'>('checking');
   const [pin, setPin] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pinError, setPinError] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  const flash = useCallback((kind: 'ok' | 'error', text: string) => {
+    setNotice({ kind, text });
+    window.setTimeout(() => setNotice(null), 4000);
+  }, []);
+
+  const loadQuotes = useCallback(async () => {
+    const { quotes: all } = await adminApi.list();
+    setQuotes(all);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await adminApi.me();
+        if (!me.configured) return setAuthState('unconfigured');
+        if (!me.authenticated) return setAuthState('out');
+        await loadQuotes();
+        setAuthState('in');
+      } catch {
+        setAuthState('offline');
+      }
+    })();
+  }, [loadQuotes]);
+
+  const handleError = useCallback(
+    (e: unknown) => {
+      if (e instanceof ApiError && e.status === 401) {
+        setAuthState('out');
+        return;
+      }
+      flash('error', e instanceof Error ? e.message : 'حدث خطأ غير متوقع.');
+    },
+    [flash]
+  );
+
+  /** بعد أي تعديل: نحدّث جدول الكاتب وما يراه القرّاء */
+  const afterChange = useCallback(async () => {
+    await loadQuotes();
+    await refreshQuotes();
+  }, [loadQuotes, refreshQuotes]);
 
   // Edit / Create Quote modal state
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
@@ -54,7 +100,7 @@ export const AdminView: React.FC = () => {
   const [formLanguage, setFormLanguage] = useState<Language>('fusha');
   const [formTopics, setFormTopics] = useState<string[]>(['الطمأنينة']);
   const [formStatus, setFormStatus] = useState<QuoteStatus>('published');
-  const [formPublishedAt, setFormPublishedAt] = useState(new Date().toISOString().split('T')[0]);
+  const [formPublishedAt, setFormPublishedAt] = useState(toLocalInput(new Date().toISOString()));
   const [formBehindTheWords, setFormBehindTheWords] = useState('');
   const [formPairedQuoteId, setFormPairedQuoteId] = useState<string>('');
   const [formRevisionNote, setFormRevisionNote] = useState('');
@@ -65,14 +111,66 @@ export const AdminView: React.FC = () => {
   // Search in admin table
   const [adminSearch, setAdminSearch] = useState('');
 
-  // Check PIN (default is '1234')
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === '1234' || pin === 'kalimati') {
-      setIsAuthenticated(true);
-      setPinError(false);
-    } else {
-      setPinError(true);
+    if (!pin || isBusy) return;
+    setIsBusy(true);
+    setPinError(null);
+    try {
+      await adminApi.login(pin);
+      setPin('');
+      await loadQuotes();
+      setAuthState('in');
+    } catch (err) {
+      setPinError(err instanceof Error ? err.message : 'تعذّر تسجيل الدخول.');
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await adminApi.logout();
+    } catch {
+      // حتى لو فشل الطلب نُغلق الواجهة
+    }
+    setQuotes([]);
+    setAuthState('out');
+  };
+
+  const handleDelete = async (q: Quote) => {
+    if (!confirm('هل أنت متأكد من حذف هذه الخاطرة نهائيًا؟')) return;
+    try {
+      await adminApi.remove(q.id);
+      await afterChange();
+      flash('ok', 'حُذفت الخاطرة.');
+    } catch (err) {
+      handleError(err);
+    }
+  };
+
+  // نسخة احتياطية كاملة لكل الأقوال (مع المسودات وسجل التعديلات)
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify({ version: 2, exportedAt: new Date().toISOString(), quotes }, null, 2)], {
+      type: 'application/json',
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `kalimati-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      const data = JSON.parse(await file.text());
+      if (!Array.isArray(data?.quotes)) throw new Error('الملف لا يحتوي على أقوال.');
+      if (!confirm(`سيتم استيراد ${data.quotes.length} قولاً، وتحديث الموجود منها بنفس المعرّف. متابعة؟`)) return;
+      const { imported } = await adminApi.importQuotes(data.quotes);
+      await afterChange();
+      flash('ok', `تم استيراد ${imported} قولاً.`);
+    } catch (err) {
+      handleError(err);
     }
   };
 
@@ -85,7 +183,7 @@ export const AdminView: React.FC = () => {
     setFormLanguage('fusha');
     setFormTopics(['الطمأنينة']);
     setFormStatus('published');
-    setFormPublishedAt(new Date().toISOString().split('T')[0]);
+    setFormPublishedAt(toLocalInput(new Date().toISOString()));
     setFormBehindTheWords('');
     setFormPairedQuoteId('');
     setFormRevisionNote('');
@@ -100,54 +198,51 @@ export const AdminView: React.FC = () => {
     setFormLanguage(quote.language);
     setFormTopics(quote.topics);
     setFormStatus(quote.status);
-    setFormPublishedAt(new Date(quote.publishedAt).toISOString().split('T')[0]);
+    setFormPublishedAt(toLocalInput(quote.publishedAt));
     setFormBehindTheWords(quote.behindTheWords || '');
     setFormPairedQuoteId(quote.pairedQuoteId || '');
     setFormRevisionNote('');
   };
 
-  // Save quote submission
-  const handleSaveQuote = (e: React.FormEvent) => {
+  // حفظ القول على الخادم
+  const handleSaveQuote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formText.trim()) return;
+    if (!formText.trim() || isBusy) return;
 
     const plainText = stripTashkeel(formText);
-    const slug = plainText.substring(0, 30).trim().replace(/\s+/g, '-');
+    const existing = editingQuoteId ? quotes.find((q) => q.id === editingQuoteId) : undefined;
+    const payload: QuoteInput = {
+      // الرابط يُولَّد على الخادم للقول الجديد، ويُحفظ كما هو عند التعديل حتى لا تنكسر الروابط المشاركة
+      slug: existing?.slug || plainText,
+      text: formText,
+      plainText,
+      author: formAuthor,
+      language: formLanguage,
+      topics: formTopics,
+      status: formStatus,
+      publishedAt: new Date(formPublishedAt).toISOString(),
+      behindTheWords: formBehindTheWords.trim() || undefined,
+      pairedQuoteId: formPairedQuoteId || undefined,
+      revisionNote: formRevisionNote.trim() || undefined,
+    };
 
-    if (isCreatingNew) {
-      addQuote({
-        slug,
-        text: formText,
-        plainText,
-        author: formAuthor,
-        language: formLanguage,
-        topics: formTopics,
-        status: formStatus,
-        publishedAt: new Date(formPublishedAt).toISOString(),
-        behindTheWords: formBehindTheWords.trim() || undefined,
-        pairedQuoteId: formPairedQuoteId || undefined,
-      });
-    } else if (editingQuoteId) {
-      updateQuote(
-        editingQuoteId,
-        {
-          slug,
-          text: formText,
-          plainText,
-          author: formAuthor,
-          language: formLanguage,
-          topics: formTopics,
-          status: formStatus,
-          publishedAt: new Date(formPublishedAt).toISOString(),
-          behindTheWords: formBehindTheWords.trim() || undefined,
-          pairedQuoteId: formPairedQuoteId || undefined,
-        },
-        formRevisionNote.trim() || 'تحديث وتنقيح النص'
-      );
+    setIsBusy(true);
+    try {
+      if (isCreatingNew) {
+        await adminApi.create(payload);
+        flash('ok', 'حُفظت الخاطرة.');
+      } else if (editingQuoteId) {
+        await adminApi.update(editingQuoteId, payload);
+        flash('ok', 'حُفظت التعديلات.');
+      }
+      await afterChange();
+      setIsCreatingNew(false);
+      setEditingQuoteId(null);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setIsBusy(false);
     }
-
-    setIsCreatingNew(false);
-    setEditingQuoteId(null);
   };
 
   // Toggle topic selection
@@ -167,7 +262,7 @@ export const AdminView: React.FC = () => {
   const totalPublished = quotes.filter((q) => q.status === 'published').length;
   const totalDrafts = quotes.filter((q) => q.status === 'draft' || q.status === 'scheduled').length;
 
-  if (!isAuthenticated) {
+  if (authState !== 'in') {
     return (
       <div className="w-full max-w-md mx-auto px-4 py-16 text-center">
         <div className="p-8 rounded-3xl bg-[#141518] border border-amber-500/30 shadow-2xl space-y-5">
@@ -176,41 +271,60 @@ export const AdminView: React.FC = () => {
           </div>
 
           <div>
-            <h1 className="text-xl font-bold font-amiri text-white">لوحة إدارة الكاتب</h1>
-            <p className="text-xs text-stone-400 mt-1">
-              مخصصة لصاحب المشروع لإدارة الأقوال والخواطر وسجل التعديلات والجدولة.
+            <h1 className="text-xl font-bold font-amiri text-white">لوحة الكاتب</h1>
+            <p className="text-xs text-stone-400 mt-2 leading-relaxed">
+              لإدارة الأقوال والخواطر وجدولتها ومتابعة أثرها.
             </p>
           </div>
 
-          <form onSubmit={handlePinSubmit} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                placeholder="أدخل رمز الدخول (الافتراضي: 1234)"
-                className="w-full text-center tracking-widest text-lg p-3 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-stone-500 focus:outline-none focus:border-amber-500"
-                autoFocus
-              />
-              {pinError && (
-                <p className="text-xs text-rose-400 mt-1.5 flex items-center justify-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  رمز الدخول غير صحيح. الرمز الافتراضي هو 1234.
-                </p>
-              )}
+          {authState === 'checking' && (
+            <div className="flex justify-center py-4 text-stone-400">
+              <Loader2 className="w-6 h-6 animate-spin" />
             </div>
+          )}
 
-            <button
-              type="submit"
-              className="w-full py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors cursor-pointer"
-            >
-              فتح لوحة الإدارة
-            </button>
-          </form>
+          {authState === 'offline' && (
+            <p className="text-xs text-rose-300 leading-relaxed">
+              لا يمكن الوصول إلى الخادم الآن. تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة.
+            </p>
+          )}
 
-          <p className="text-[11px] text-stone-500">
-            * يمكنك تغيير الرمز أو تخصيصه في أي وقت من بيانات الإعدادات.
-          </p>
+          {authState === 'unconfigured' && (
+            <p className="text-xs text-amber-200 leading-relaxed">
+              لم تُضبط كلمة مرور الكاتب على الخادم بعد. أضفها كسرّ باسم <code>ADMIN_PASSWORD</code> في إعدادات النشر.
+            </p>
+          )}
+
+          {authState === 'out' && (
+            <form onSubmit={handlePinSubmit} className="space-y-4">
+              <div>
+                <input
+                  type="password"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  placeholder="كلمة المرور"
+                  autoComplete="current-password"
+                  className="w-full text-center text-lg p-3 rounded-xl bg-black/50 border border-white/10 text-white placeholder:text-stone-500 focus:outline-none focus:border-amber-500"
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-xs text-rose-400 mt-2 flex items-center justify-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {pinError}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isBusy || !pin}
+                className="w-full py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-stone-950 transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>دخول</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
     );
@@ -255,14 +369,51 @@ export const AdminView: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setIsAuthenticated(false)}
+            onClick={handleExport}
             className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white border border-white/10 text-xs"
-            title="قفل لوحة الإدارة"
+            title="تنزيل نسخة احتياطية من كل الأقوال"
           >
-            <Lock className="w-4 h-4" />
+            <Download className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => importInputRef.current?.click()}
+            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white border border-white/10 text-xs"
+            title="استيراد نسخة احتياطية"
+          >
+            <Upload className="w-4 h-4" />
+          </button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleImport(file);
+              e.target.value = '';
+            }}
+          />
+
+          <button
+            onClick={handleLogout}
+            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white border border-white/10 text-xs"
+            title="تسجيل الخروج"
+          >
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      {notice && (
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-bold shadow-xl ${
+            notice.kind === 'ok' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+          }`}
+        >
+          {notice.text}
+        </div>
+      )}
 
       {/* Aggregate Stats Cards (Section 10 & 13: strictly anonymous aggregate metrics) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-right">
@@ -448,9 +599,7 @@ export const AdminView: React.FC = () => {
 
                         <button
                           onClick={() => {
-                            if (confirm('هل أنت متأكد من حذف هذه الخاطرة نهائيًا؟')) {
-                              deleteQuote(q.id);
-                            }
+                            handleDelete(q);
                           }}
                           className="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-white/5"
                           title="حذف"
@@ -537,7 +686,7 @@ export const AdminView: React.FC = () => {
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">تاريخ النشر العام:</label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={formPublishedAt}
                     onChange={(e) => setFormPublishedAt(e.target.value)}
                     className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
@@ -652,9 +801,11 @@ export const AdminView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-xl font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-colors"
+                  disabled={isBusy}
+                  className="px-6 py-2 rounded-xl font-bold bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-stone-950 transition-colors flex items-center gap-2"
                 >
-                  {isCreatingNew ? 'نشر الخاطرة' : 'حفظ التعديلات'}
+                  {isBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isCreatingNew ? 'حفظ الخاطرة' : 'حفظ التعديلات'}
                 </button>
               </div>
             </form>

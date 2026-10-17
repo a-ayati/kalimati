@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Quote, ThemeId, FontId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
+import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
 import { 
   X, 
@@ -247,7 +248,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     ctx.fillStyle = subtleColor;
     ctx.font = '18px "Cairo", sans-serif';
-    ctx.fillText('kalimati.app', config.width / 2, footerY + 36);
+    ctx.fillText(siteHost(), config.width / 2, footerY + 36);
   }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author]);
 
   useEffect(() => {
@@ -279,14 +280,14 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
                 title: 'كلماتي — كلمة تصل في وقتها',
-                text: `${stripTashkeel(quote.text)}\n\n— بقلم: ${quote.author}\nمنصة كلماتي: https://kalimati.app/quote/${quote.id}`,
+                text: `${stripTashkeel(quote.text)}\n\n— بقلم: ${quote.author}\nمنصة كلماتي: ${quoteUrl(quote)}`,
                 files: [file],
               });
             } else {
               await navigator.share({
                 title: 'كلماتي — كلمة تصل في وقتها',
-                text: `${stripTashkeel(quote.text)}\n\n— بقلم: ${quote.author}\nhttps://kalimati.app/quote/${quote.id}`,
-                url: `https://kalimati.app/quote/${quote.id}`,
+                text: `${stripTashkeel(quote.text)}\n\n— بقلم: ${quote.author}`,
+                url: quoteUrl(quote),
               });
             }
           } catch {
@@ -322,7 +323,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
   // Copy Link
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(`https://kalimati.app/quote/${quote.id}`);
+      await navigator.clipboard.writeText(quoteUrl(quote));
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     } catch {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Quote, EmotionTag } from '../types';
+import { quoteUrl } from '../lib/links';
 import { useKalimati } from '../context/KalimatiContext';
 import { FormattedArabicText, stripTashkeel } from '../utils/tashkeel';
 import { 
@@ -84,7 +85,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   const handleCopyText = async () => {
     try {
-      const textToCopy = `${stripTashkeel(currentQuote.text)}\n\n— بقلم: ${currentQuote.author}\nمنصة كلماتي: https://kalimati.app/quote/${currentQuote.id}`;
+      const textToCopy = `${stripTashkeel(currentQuote.text)}\n\n— بقلم: ${currentQuote.author}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

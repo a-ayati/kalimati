@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { quoteUrl as quoteLink } from '../lib/links';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { stripTashkeel } from '../utils/tashkeel';
@@ -23,13 +24,33 @@ export const QuoteDetailView: React.FC = () => {
     setActiveTab, 
     setSelectedQuoteId, 
     author, 
-    openShareModal 
+    openShareModal,
+    quotesSource
   } = useKalimati();
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
 
-  const quote = quotes.find((q) => q.id === selectedQuoteId) || quotes[0];
+  const quote = quotes.find((q) => q.id === selectedQuoteId);
+
+  if (!quote) {
+    const loading = quotesSource !== 'server';
+    return (
+      <div className="w-full max-w-xl mx-auto px-4 py-20 text-center space-y-4">
+        <p className="text-lg font-amiri text-stone-200">
+          {loading ? 'لحظة… نبحث عن هذه الكلمة.' : 'لم نجد هذه الكلمة. ربما نُقلت أو لم يحن موعد نشرها بعد.'}
+        </p>
+        {!loading && (
+          <button
+            onClick={() => setActiveTab('library')}
+            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 cursor-pointer"
+          >
+            تصفّح المكتبة
+          </button>
+        )}
+      </div>
+    );
+  }
 
   // Related quotes sharing same topic
   const relatedQuotes = quotes.filter(
@@ -43,7 +64,7 @@ export const QuoteDetailView: React.FC = () => {
     day: 'numeric',
   });
 
-  const quoteUrl = `https://kalimati.app/quote/${quote.id}`;
+  const quoteUrl = quoteLink(quote);
 
   const handleCopyLink = async () => {
     try {
@@ -76,14 +97,14 @@ export const QuoteDetailView: React.FC = () => {
             'creator': {
               '@type': 'Person',
               'name': quote.author,
-              'url': 'https://kalimati.app/author',
+              'url': `${window.location.origin}/author`,
             },
             'datePublished': quote.publishedAt,
             'inLanguage': quote.language === 'darja' ? 'ar-DZ' : 'ar',
             'isPartOf': {
               '@type': 'WebSite',
               'name': 'كلماتي',
-              'url': 'https://kalimati.app',
+              'url': window.location.origin,
             },
           }),
         }}

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
   Quote, 
   SavedItem, 
@@ -11,6 +11,74 @@ import {
 } from '../types';
 import { SEED_QUOTES, INITIAL_AUTHOR, ALL_TOPICS } from '../data/seedQuotes';
 import confetti from 'canvas-confetti';
+import { fetchPublicQuotes, trackEvent } from '../lib/api';
+
+// ---------------------------------------------------------------------------
+// الروابط: كل صفحة وكل قول لها عنوان حقيقي في المتصفح
+// ---------------------------------------------------------------------------
+
+const TAB_PATHS: Record<Exclude<ActiveTab, 'quote-detail'>, string> = {
+  today: '/',
+  library: '/library',
+  saved: '/saved',
+  customize: '/customize',
+  account: '/account',
+  author: '/author',
+  about: '/about',
+  'privacy-terms': '/privacy',
+  contact: '/contact',
+  admin: '/admin',
+};
+
+const TAB_TITLES: Record<ActiveTab, string> = {
+  today: 'كلماتي — كلمة تصل في وقتها',
+  library: 'المكتبة — كلماتي',
+  saved: 'محفوظاتي — كلماتي',
+  customize: 'التخصيص — كلماتي',
+  account: 'الإعدادات — كلماتي',
+  author: 'عن الكاتب — كلماتي',
+  about: 'عن المنصة — كلماتي',
+  'privacy-terms': 'الخصوصية والشروط — كلماتي',
+  contact: 'تواصل — كلماتي',
+  admin: 'لوحة الكاتب — كلماتي',
+  'quote-detail': 'كلماتي',
+};
+
+interface Route {
+  tab: ActiveTab;
+  slug: string | null;
+}
+
+function parseRoute(pathname: string): Route {
+  const quoteMatch = pathname.match(/^\/q\/([^/]+)\/?$/);
+  if (quoteMatch) {
+    let slug = quoteMatch[1];
+    try {
+      slug = decodeURIComponent(slug);
+    } catch {
+      // اترك الرابط كما هو
+    }
+    return { tab: 'quote-detail', slug };
+  }
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  const tab = (Object.keys(TAB_PATHS) as Array<keyof typeof TAB_PATHS>).find((t) => TAB_PATHS[t] === clean);
+  return { tab: tab || 'today', slug: null };
+}
+
+function routeToPath(route: Route): string {
+  if (route.tab === 'quote-detail') return route.slug ? `/q/${encodeURIComponent(route.slug)}` : '/library';
+  return TAB_PATHS[route.tab];
+}
+
+/** الأقوال التي يحق للقارئ رؤيتها من النسخة المضمّنة (عند غياب الاتصال) */
+function visibleSeed(): Quote[] {
+  const now = Date.now();
+  return SEED_QUOTES.filter(
+    (q) => (q.status === 'published' || q.status === 'scheduled') && new Date(q.publishedAt).getTime() <= now
+  ).map((q) => ({ ...q, status: 'published' as const, stats: { savesCount: 0, sharesCount: 0, readsCount: 0 } }));
+}
+
+export type QuotesSource = 'server' | 'cache' | 'offline';
 
 interface KalimatiContextType {
   quotes: Quote[];
@@ -25,7 +93,9 @@ interface KalimatiContextType {
   isZenActive: boolean;
   shareModalQuote: Quote | null;
   postSaveNotice: { show: boolean; quoteText: string } | null;
+  quotesSource: QuotesSource;
   // Actions
+  refreshQuotes: () => Promise<void>;
   setActiveTab: (tab: ActiveTab) => void;
   setSelectedQuoteId: (id: string | null) => void;
   openShareModal: (quote: Quote) => void;
@@ -42,9 +112,6 @@ interface KalimatiContextType {
   setNotificationSettings: React.Dispatch<React.SetStateAction<NotificationSettings>>;
   requestNotificationPermission: () => Promise<boolean>;
   setAuthor: React.Dispatch<React.SetStateAction<AuthorProfile>>;
-  addQuote: (newQuote: Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions'>) => Quote;
-  updateQuote: (id: string, updates: Partial<Quote>, revisionNote?: string) => void;
-  deleteQuote: (id: string) => void;
   exportBackupJson: () => string;
   importBackupJson: (jsonStr: string) => boolean;
   dismissPostSaveNotice: () => void;
@@ -81,7 +148,7 @@ const DEFAULT_NOTIFICATIONS: NotificationSettings = {
 const KalimatiContext = createContext<KalimatiContextType | null>(null);
 
 const STORAGE_KEYS = {
-  QUOTES: 'kalimati_quotes_v1',
+  QUOTES_CACHE: 'kalimati_quotes_cache_v2',
   SAVED: 'kalimati_saved_items_v1',
   STYLE: 'kalimati_custom_style_v1',
   ZEN: 'kalimati_zen_settings_v1',
@@ -91,23 +158,48 @@ const STORAGE_KEYS = {
 };
 
 export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load quotes
+  // الأقوال: آخر نسخة من الخادم محفوظة للعمل دون اتصال، وإلا النسخة المضمّنة
   const [quotes, setQuotes] = useState<Quote[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.QUOTES);
+      const stored = localStorage.getItem(STORAGE_KEYS.QUOTES_CACHE);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((q: Quote) =>
-            q.author === 'عبد الواحد عياتي' ? { ...q, author: 'شعيب المطوع' } : q
-          );
-        }
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {
-      console.error('Error loading stored quotes:', e);
+      console.error('Error loading cached quotes:', e);
     }
-    return SEED_QUOTES;
+    return visibleSeed();
   });
+  const [quotesSource, setQuotesSource] = useState<QuotesSource>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.QUOTES_CACHE) ? 'cache' : 'offline';
+    } catch {
+      return 'offline';
+    }
+  });
+
+  const refreshQuotes = useCallback(async () => {
+    try {
+      const { quotes: fresh } = await fetchPublicQuotes();
+      setQuotes(fresh);
+      setQuotesSource('server');
+      try {
+        localStorage.setItem(STORAGE_KEYS.QUOTES_CACHE, JSON.stringify(fresh));
+      } catch {
+        // مساحة التخزين ممتلئة — لا بأس
+      }
+    } catch (e) {
+      console.warn('تعذّر تحميل الأقوال من الخادم، نعرض آخر نسخة محفوظة.', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshQuotes();
+    const onOnline = () => refreshQuotes();
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [refreshQuotes]);
 
   // Load saved items
   const [savedItems, setSavedItems] = useState<SavedItem[]>(() => {
@@ -117,14 +209,7 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (e) {
       console.error(e);
     }
-    return [
-      {
-        quoteId: 'quote-1',
-        savedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-        emotionTag: 'طمأنتني',
-        privateNote: 'قرأتها في لحظة ضيق فكانت كأنها كُتبت لأجلي.',
-      },
-    ];
+    return [];
   });
 
   // Load custom style
@@ -198,17 +283,86 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   // UI state
-  const [activeTab, setActiveTab] = useState<ActiveTab>('today');
-  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+  const [route, setRoute] = useState<Route>(() => parseRoute(window.location.pathname));
+  const activeTab = route.tab;
+  const routeRef = useRef(route);
+  routeRef.current = route;
+  // آخر قول اختاره المستخدم (يُستعمل عند الانتقال إلى صفحة القول مباشرة بعد اختياره)
+  const pendingSlugRef = useRef<string | null>(route.slug);
+  const quotesRef = useRef(quotes);
+  quotesRef.current = quotes;
+
+  const selectedQuoteId = useMemo(() => {
+    if (!route.slug) return null;
+    return quotes.find((q) => q.slug === route.slug || q.id === route.slug)?.id ?? null;
+  }, [route.slug, quotes]);
+
+  const navigate = useCallback((next: Route, replace = false) => {
+    const path = routeToPath(next);
+    if (path !== window.location.pathname) {
+      if (replace) window.history.replaceState(null, '', path);
+      else window.history.pushState(null, '', path);
+    }
+    setRoute(next);
+  }, []);
+
+  const setActiveTab = useCallback(
+    (tab: ActiveTab) => {
+      if (tab === 'quote-detail') {
+        navigate({ tab, slug: pendingSlugRef.current });
+      } else {
+        navigate({ tab, slug: null });
+      }
+    },
+    [navigate]
+  );
+
+  const setSelectedQuoteId = useCallback(
+    (id: string | null) => {
+      const q = id ? quotesRef.current.find((x) => x.id === id) : null;
+      pendingSlugRef.current = q ? q.slug : null;
+      // إن كنا في صفحة قول (مثل «كلمات أخرى في ذات المعنى») ننتقل إلى رابط القول الجديد
+      if (q && routeRef.current.tab === 'quote-detail') navigate({ tab: 'quote-detail', slug: q.slug });
+    },
+    [navigate]
+  );
+
+  // زر الرجوع والتقدّم في المتصفح
+  useEffect(() => {
+    const onPop = () => setRoute(parseRoute(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  // توحيد الروابط غير المعروفة إلى الصفحة الرئيسية
+  useEffect(() => {
+    if (route.tab === 'quote-detail') return;
+    const path = routeToPath(route);
+    const current = window.location.pathname.replace(/\/+$/, '') || '/';
+    if (current !== path) window.history.replaceState(null, '', path);
+  }, [route]);
+
+  // عنوان الصفحة + احتساب القراءة عند فتح صفحة قول
+  useEffect(() => {
+    if (route.tab === 'quote-detail' && selectedQuoteId) {
+      const q = quotes.find((x) => x.id === selectedQuoteId);
+      if (q) {
+        const plain = q.plainText.length > 60 ? q.plainText.slice(0, 60) + '…' : q.plainText;
+        document.title = `«${plain}» — كلماتي`;
+      }
+    } else {
+      document.title = TAB_TITLES[route.tab];
+    }
+  }, [route, selectedQuoteId, quotes]);
+
+  useEffect(() => {
+    if (route.tab === 'quote-detail' && selectedQuoteId) trackEvent(selectedQuoteId, 'read');
+  }, [route.tab, selectedQuoteId]);
   const [isZenActive, setIsZenActive] = useState<boolean>(false);
   const [shareModalQuote, setShareModalQuote] = useState<Quote | null>(null);
   const [postSaveNotice, setPostSaveNotice] = useState<{ show: boolean; quoteText: string } | null>(null);
 
   // Persistence effects
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.QUOTES, JSON.stringify(quotes));
-  }, [quotes]);
-
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SAVED, JSON.stringify(savedItems));
   }, [savedItems]);
@@ -256,7 +410,8 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       ];
     });
 
-    // Increment anonymous stats counter on the quote
+    // إحصائية حقيقية على الخادم + تحديث فوري للعرض
+    trackEvent(quoteId, 'save');
     setQuotes((prev) =>
       prev.map((q) =>
         q.id === quoteId
@@ -332,87 +487,38 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return granted;
   }, []);
 
-  // Admin Actions
-  const addQuote = useCallback((data: Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions'>) => {
-    const id = `quote-${Date.now()}`;
-    const newQuote: Quote = {
-      ...data,
-      id,
-      createdAt: new Date().toISOString(),
-      stats: { savesCount: 0, sharesCount: 0, readsCount: 1 },
-      revisions: [
-        {
-          id: `rev-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          note: 'إنشاء النص الأولي وحفظه في النظام',
-          textSnippet: data.text.substring(0, 45) + '...',
-        },
-      ],
-    };
-    setQuotes((prev) => [newQuote, ...prev]);
-    return newQuote;
-  }, []);
-
-  const updateQuote = useCallback((id: string, updates: Partial<Quote>, revisionNote?: string) => {
-    setQuotes((prev) =>
-      prev.map((q) => {
-        if (q.id !== id) return q;
-        const newRevisions = revisionNote
-          ? [
-              {
-                id: `rev-${Date.now()}`,
-                timestamp: new Date().toISOString(),
-                note: revisionNote,
-                textSnippet: (updates.text || q.text).substring(0, 45) + '...',
-              },
-              ...q.revisions,
-            ]
-          : q.revisions;
-
-        return {
-          ...q,
-          ...updates,
-          revisions: newRevisions,
-        };
-      })
-    );
-  }, []);
-
-  const deleteQuote = useCallback((id: string) => {
-    setQuotes((prev) => prev.filter((q) => q.id !== id));
-    setSavedItems((prev) => prev.filter((s) => s.quoteId !== id));
-  }, []);
-
   // Backup & Restore
   const exportBackupJson = useCallback(() => {
+    // نسخة شخصية: المحفوظات والملاحظات والتخصيص (الأقوال نفسها محفوظة على الخادم)
     const backup = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
-      quotes,
       savedItems,
       customStyle,
-      author,
+      zenSettings,
+      preferredTopics,
     };
     return JSON.stringify(backup, null, 2);
-  }, [quotes, savedItems, customStyle, author]);
+  }, [savedItems, customStyle, zenSettings, preferredTopics]);
 
   const importBackupJson = useCallback((jsonStr: string) => {
     try {
       const data = JSON.parse(jsonStr);
-      if (data.quotes && Array.isArray(data.quotes)) setQuotes(data.quotes);
-      if (data.savedItems && Array.isArray(data.savedItems)) setSavedItems(data.savedItems);
-      if (data.customStyle) setCustomStyle(data.customStyle);
-      if (data.author) setAuthor(data.author);
+      if (!data || typeof data !== 'object') return false;
+      if (Array.isArray(data.savedItems)) setSavedItems(data.savedItems);
+      if (data.customStyle && typeof data.customStyle === 'object') setCustomStyle({ ...DEFAULT_STYLE, ...data.customStyle });
+      if (data.zenSettings && typeof data.zenSettings === 'object') setZenSettings({ ...DEFAULT_ZEN, ...data.zenSettings });
+      if (Array.isArray(data.preferredTopics)) setPreferredTopics(data.preferredTopics);
       return true;
     } catch (e) {
       console.error('Import failed:', e);
       return false;
     }
-  }, []);
+  }, [setPreferredTopics]);
 
   const openShareModal = useCallback((quote: Quote) => {
     setShareModalQuote(quote);
-    // increment share stat
+    trackEvent(quote.id, 'share');
     setQuotes((prev) =>
       prev.map((q) =>
         q.id === quote.id
@@ -441,6 +547,8 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         isZenActive,
         shareModalQuote,
         postSaveNotice,
+        quotesSource,
+        refreshQuotes,
         setActiveTab,
         setSelectedQuoteId,
         openShareModal,
@@ -457,9 +565,6 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setNotificationSettings,
         requestNotificationPermission,
         setAuthor,
-        addQuote,
-        updateQuote,
-        deleteQuote,
         exportBackupJson,
         importBackupJson,
         dismissPostSaveNotice,

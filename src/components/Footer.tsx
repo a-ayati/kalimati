@@ -47,13 +47,6 @@ export const Footer: React.FC = () => {
             >
               الخصوصية وحقوق المحتوى
             </button>
-            <button
-              onClick={() => setActiveTab('admin')}
-              className="hover:text-amber-400 transition-colors cursor-pointer flex items-center gap-1 text-[11px] text-stone-500"
-            >
-              <Lock className="w-3 h-3" />
-              <span>لوحة الإدارة</span>
-            </button>
           </div>
         </div>
 

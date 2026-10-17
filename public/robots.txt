@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /admin/*
-Disallow: /drafts/*
-
-Sitemap: https://kalimati.app/sitemap.xml

@@ -1,6 +1,0 @@
-{
-  "name": "كلماتي — كلمة تصل في وقتها",
-  "description": "منصة أدبية راقية لأقوال وخواطر أصلية بالفصحى والدارجة الجزائرية، مع بطاقات مشاركة وتخصيص فني ولحظة سكون وتطبيق ويب تقدمي PWA.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

@@ -8,3 +8,6 @@ coverage/
 !.env.example
 .aistudio/
 skills/
+dev-dist/
+.wrangler/
+.dev.vars

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { trackEvent } from '../lib/api';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { ALL_TOPICS } from '../data/seedQuotes';
@@ -48,6 +49,11 @@ export const TodayView: React.FC = () => {
     : universalTodayQuote;
 
   const currentDisplayQuote = viewMode === 'universal' ? universalTodayQuote : tailoredTodayQuote;
+
+  // احتساب قراءة لكلمة اليوم المعروضة (مرة واحدة لكل زائر في اليوم على الخادم)
+  useEffect(() => {
+    if (currentDisplayQuote?.id) trackEvent(currentDisplayQuote.id, 'read');
+  }, [currentDisplayQuote?.id]);
 
   const toggleTopic = (topic: string) => {
     if (preferredTopics.includes(topic)) {
