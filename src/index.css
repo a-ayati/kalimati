@@ -39,7 +39,7 @@
 /* خط الشعار مستضاف داخل المنصة حتى يظهر فوراً في المقدّمة (رخصة OFL) */
 @font-face {
   font-family: 'KalimatiInk';
-  src: url('/fonts/aref-ruqaa-ink-arabic-700-normal.woff2') format('woff2');
+  src: url('/fonts/kalimati-ink-700.woff2') format('woff2');
   font-weight: 700;
   font-display: block;
 }
