@@ -48,7 +48,7 @@ export const LogoIntro: React.FC = () => {
         setReady(true);
       }
     };
-    document.fonts.load(`700 ${WORD_SIZE}px KQ-ruqaaink`, 'كَلِمَاتِي').then(go, go);
+    document.fonts.load(`700 ${WORD_SIZE}px KQL-ruqaaink`, 'كَلِمَاتِي').then(go, go);
     const t = window.setTimeout(go, 1000);
     return () => window.clearTimeout(t);
   }, [play]);

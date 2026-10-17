@@ -1,80 +1,19 @@
 /* مولَّد آلياً بواسطة scripts/build-fonts.py — لا تعدّله يدوياً */
-@font-face { font-family: 'KQ-ruqaaink'; src: url('/fonts/kq-ruqaaink-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'KQ-ruqaaink'; src: url('/fonts/kq-ruqaaink-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-palette-values --kq-ruqaaink-red-dark { font-family: 'KQ-ruqaaink'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-ruqaaink-red-light { font-family: 'KQ-ruqaaink'; override-colors: 0 #c62828; }
-@font-palette-values --kq-ruqaaink-yellow-dark { font-family: 'KQ-ruqaaink'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-ruqaaink-yellow-light { font-family: 'KQ-ruqaaink'; override-colors: 0 #d97706; }
-@font-palette-values --kq-ruqaaink-gold-dark { font-family: 'KQ-ruqaaink'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-ruqaaink-gold-light { font-family: 'KQ-ruqaaink'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-ruqaaink-plain-dark { font-family: 'KQ-ruqaaink'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-ruqaaink-plain-light { font-family: 'KQ-ruqaaink'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-ruqaaink-dial-dark { font-family: 'KQ-ruqaaink'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-ruqaaink-dial-light { font-family: 'KQ-ruqaaink'; override-colors: 0 #a87f12; }
-@font-face { font-family: 'KQ-ruqaa'; src: url('/fonts/kq-ruqaa-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-palette-values --kq-ruqaa-red-dark { font-family: 'KQ-ruqaa'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-ruqaa-red-light { font-family: 'KQ-ruqaa'; override-colors: 0 #c62828; }
-@font-palette-values --kq-ruqaa-yellow-dark { font-family: 'KQ-ruqaa'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-ruqaa-yellow-light { font-family: 'KQ-ruqaa'; override-colors: 0 #d97706; }
-@font-palette-values --kq-ruqaa-gold-dark { font-family: 'KQ-ruqaa'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-ruqaa-gold-light { font-family: 'KQ-ruqaa'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-ruqaa-plain-dark { font-family: 'KQ-ruqaa'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-ruqaa-plain-light { font-family: 'KQ-ruqaa'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-ruqaa-dial-dark { font-family: 'KQ-ruqaa'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-ruqaa-dial-light { font-family: 'KQ-ruqaa'; override-colors: 0 #a87f12; }
-@font-face { font-family: 'KQ-rakkas'; src: url('/fonts/kq-rakkas-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-palette-values --kq-rakkas-red-dark { font-family: 'KQ-rakkas'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-rakkas-red-light { font-family: 'KQ-rakkas'; override-colors: 0 #c62828; }
-@font-palette-values --kq-rakkas-yellow-dark { font-family: 'KQ-rakkas'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-rakkas-yellow-light { font-family: 'KQ-rakkas'; override-colors: 0 #d97706; }
-@font-palette-values --kq-rakkas-gold-dark { font-family: 'KQ-rakkas'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-rakkas-gold-light { font-family: 'KQ-rakkas'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-rakkas-plain-dark { font-family: 'KQ-rakkas'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-rakkas-plain-light { font-family: 'KQ-rakkas'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-rakkas-dial-dark { font-family: 'KQ-rakkas'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-rakkas-dial-light { font-family: 'KQ-rakkas'; override-colors: 0 #a87f12; }
-@font-face { font-family: 'KQ-amiri'; src: url('/fonts/kq-amiri-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-palette-values --kq-amiri-red-dark { font-family: 'KQ-amiri'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-amiri-red-light { font-family: 'KQ-amiri'; override-colors: 0 #c62828; }
-@font-palette-values --kq-amiri-yellow-dark { font-family: 'KQ-amiri'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-amiri-yellow-light { font-family: 'KQ-amiri'; override-colors: 0 #d97706; }
-@font-palette-values --kq-amiri-gold-dark { font-family: 'KQ-amiri'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-amiri-gold-light { font-family: 'KQ-amiri'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-amiri-plain-dark { font-family: 'KQ-amiri'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-amiri-plain-light { font-family: 'KQ-amiri'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-amiri-dial-dark { font-family: 'KQ-amiri'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-amiri-dial-light { font-family: 'KQ-amiri'; override-colors: 0 #a87f12; }
-@font-face { font-family: 'KQ-kufi'; src: url('/fonts/kq-kufi-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
-@font-face { font-family: 'KQ-kufi'; src: url('/fonts/kq-kufi-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-palette-values --kq-kufi-red-dark { font-family: 'KQ-kufi'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-kufi-red-light { font-family: 'KQ-kufi'; override-colors: 0 #c62828; }
-@font-palette-values --kq-kufi-yellow-dark { font-family: 'KQ-kufi'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-kufi-yellow-light { font-family: 'KQ-kufi'; override-colors: 0 #d97706; }
-@font-palette-values --kq-kufi-gold-dark { font-family: 'KQ-kufi'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-kufi-gold-light { font-family: 'KQ-kufi'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-kufi-plain-dark { font-family: 'KQ-kufi'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-kufi-plain-light { font-family: 'KQ-kufi'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-kufi-dial-dark { font-family: 'KQ-kufi'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-kufi-dial-light { font-family: 'KQ-kufi'; override-colors: 0 #a87f12; }
-@font-face { font-family: 'KQ-naskh'; src: url('/fonts/kq-naskh-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
-@font-palette-values --kq-naskh-red-dark { font-family: 'KQ-naskh'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-naskh-red-light { font-family: 'KQ-naskh'; override-colors: 0 #c62828; }
-@font-palette-values --kq-naskh-yellow-dark { font-family: 'KQ-naskh'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-naskh-yellow-light { font-family: 'KQ-naskh'; override-colors: 0 #d97706; }
-@font-palette-values --kq-naskh-gold-dark { font-family: 'KQ-naskh'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-naskh-gold-light { font-family: 'KQ-naskh'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-naskh-plain-dark { font-family: 'KQ-naskh'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-naskh-plain-light { font-family: 'KQ-naskh'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-naskh-dial-dark { font-family: 'KQ-naskh'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-naskh-dial-light { font-family: 'KQ-naskh'; override-colors: 0 #a87f12; }
-@font-face { font-family: 'KQ-cairo'; src: url('/fonts/kq-cairo-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-palette-values --kq-cairo-red-dark { font-family: 'KQ-cairo'; override-colors: 0 #e5483b; }
-@font-palette-values --kq-cairo-red-light { font-family: 'KQ-cairo'; override-colors: 0 #c62828; }
-@font-palette-values --kq-cairo-yellow-dark { font-family: 'KQ-cairo'; override-colors: 0 #f59e0b; }
-@font-palette-values --kq-cairo-yellow-light { font-family: 'KQ-cairo'; override-colors: 0 #d97706; }
-@font-palette-values --kq-cairo-gold-dark { font-family: 'KQ-cairo'; override-colors: 0 #c9a227; }
-@font-palette-values --kq-cairo-gold-light { font-family: 'KQ-cairo'; override-colors: 0 #a87f12; }
-@font-palette-values --kq-cairo-plain-dark { font-family: 'KQ-cairo'; override-colors: 0 #f3ead8; }
-@font-palette-values --kq-cairo-plain-light { font-family: 'KQ-cairo'; override-colors: 0 #1a1410; }
-@font-palette-values --kq-cairo-dial-dark { font-family: 'KQ-cairo'; override-colors: 0 #d4a72c; }
-@font-palette-values --kq-cairo-dial-light { font-family: 'KQ-cairo'; override-colors: 0 #a87f12; }
+@font-face { font-family: 'KQL-ruqaaink'; src: url('/fonts/kq-ruqaaink-400-l.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'KQM-ruqaaink'; src: url('/fonts/kq-ruqaaink-400-m.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'KQL-ruqaaink'; src: url('/fonts/kq-ruqaaink-700-l.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQM-ruqaaink'; src: url('/fonts/kq-ruqaaink-700-m.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQL-ruqaa'; src: url('/fonts/kq-ruqaa-700-l.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQM-ruqaa'; src: url('/fonts/kq-ruqaa-700-m.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQL-rakkas'; src: url('/fonts/kq-rakkas-400-l.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'KQM-rakkas'; src: url('/fonts/kq-rakkas-400-m.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'KQL-amiri'; src: url('/fonts/kq-amiri-700-l.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQM-amiri'; src: url('/fonts/kq-amiri-700-m.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQL-kufi'; src: url('/fonts/kq-kufi-600-l.woff2') format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'KQM-kufi'; src: url('/fonts/kq-kufi-600-m.woff2') format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'KQL-kufi'; src: url('/fonts/kq-kufi-700-l.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQM-kufi'; src: url('/fonts/kq-kufi-700-m.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQL-naskh'; src: url('/fonts/kq-naskh-600-l.woff2') format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'KQM-naskh'; src: url('/fonts/kq-naskh-600-m.woff2') format('woff2'); font-weight: 600; font-display: block; }
+@font-face { font-family: 'KQL-cairo'; src: url('/fonts/kq-cairo-700-l.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'KQM-cairo'; src: url('/fonts/kq-cairo-700-m.woff2') format('woff2'); font-weight: 700; font-display: block; }

@@ -1,8 +1,9 @@
 import { FontId } from '../types';
 
 /**
- * خطوط المقولات المستضافة (مولّدة بواسطة scripts/build-fonts.py):
- * كل خط بلونين في طبقة واحدة — الحروف بلون النص، والتشكيل بلون يُبدَّل عبر font-palette.
+ * خطوط المقولات المستضافة (مولّدة بواسطة scripts/build-fonts.py)، لكل خط نسختان متطابقتا القياسات:
+ *   KQL-*  الحروف وحدها،  KQM-*  التشكيل وحده.
+ * تُرسمان فوق بعض بلونين، فيُصفّ النص حرفاً بحرف في كل المتصفحات.
  */
 export const QUOTE_FONTS: Record<FontId, { fam: string; fusha: number; dialect: number; weights: number[]; fallback: string }> = {
   'ruqaa-ink': { fam: 'ruqaaink', fusha: 700, dialect: 400, weights: [400, 700], fallback: 'serif' },
@@ -15,34 +16,24 @@ export const QUOTE_FONTS: Record<FontId, { fam: string; fusha: number; dialect: 
   cairo: { fam: 'cairo', fusha: 700, dialect: 700, weights: [700], fallback: 'sans-serif' },
 };
 
+export type FontLayer = 'L' | 'M';
+
 export function quoteFont(id: FontId) {
   return QUOTE_FONTS[id] || QUOTE_FONTS['ruqaa-ink'];
 }
 
-export function fontFamilyCss(id: FontId): string {
+/** اسم الخط في CSS لطبقة الحروف (L) أو التشكيل (M) */
+export function fontFamilyCss(id: FontId, layer: FontLayer = 'L'): string {
   const f = quoteFont(id);
-  return `'KQ-${f.fam}', ${f.fallback}`;
+  return `'KQ${layer}-${f.fam}', ${f.fallback}`;
 }
 
-/** اسم لوحة الألوان (معرّفة في quote-fonts.css) */
-export function paletteName(id: FontId, key: string): string {
-  return `--kq-${quoteFont(id).fam}-${key}`;
-}
-
-/** بطاقة المشاركة: اللوحة لا تدعم font-palette، فنحمّل نسخة التشكيل الذهبي للهجة عند الحاجة */
-const loadedGold = new Set<string>();
+/** بطاقة المشاركة: نحمّل نسختي الخط قبل الرسم على اللوحة */
 export async function ensureCardFonts(id: FontId): Promise<void> {
   const f = quoteFont(id);
   const jobs: Promise<unknown>[] = [];
   for (const w of f.weights) {
-    jobs.push(document.fonts.load(`${w} 40px 'KQ-${f.fam}'`, 'كَلِمَة'));
-    const key = `${f.fam}-${w}`;
-    if (!loadedGold.has(key)) {
-      loadedGold.add(key);
-      const face = new FontFace(`KQ-${f.fam}-gold`, `url(/fonts/kq-${f.fam}-${w}-gold.woff2)`, { weight: String(w) });
-      document.fonts.add(face);
-      jobs.push(face.load());
-    }
+    for (const layer of ['L', 'M'] as const) jobs.push(document.fonts.load(`${w} 40px 'KQ${layer}-${f.fam}'`, 'كَلِمَة').catch(() => []));
   }
-  await Promise.all(jobs.map((j) => j.catch(() => undefined)));
+  await Promise.all(jobs);
 }

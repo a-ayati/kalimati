@@ -182,11 +182,11 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
       contentTop = margin + 350;
     }
 
-    // نفس الخط للفصحى واللهجة، والألوان ترسم بطبقتين (تعمل في كل المتصفحات)
-    // خطوط بلونين في طبقة واحدة: الحروف بلون fillStyle، والتشكيل أحمر (للفصحى) أو ذهبي (نسخة اللهجة)
+    // طبقتان متطابقتا القياسات: خط الحروف ثم خط التشكيل، كلٌّ بلونه
     const qf = quoteFont(selectedFont);
-    const fushaFamily = `"KQ-${qf.fam}", ${qf.fallback}`;
-    const darjaFamily = `"KQ-${qf.fam}-gold", "KQ-${qf.fam}", ${qf.fallback}`;
+    const fushaFamily = `"KQL-${qf.fam}", ${qf.fallback}`;
+    const darjaFamily = `"KQL-${qf.fam}", ${qf.fallback}`;
+    const marksFamily = `"KQM-${qf.fam}", ${qf.fallback}`;
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
     const darjaText = quote.language === 'darja' ? quote.text : pickDialect(quote, preferredDialect)?.variant.text || null;
@@ -234,9 +234,14 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // نفس ألوان المقولة في الصفحة: تتبع المظهر وحده، أياً كان الخط
     const palette = quoteColors({ themeId: selectedTheme, tashkeelColor: customStyle.tashkeelColor });
-    const drawTwoTone = (line: string, letters: string, _marks: string, atY: number) => {
+    const drawTwoTone = (line: string, letters: string, marks: string, atY: number) => {
+      const lettersFont = ctx.font;
       ctx.fillStyle = letters;
       ctx.fillText(line, config.width / 2, atY);
+      ctx.font = lettersFont.replace(/"KQL-[^"]+"/, marksFamily);
+      ctx.fillStyle = marks;
+      ctx.fillText(line, config.width / 2, atY);
+      ctx.font = lettersFont;
     };
 
     fushaLines.forEach((line) => {
