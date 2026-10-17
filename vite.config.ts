@@ -11,7 +11,7 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+        includeAssets: ['favicon.ico', 'favicon-64.png', 'apple-touch-icon.png', 'og.png', 'fonts/*.woff2'],
         manifest: {
           id: '/',
           name: 'كلماتي — كلمة تصل في وقتها',

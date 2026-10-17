@@ -36,6 +36,16 @@
 .font-kufi { font-family: 'Reem Kufi', sans-serif; }
 .font-naskh { font-family: 'Noto Naskh Arabic', serif; }
 
+/* خط الشعار مستضاف داخل المنصة حتى يظهر فوراً في المقدّمة (رخصة OFL) */
+@font-face {
+  font-family: 'KalimatiInk';
+  src: url('/fonts/aref-ruqaa-ink-arabic-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-display: block;
+}
+@font-palette-values --logo-dark { font-family: 'KalimatiInk'; override-colors: 0 #f3ead8, 1 #f3ead8, 2 #e5483b, 3 #e5483b, 4 #e5483b; }
+.logo-ink { font-family: 'KalimatiInk', 'Aref Ruqaa Ink', serif; font-weight: 700; font-palette: --logo-dark; letter-spacing: 0; }
+
 /* ألوان الخط الحبري للفصحى: الحروف بلون النص (0،1) والتشكيل باللون المختار (2،3،4) */
 @font-palette-values --fusha-dark-red { font-family: 'Aref Ruqaa Ink'; override-colors: 0 #f3ead8, 1 #f3ead8, 2 #d32f2f, 3 #d32f2f, 4 #d32f2f; }
 @font-palette-values --fusha-dark-yellow { font-family: 'Aref Ruqaa Ink'; override-colors: 0 #f3ead8, 1 #f3ead8, 2 #f59e0b, 3 #f59e0b, 4 #f59e0b; }

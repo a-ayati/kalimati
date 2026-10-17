@@ -16,6 +16,7 @@ import { AdminView } from './views/AdminView';
 import { CardShareModal } from './components/CardShareModal';
 import { ZenMode } from './components/ZenMode';
 import { OfflineBanner } from './components/OfflineBanner';
+import { LogoIntro } from './components/LogoIntro';
 import { useIdleDetector } from './hooks/useIdleDetector';
 
 const AppContent: React.FC = () => {
@@ -77,6 +78,9 @@ const AppContent: React.FC = () => {
 
       {/* Connectivity & Offline Banner */}
       <OfflineBanner />
+
+      {/* مقدّمة الشعار: مرة واحدة في كل زيارة */}
+      <LogoIntro />
     </div>
   );
 };

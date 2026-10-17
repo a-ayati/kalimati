@@ -476,7 +476,7 @@ async function serveShell(
   const url = new URL(req.url);
   const shell = await env.ASSETS.fetch(new Request(`${url.origin}/`, { headers: req.headers }));
   const pageUrl = `${url.origin}${pagePath}`;
-  const image = `${url.origin}/pwa-512x512.png`;
+  const image = `${url.origin}/og.png`;
   const setContent = (content: string) => ({ element: (el: Element) => { el.setAttribute('content', content); } });
 
   let rewriter = new HTMLRewriter()
