@@ -54,6 +54,17 @@ const FORMATS: Record<CardFormat, FormatConfig> = {
   },
 };
 
+const CANVAS_FONTS: Record<FontId, string> = {
+  'ruqaa-ink': '"Aref Ruqaa", serif',
+  ruqaa: '"Aref Ruqaa", serif',
+  rakkas: '"Rakkas", serif',
+  'kufi-ink': '"Reem Kufi", sans-serif',
+  amiri: '"Amiri", serif',
+  kufi: '"Reem Kufi", sans-serif',
+  naskh: '"Noto Naskh Arabic", serif',
+  cairo: '"Cairo", sans-serif',
+};
+
 export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }) => {
   const { author, customStyle } = useKalimati();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -178,56 +189,90 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
       contentTop = margin + 350;
     }
 
-    // Font selection for quote body
-    let fontFamily = '"Aref Ruqaa", "Amiri", serif';
-    if (selectedFont === 'amiri') fontFamily = '"Amiri", serif';
-    if (selectedFont === 'kufi') fontFamily = '"Reem Kufi", sans-serif';
-    if (selectedFont === 'naskh') fontFamily = '"Noto Naskh Arabic", serif';
-    if (selectedFont === 'cairo') fontFamily = '"Cairo", sans-serif';
+    // الخطوط: الفصحى بالرقعة (حروف داكنة وتشكيل أحمر) والدارجة بالرقعة الحبري بألوانه، كالبطاقة الرسمية
+    const isInk = selectedFont === 'ruqaa-ink';
+    const fushaFamily = isInk ? '"Aref Ruqaa", serif' : CANVAS_FONTS[selectedFont];
+    const darjaFamily = isInk ? '"Aref Ruqaa Ink", "Aref Ruqaa", serif' : CANVAS_FONTS[selectedFont];
+    const accent = selectedTheme === 'dark' ? '#ef5350' : '#c62828';
 
-    // Auto-fit font size based on text length and format height
-    let fontSize = config.height > 1500 ? 54 : 44;
-    if (quote.text.length > 120) fontSize = 38;
-    if (quote.text.length > 200) fontSize = 32;
+    const fushaText = quote.language === 'fusha' ? quote.text : null;
+    const darjaText = quote.language === 'darja' ? quote.text : quote.darja?.text || null;
+    const maxWidth = config.width - 240;
 
-    ctx.font = `normal ${fontSize}px ${fontFamily}`;
-    ctx.fillStyle = textColor;
+    const wrap = (text: string, font: string): string[] => {
+      ctx.font = font;
+      const words = text.split(' ');
+      const out: string[] = [];
+      let line = words[0];
+      for (let i = 1; i < words.length; i++) {
+        const test = line + ' ' + words[i];
+        if (ctx.measureText(test).width > maxWidth) {
+          out.push(line);
+          line = words[i];
+        } else {
+          line = test;
+        }
+      }
+      out.push(line);
+      return out;
+    };
+
+    // حجم تلقائي حسب طول النص
+    const baseLen = (fushaText || darjaText || '').length;
+    let fushaSize = config.height > 1500 ? 64 : 56;
+    if (baseLen > 80) fushaSize -= 8;
+    if (baseLen > 140) fushaSize -= 10;
+    const darjaSize = fushaText ? Math.round(fushaSize * 0.7) : fushaSize;
+
+    const fushaFont = `bold ${fushaSize}px ${fushaFamily}`;
+    const darjaFont = `${isInk ? 'normal' : 'bold'} ${darjaSize}px ${darjaFamily}`;
+    const fushaLines = fushaText ? wrap(fushaText, fushaFont) : [];
+    const darjaLines = darjaText ? wrap(darjaText, darjaFont) : [];
+    const fushaLH = fushaSize * 1.9;
+    const darjaLH = darjaSize * 1.9;
+    const gap = fushaLines.length && darjaLines.length ? 90 : 0;
+    const totalTextHeight = fushaLines.length * fushaLH + gap + darjaLines.length * darjaLH;
+    let startY = (config.height - totalTextHeight) / 2 + fushaSize * 0.6;
+    if (isGiftMode) startY = Math.max(startY, contentTop + 60);
+
     ctx.direction = 'rtl';
     ctx.textAlign = 'center';
+    let y = startY;
 
-    // Word wrap function for canvas
-    const maxWidth = config.width - 240;
-    const words = quote.text.split(' ');
-    const lines: string[] = [];
-    let currentLine = words[0];
-
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine + ' ' + word;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
-    }
-    lines.push(currentLine);
-
-    // Calculate vertical centering
-    const lineHeight = fontSize * 1.85;
-    const totalTextHeight = lines.length * lineHeight;
-    let startY = (config.height - totalTextHeight) / 2;
-    if (isGiftMode) startY = Math.max(startY, contentTop + 40);
-
-    // Draw lines
-    lines.forEach((line, index) => {
-      ctx.fillText(line, config.width / 2, startY + index * lineHeight);
+    // الفصحى: نرسم النص كاملاً بلون التشكيل ثم الحروف وحدها فوقه بلون النص، فيبقى التشكيل ملوّناً
+    fushaLines.forEach((line) => {
+      ctx.font = fushaFont;
+      ctx.fillStyle = accent;
+      ctx.fillText(line, config.width / 2, y);
+      ctx.fillStyle = textColor;
+      ctx.fillText(stripTashkeel(line), config.width / 2, y);
+      y += fushaLH;
     });
+
+    if (gap) {
+      // فاصل متموّج بين الصيغتين
+      const midY = y - fushaLH + fushaSize * 0.55 + gap / 2;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(config.width / 2 - 170, midY);
+      ctx.bezierCurveTo(config.width / 2 - 90, midY - 6, config.width / 2 - 40, midY + 6, config.width / 2, midY);
+      ctx.bezierCurveTo(config.width / 2 + 40, midY - 6, config.width / 2 + 90, midY + 6, config.width / 2 + 170, midY);
+      ctx.stroke();
+      y += gap - fushaLH + fushaLH * 0.9;
+    }
+
+    darjaLines.forEach((line) => {
+      ctx.font = darjaFont;
+      ctx.fillStyle = isInk ? textColor : accent;
+      ctx.fillText(line, config.width / 2, y);
+      y += darjaLH;
+    });
+    const textBottom = y;
 
     // Stamp: «وصلتني في وقتها»
     if (showSavedStamp) {
-      const stampY = startY + totalTextHeight + 45;
+      const stampY = textBottom + 20;
       ctx.font = 'bold 22px "Cairo", sans-serif';
       ctx.fillStyle = selectedTheme === 'dark' ? '#fb7185' : '#e11d48';
       ctx.fillText('♥ وَصَلَتْنِي فِي وَقْتِهَا', config.width / 2, stampY);
@@ -253,7 +298,23 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
   useEffect(() => {
     renderCanvas();
-  }, [renderCanvas]);
+    // الرسم على اللوحة لا ينتظر الخطوط؛ نحمّلها ثم نعيد الرسم حتى لا تظهر البطاقة بخط بديل
+    let cancelled = false;
+    const sample = 'مَا لِي أُبَالِي';
+    Promise.all(
+      [
+        `bold 40px ${CANVAS_FONTS[selectedFont]}`,
+        '40px "Aref Ruqaa Ink"',
+        'bold 40px "Aref Ruqaa"',
+        'bold 26px "Cairo"',
+      ].map((f) => document.fonts.load(f, sample).catch(() => []))
+    ).then(() => {
+      if (!cancelled) renderCanvas();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [renderCanvas, selectedFont]);
 
   // Handle Download PNG
   const handleDownload = () => {
@@ -280,7 +341,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
                 title: 'كلماتي — كلمة تصل في وقتها',
-                text: `${stripTashkeel(quote.text)}\n\n— بقلم: ${quote.author}\nمنصة كلماتي: ${quoteUrl(quote)}`,
+                text: `${stripTashkeel(quote.text)}${quote.darja ? '\n' + stripTashkeel(quote.darja.text) : ''}\n\n— بقلم: ${quote.author}\nمنصة كلماتي: ${quoteUrl(quote)}`,
                 files: [file],
               });
             } else {

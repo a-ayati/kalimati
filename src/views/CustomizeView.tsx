@@ -1,7 +1,7 @@
 import React from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { FontId, ThemeId, TashkeelColor, BorderStyle } from '../types';
-import { FormattedArabicText } from '../utils/tashkeel';
+import { QuoteText, FONT_FAMILIES } from '../components/QuoteText';
 import { 
   Palette, 
   RotateCcw, 
@@ -17,7 +17,7 @@ export const CustomizeView: React.FC = () => {
   const { customStyle, setCustomStyle, resetToOfficialStyle, quotes } = useKalimati();
 
   // Sample quote for live preview
-  const previewQuote = quotes[0];
+  const previewQuote = quotes.find((q) => q.darja) || quotes[0];
 
   const FONTS: { id: FontId; name: string; desc: string; sample: string }[] = [
     { id: 'ruqaa-ink', name: 'الرقعة الحبري (Aref Ruqaa Ink) — المطابق للبطاقة الرسمية', desc: 'خط رقعة حبري غني بالتشكيل المطابق تمامًا للصورة المرجعية الرسمية', sample: 'مَا لِي أُبَالِي بِمَنْ لَا يُبَالِي' },
@@ -118,20 +118,7 @@ export const CustomizeView: React.FC = () => {
         <div className={`p-4 sm:p-7 rounded-3xl border-2 transition-all duration-300 shadow-2xl ${previewThemeClasses}`}>
           <div className="border border-white/10 p-5 sm:p-8 rounded-2xl text-center">
             <div className="text-amber-500/40 text-xs mb-3">❦ ✦ ❦</div>
-            <p
-              className={`${fontClass} leading-relaxed transition-all`}
-              style={{
-                fontSize: `${customStyle.fontSize}px`,
-                lineHeight: customStyle.lineHeight,
-              }}
-            >
-              <FormattedArabicText
-                text={previewQuote.text}
-                language={previewQuote.language}
-                showTashkeel={customStyle.showTashkeel}
-                overrideColor={customStyle.tashkeelColor}
-              />
-            </p>
+            <QuoteText quote={previewQuote} style={customStyle} className="transition-all" />
             <div className="mt-4 pt-3 border-t border-white/10 text-xs opacity-75">
               بقلم: {previewQuote.author} — منصة كلماتي
             </div>
@@ -209,7 +196,7 @@ export const CustomizeView: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-stone-200">{font.name}</span>
-                      <span className={`${fClass} text-amber-400 text-sm`}>({font.sample})</span>
+                      <span className="text-amber-400 text-base" style={{ fontFamily: FONT_FAMILIES[font.id] }}>({font.sample})</span>
                     </div>
                     <div className="text-[10px] text-stone-400 mt-0.5">{font.desc}</div>
                   </div>

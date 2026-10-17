@@ -12,6 +12,7 @@ import {
 import { SEED_QUOTES, INITIAL_AUTHOR, ALL_TOPICS } from '../data/seedQuotes';
 import confetti from 'canvas-confetti';
 import { fetchPublicQuotes, trackEvent } from '../lib/api';
+import { mergePairs } from '../utils/pairs';
 
 // ---------------------------------------------------------------------------
 // الروابط: كل صفحة وكل قول لها عنوان حقيقي في المتصفح
@@ -73,7 +74,7 @@ function routeToPath(route: Route): string {
 /** الأقوال التي يحق للقارئ رؤيتها من النسخة المضمّنة (عند غياب الاتصال) */
 function visibleSeed(): Quote[] {
   const now = Date.now();
-  return SEED_QUOTES.filter(
+  return mergePairs(SEED_QUOTES).filter(
     (q) => (q.status === 'published' || q.status === 'scheduled') && new Date(q.publishedAt).getTime() <= now
   ).map((q) => ({ ...q, status: 'published' as const, stats: { savesCount: 0, sharesCount: 0, readsCount: 0 } }));
 }
@@ -164,7 +165,7 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const stored = localStorage.getItem(STORAGE_KEYS.QUOTES_CACHE);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return mergePairs(parsed);
       }
     } catch (e) {
       console.error('Error loading cached quotes:', e);
@@ -181,7 +182,7 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const refreshQuotes = useCallback(async () => {
     try {
-      const { quotes: fresh } = await fetchPublicQuotes();
+      const fresh = mergePairs((await fetchPublicQuotes()).quotes);
       setQuotes(fresh);
       setQuotesSource('server');
       try {

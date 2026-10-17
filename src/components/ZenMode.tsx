@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
-import { FormattedArabicText } from '../utils/tashkeel';
+import { QuoteText } from './QuoteText';
 import { Quote } from '../types';
 import { Moon, Sparkles, X, Clock, Eye } from 'lucide-react';
 
@@ -170,20 +170,12 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
       <div className={`relative max-w-3xl text-center px-4 my-auto z-10 transition-all ${animClass}`}>
         <div className="text-amber-500/30 text-2xl mb-6">❦</div>
         
-        <div 
-          className={`${fontClass} leading-loose tracking-wide text-white drop-shadow-sm`}
-          style={{
-            fontSize: `${Math.max(30, customStyle.fontSize + 4)}px`,
-            lineHeight: 2.1,
-          }}
-        >
-          <FormattedArabicText
-            text={activeQuote.text}
-            language={activeQuote.language}
-            showTashkeel={customStyle.showTashkeel}
-            overrideColor={customStyle.tashkeelColor}
-          />
-        </div>
+        <QuoteText
+          quote={activeQuote}
+          style={{ ...customStyle, themeId: 'dark' }}
+          fontSize={Math.max(30, customStyle.fontSize + 4)}
+          className="text-white drop-shadow-sm"
+        />
 
         <div className="mt-8 flex items-center justify-center gap-3 text-amber-500/40">
           <span className="w-16 h-[1px] bg-amber-500/20" />

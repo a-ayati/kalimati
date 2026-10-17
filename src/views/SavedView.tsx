@@ -53,7 +53,7 @@ export const SavedView: React.FC = () => {
 
       // Search text
       if (cleanQuery) {
-        const textMatch = stripTashkeel(entry.quote.text.toLowerCase()).includes(cleanQuery);
+        const textMatch = stripTashkeel(`${entry.quote.text} ${entry.quote.darja?.text || ''}`.toLowerCase()).includes(cleanQuery);
         const noteMatch = stripTashkeel((entry.privateNote || '').toLowerCase()).includes(cleanQuery);
         const topicMatch = entry.quote.topics.some((t) => stripTashkeel(t.toLowerCase()).includes(cleanQuery));
         return textMatch || noteMatch || topicMatch;

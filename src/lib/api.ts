@@ -45,7 +45,11 @@ export function trackEvent(quoteId: string, kind: StatKind): void {
 
 // ---- لوحة الكاتب ----
 
-export type QuoteInput = Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions'> & { revisionNote?: string };
+export type QuoteInput = Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions' | 'darja'> & {
+  revisionNote?: string;
+  /** الصيغة الجزائرية المرافقة للفصحى */
+  darjaText?: string;
+};
 
 export const adminApi = {
   me: () => request<{ authenticated: boolean; configured: boolean }>('/api/admin/me'),

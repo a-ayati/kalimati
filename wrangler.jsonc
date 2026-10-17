@@ -17,7 +17,6 @@
       "binding": "DB",
       "database_name": "kalimati",
       // بلا معرّف: تُنشئ Cloudflare قاعدة البيانات تلقائياً عند أول نشر، والخادم يجهّز الجداول بنفسه
-      "migrations_dir": "migrations"
     }
   ],
   "observability": { "enabled": true }

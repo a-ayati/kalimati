@@ -9,6 +9,11 @@ export interface QuoteRevision {
   textSnippet: string;
 }
 
+export interface QuoteVariant {
+  text: string; // مع التشكيل
+  plainText: string;
+}
+
 export interface Quote {
   id: string;
   slug: string;
@@ -21,7 +26,8 @@ export interface Quote {
   status: QuoteStatus;
   topics: string[];
   behindTheWords?: string; // الشرح من الكاتب «وراء الكلمات»
-  pairedQuoteId?: string; // رابط بصيغة مقابلة (فصحى <-> دارجة)
+  pairedQuoteId?: string; // (قديم) رابط بصيغة مقابلة — استُبدل بالحقل darja
+  darja?: QuoteVariant; // الصيغة الجزائرية التي تُعرض مع الفصحى في آنٍ واحد
   calligraphyManuscriptUrl?: string; // مخطوطة فنية مستقبلية
   audioRecitationUrl?: string; // تسجيل صوتي مستقبلي
   stats: {

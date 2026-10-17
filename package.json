@@ -8,7 +8,6 @@
     "build": "vite build",
     "preview": "npm run build && wrangler dev",
     "lint": "tsc --noEmit && tsc --noEmit -p worker",
-    "db:migrate:local": "wrangler d1 migrations apply kalimati --local",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {

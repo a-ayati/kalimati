@@ -8,7 +8,7 @@
 |---|---|---|
 | الواجهة | React 19 + Vite + Tailwind | `src/` |
 | الخادم | Cloudflare Worker | `worker/index.ts` |
-| قاعدة البيانات | Cloudflare D1 | `migrations/` |
+| قاعدة البيانات | Cloudflare D1 (يجهّزها الخادم بنفسه) | `worker/seed.ts` |
 | النشر | GitHub Actions | `.github/workflows/deploy.yml` |
 
 ### ما يقدّمه الخادم
@@ -31,7 +31,6 @@
 ```bash
 npm install
 echo 'ADMIN_PASSWORD="local-password"' > .dev.vars
-npm run db:migrate:local
 npm run preview          # الموقع كاملاً مع الخادم على http://localhost:8787
 ```
 

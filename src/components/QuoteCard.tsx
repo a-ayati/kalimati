@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Quote, EmotionTag } from '../types';
 import { quoteUrl } from '../lib/links';
 import { useKalimati } from '../context/KalimatiContext';
-import { FormattedArabicText, stripTashkeel } from '../utils/tashkeel';
+import { stripTashkeel } from '../utils/tashkeel';
+import { QuoteText } from './QuoteText';
 import { 
   Heart, 
   Share2, 
@@ -54,20 +55,16 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   const [copied, setCopied] = useState(false);
   const [showBehind, setShowBehind] = useState(false);
   const [showNoteEditor, setShowNoteEditor] = useState(false);
-  const [activePairedQuote, setActivePairedQuote] = useState<Quote | null>(null);
+
 
   // Current quote being viewed (either current or paired alternate dialect)
-  const currentQuote = activePairedQuote || quote;
+  const currentQuote = quote;
   const savedEntry = savedItems.find((s) => s.quoteId === currentQuote.id);
   const saved = !!savedEntry;
 
   const [noteText, setNoteText] = useState(savedEntry?.privateNote || '');
   const [selectedEmotion, setSelectedEmotion] = useState<EmotionTag | undefined>(savedEntry?.emotionTag);
 
-  // Look up paired quote if exists
-  const pairedSisterQuote = currentQuote.pairedQuoteId
-    ? quotes.find((q) => q.id === currentQuote.pairedQuoteId)
-    : null;
 
   const handleToggleSave = () => {
     if (saved) {
@@ -85,7 +82,8 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   const handleCopyText = async () => {
     try {
-      const textToCopy = `${stripTashkeel(currentQuote.text)}\n\n— بقلم: ${currentQuote.author}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
+      const darjaLine = currentQuote.darja ? `\n${stripTashkeel(currentQuote.darja.text)}` : '';
+      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}\n\n— بقلم: ${currentQuote.author}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -148,7 +146,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
                   : 'bg-rose-500/15 text-rose-400 border-rose-500/40'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isDarja ? 'bg-amber-400' : 'bg-rose-400'}`} />
-                {isDarja ? 'دارجة جزائرية' : 'عربية فصحى'}
+                {currentQuote.darja ? 'فصحى ودارجة' : isDarja ? 'دارجة جزائرية' : 'عربية فصحى'}
               </span>
 
               {/* Topics */}
@@ -169,16 +167,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
             {/* Quick Actions (Copy, View Details) */}
             <div className="flex items-center gap-1">
-              {pairedSisterQuote && (
-                <button
-                  onClick={() => setActivePairedQuote(activePairedQuote ? null : pairedSisterQuote)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition-all cursor-pointer"
-                  title="استعراض الصيغة التوأم للمعنى ذاته"
-                >
-                  <Languages className="w-3.5 h-3.5" />
-                  <span>{activePairedQuote ? 'الأصلية' : isDarja ? 'الفصحى' : 'الجزائرية'}</span>
-                </button>
-              )}
+
 
               <button
                 onClick={handleCopyText}
@@ -199,20 +188,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
               <span className="w-8 h-[1px] bg-amber-500/30" />
             </div>
 
-            <p 
-              className={`${fontClass} font-normal transition-all duration-300 py-3 sm:py-4`}
-              style={{
-                fontSize: `${customStyle.fontSize}px`,
-                lineHeight: Math.max(2.3, customStyle.lineHeight),
-              }}
-            >
-              <FormattedArabicText
-                text={currentQuote.text}
-                language={currentQuote.language}
-                showTashkeel={customStyle.showTashkeel}
-                overrideColor={customStyle.tashkeelColor}
-              />
-            </p>
+            <QuoteText quote={currentQuote} style={customStyle} className="py-3 sm:py-4 transition-all duration-300" />
 
             {/* Bottom flourish */}
             <div className="flex items-center justify-center gap-2 mt-5 text-amber-500/40 select-none">

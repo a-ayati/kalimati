@@ -35,7 +35,7 @@ export const LibraryView: React.FC = () => {
 
       // Search query
       if (cleanQuery) {
-        const cleanQuoteText = stripTashkeel(quote.text.toLowerCase());
+        const cleanQuoteText = stripTashkeel(`${quote.text} ${quote.darja?.text || ''}`.toLowerCase());
         const cleanAuthor = stripTashkeel(quote.author.toLowerCase());
         const cleanBehind = stripTashkeel((quote.behindTheWords || '').toLowerCase());
         const matchesTopic = quote.topics.some((t) => stripTashkeel(t.toLowerCase()).includes(cleanQuery));

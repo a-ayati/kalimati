@@ -76,7 +76,8 @@ export const QuoteDetailView: React.FC = () => {
 
   const handleCopyCleanText = async () => {
     try {
-      const fullCitation = `"${stripTashkeel(quote.text)}"\n\n— بقلم: ${quote.author}\nالمصدر: منصة كلماتي (${quoteUrl})`;
+      const darjaLine = quote.darja ? `\n"${stripTashkeel(quote.darja.text)}"` : '';
+      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}\n\n— بقلم: ${quote.author}\nالمصدر: منصة كلماتي (${quoteUrl})`;
       await navigator.clipboard.writeText(fullCitation);
       setCopiedText(true);
       setTimeout(() => setCopiedText(false), 2000);
@@ -161,6 +162,12 @@ export const QuoteDetailView: React.FC = () => {
           <div className="text-xs font-semibold text-stone-400">النص الفعلي القابل للقراءة والنسخ:</div>
           <p className="text-base sm:text-lg font-cairo text-stone-200 leading-relaxed select-all">
             {stripTashkeel(quote.text)}
+            {quote.darja && (
+              <>
+                <br />
+                {stripTashkeel(quote.darja.text)}
+              </>
+            )}
           </p>
         </div>
 

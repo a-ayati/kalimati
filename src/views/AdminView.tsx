@@ -96,6 +96,7 @@ export const AdminView: React.FC = () => {
 
   // Form fields
   const [formText, setFormText] = useState('');
+  const [formDarja, setFormDarja] = useState('');
   const [formAuthor, setFormAuthor] = useState(author.name);
   const [formLanguage, setFormLanguage] = useState<Language>('fusha');
   const [formTopics, setFormTopics] = useState<string[]>(['الطمأنينة']);
@@ -179,6 +180,7 @@ export const AdminView: React.FC = () => {
     setIsCreatingNew(true);
     setEditingQuoteId(null);
     setFormText('');
+    setFormDarja('');
     setFormAuthor(author.name);
     setFormLanguage('fusha');
     setFormTopics(['الطمأنينة']);
@@ -194,6 +196,7 @@ export const AdminView: React.FC = () => {
     setEditingQuoteId(quote.id);
     setIsCreatingNew(false);
     setFormText(quote.text);
+    setFormDarja(quote.darja?.text || '');
     setFormAuthor(quote.author);
     setFormLanguage(quote.language);
     setFormTopics(quote.topics);
@@ -215,6 +218,7 @@ export const AdminView: React.FC = () => {
       // الرابط يُولَّد على الخادم للقول الجديد، ويُحفظ كما هو عند التعديل حتى لا تنكسر الروابط المشاركة
       slug: existing?.slug || plainText,
       text: formText,
+      darjaText: formLanguage === 'fusha' ? formDarja.trim() || undefined : undefined,
       plainText,
       author: formAuthor,
       language: formLanguage,
@@ -629,17 +633,33 @@ export const AdminView: React.FC = () => {
               {/* Quote Text with Tashkeel */}
               <div>
                 <label className="block text-stone-300 font-semibold mb-1">
-                  نص الخاطرة (يُفضل ضبط التشكيل للحفاظ على هوية البطاقة الرسمية):
+                  القول بالفصحى (مع التشكيل):
                 </label>
                 <textarea
                   value={formText}
                   onChange={(e) => setFormText(e.target.value)}
-                  placeholder="اكتب العبارة هنا مع التشكيل (بالفصحى أو الدارجة الجزائرية)..."
-                  rows={4}
+                  placeholder="مَا لِي أُبَالِي بِمَنْ لَا يُبَالِي"
+                  rows={3}
                   required
                   className="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-stone-100 font-serif text-sm leading-relaxed focus:outline-none focus:border-amber-500 resize-none"
                 />
               </div>
+
+              {/* الصيغة الجزائرية: تُعرض تحت الفصحى في آنٍ واحد */}
+              {formLanguage === 'fusha' && (
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">
+                    الصيغة بالدارجة الجزائرية (تظهر تحت الفصحى):
+                  </label>
+                  <textarea
+                    value={formDarja}
+                    onChange={(e) => setFormDarja(e.target.value)}
+                    placeholder="اللّي ما يدّيش عليّا، ما ندّيش عليه"
+                    rows={2}
+                    className="w-full p-3 rounded-xl bg-black/50 border border-white/10 text-stone-100 font-serif text-sm leading-relaxed focus:outline-none focus:border-amber-500 resize-none"
+                  />
+                </div>
+              )}
 
               {/* Author & Dialect */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -661,8 +681,8 @@ export const AdminView: React.FC = () => {
                     onChange={(e) => setFormLanguage(e.target.value as Language)}
                     className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
                   >
-                    <option value="fusha">عربية فصحى (تشكيل أحمر)</option>
-                    <option value="darja">دارجة جزائرية (تشكيل أصفر خردلي)</option>
+                    <option value="fusha">فصحى مع صيغتها الجزائرية</option>
+                    <option value="darja">دارجة جزائرية فقط</option>
                   </select>
                 </div>
               </div>
@@ -730,27 +750,6 @@ export const AdminView: React.FC = () => {
                   rows={2}
                   className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500 resize-none"
                 />
-              </div>
-
-              {/* Link Sister Paired Quote (Section 10 requirement) */}
-              <div>
-                <label className="block text-stone-300 font-semibold mb-1">
-                  ربط بصيغة توأم (فصحى ⟷ دارجة لنفس المعنى):
-                </label>
-                <select
-                  value={formPairedQuoteId}
-                  onChange={(e) => setFormPairedQuoteId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">بدون ربط (خاطرة مستقلة)</option>
-                  {quotes
-                    .filter((q) => q.id !== editingQuoteId)
-                    .map((q) => (
-                      <option key={q.id} value={q.id}>
-                        [{q.language === 'darja' ? 'دارجة' : 'فصحى'}] {stripTashkeel(q.text).substring(0, 45)}...
-                      </option>
-                    ))}
-                </select>
               </div>
 
               {/* Future Media: Manuscript & Audio Voice slots (Section 10) */}

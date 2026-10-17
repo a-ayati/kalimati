@@ -209,6 +209,11 @@ interface QuoteInput {
   pairedQuoteId?: string;
   calligraphyManuscriptUrl?: string;
   audioRecitationUrl?: string;
+  darja?: { text: string; plainText: string };
+}
+
+function stripMarks(text: string): string {
+  return text.replace(/[\u0617-\u061A\u064B-\u0652\u0657-\u065E\u0670]/g, '');
 }
 
 function str(v: unknown, max: number): string | undefined {
@@ -230,7 +235,10 @@ function validateQuote(body: any): QuoteInput | string {
   const topics = Array.isArray(body.topics)
     ? body.topics.filter((t: unknown) => typeof t === 'string' && t.trim()).map((t: string) => t.trim().slice(0, 60)).slice(0, 12)
     : [];
+  // الصيغة الجزائرية المرافقة (اختيارية)
+  const darjaText = str(body?.darjaText ?? body?.darja?.text, 4000);
   return {
+    darja: darjaText ? { text: darjaText, plainText: stripMarks(darjaText) } : undefined,
     text,
     plainText,
     author,
@@ -525,6 +533,40 @@ function handleRobots(req: Request): Response {
 
 let schemaReady: Promise<void> | null = null;
 
+/**
+ * ترحيل لمرة واحدة: كل قول فصيح مرتبط بصيغة جزائرية في سجل منفصل يصبح سجلاً واحداً
+ * يحمل الصيغتين معاً، وتُضاف إحصاءات السجل الجزائري إليه ثم يُحذف.
+ */
+async function mergeLegacyPairs(env: Env): Promise<void> {
+  const done = await env.DB.prepare("SELECT value FROM meta WHERE key = 'merge_pairs_v1'").first();
+  if (done) return;
+  const { results } = await env.DB.prepare('SELECT * FROM quotes').all<QuoteRow>();
+  const byId = new Map(results.map((r) => [r.id, r]));
+  const stmts: D1PreparedStatement[] = [];
+  const handled = new Set<string>();
+  for (const row of results) {
+    if (handled.has(row.id)) continue;
+    const data = JSON.parse(row.data);
+    const pair = data.pairedQuoteId ? byId.get(data.pairedQuoteId) : undefined;
+    if (!pair || data.darja) continue;
+    const pairData = JSON.parse(pair.data);
+    if (pairData.language === data.language) continue;
+    const [fRow, fData, dRow, dData] = data.language === 'fusha' ? [row, data, pair, pairData] : [pair, pairData, row, data];
+    handled.add(fRow.id);
+    handled.add(dRow.id);
+    delete fData.pairedQuoteId;
+    fData.darja = { text: dData.text, plainText: dData.plainText };
+    stmts.push(
+      env.DB.prepare('UPDATE quotes SET data = ?, reads = reads + ?, saves = saves + ?, shares = shares + ? WHERE id = ?').bind(
+        JSON.stringify(fData), dRow.reads, dRow.saves, dRow.shares, fRow.id
+      ),
+      env.DB.prepare('DELETE FROM quotes WHERE id = ?').bind(dRow.id)
+    );
+  }
+  stmts.push(env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('merge_pairs_v1', ?)").bind(new Date().toISOString()));
+  await env.DB.batch(stmts);
+}
+
 function ensureSchema(env: Env): Promise<void> {
   if (!schemaReady) {
     schemaReady = (async () => {
@@ -539,7 +581,9 @@ function ensureSchema(env: Env): Promise<void> {
           PRIMARY KEY (visitor, quote_id, kind, day))`),
         env.DB.prepare(`CREATE TABLE IF NOT EXISTS login_attempts (
           visitor TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, window_start INTEGER NOT NULL)`),
+        env.DB.prepare('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)'),
       ]);
+      await mergeLegacyPairs(env);
       const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM quotes').first<{ n: number }>();
       if (!count || count.n === 0) {
         await env.DB.batch(
