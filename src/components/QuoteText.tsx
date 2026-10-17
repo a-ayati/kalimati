@@ -73,6 +73,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, showDivider
     fontWeight: weight,
     fontSize: `${size}px`,
     lineHeight,
+    letterSpacing: 0, // أي تباعد بين الحروف يفسد اتصال الخط العربي
     ...(ink ? { fontPalette: fushaPalette(style) } : {}),
   };
 
@@ -81,6 +82,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, showDivider
     fontWeight: ink ? 400 : weight,
     fontSize: `${fushaText ? Math.round(size * 0.72) : size}px`,
     lineHeight: Math.max(1.9, lineHeight - 0.2),
+    letterSpacing: 0,
     // الخط الحبري يحمل ألوانه الأصلية (الأحمر والأزرق)؛ وغيره يأخذ لون الدارجة
     ...(ink ? {} : { color: light ? '#b4231a' : '#f08a70' }),
   };
