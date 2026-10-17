@@ -10,6 +10,7 @@
  */
 
 import { SEED } from './seed';
+import { DIALECTS_FILL } from './dialects-fill';
 
 export interface Env {
   DB: D1Database;
@@ -554,6 +555,45 @@ function handleRobots(req: Request): Response {
 let schemaReady: Promise<void> | null = null;
 
 /**
+ * إضافة صيغ اللهجات المقترحة (مرة واحدة):
+ * - مقولة بالدارجة وحدها: يصبح أصلها الفصيح هو النص الرئيسي، وتنتقل الدارجة إلى صيغتها الجزائرية.
+ * - لا تُستبدل أي صيغة موجودة.
+ */
+async function fillDialects(env: Env): Promise<void> {
+  const done = await env.DB.prepare("SELECT value FROM meta WHERE key = 'dialects_fill_v1'").first();
+  if (done) return;
+  const { results } = await env.DB.prepare('SELECT * FROM quotes').all<QuoteRow>();
+  const now = new Date().toISOString();
+  const stmts: D1PreparedStatement[] = [];
+  for (const row of results) {
+    const fill = DIALECTS_FILL[row.id];
+    if (!fill) continue;
+    const data = JSON.parse(row.data);
+    const dialects: Record<string, { text: string; plainText: string }> = { ...(data.dialects || {}) };
+    if (data.darja && !dialects.dz) dialects.dz = data.darja;
+    delete data.darja;
+    if (data.language === 'darja' && fill.fusha) {
+      if (!dialects.dz) dialects.dz = { text: data.text, plainText: data.plainText };
+      data.text = fill.fusha;
+      data.plainText = stripMarks(fill.fusha);
+      data.language = 'fusha';
+    }
+    for (const id of DIALECT_IDS) {
+      const t = (fill as Record<string, string | undefined>)[id];
+      if (t && !dialects[id]?.text) dialects[id] = { text: t, plainText: stripMarks(t) };
+    }
+    data.dialects = dialects;
+    data.revisions = [
+      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إضافة صيغ اللهجات', textSnippet: snippet(data.text) },
+      ...(Array.isArray(data.revisions) ? data.revisions : []),
+    ].slice(0, 200);
+    stmts.push(env.DB.prepare('UPDATE quotes SET data = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(data), now, row.id));
+  }
+  stmts.push(env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('dialects_fill_v1', ?)").bind(now));
+  await env.DB.batch(stmts);
+}
+
+/**
  * ترحيل لمرة واحدة: كل قول فصيح مرتبط بصيغة جزائرية في سجل منفصل يصبح سجلاً واحداً
  * يحمل الصيغتين معاً، وتُضاف إحصاءات السجل الجزائري إليه ثم يُحذف.
  */
@@ -614,6 +654,7 @@ function ensureSchema(env: Env): Promise<void> {
           )
         );
       }
+      await fillDialects(env);
     })().catch((e) => {
       schemaReady = null; // نعيد المحاولة في الطلب التالي
       throw e;
