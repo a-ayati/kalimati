@@ -46,7 +46,7 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
       if (cancelled || !wordMeasure.current || !kafMeasure.current) return;
       setM({ word: wordMeasure.current.offsetWidth, kaf: kafMeasure.current.offsetWidth });
     };
-    document.fonts.load(`700 ${WORD}px KalimatiInk`, 'كَلِمَاتِي').then(measure, measure);
+    document.fonts.load(`700 ${WORD}px KQ-ruqaaink`, 'كَلِمَاتِي').then(measure, measure);
     const t = window.setTimeout(measure, 1200);
     return () => {
       cancelled = true;

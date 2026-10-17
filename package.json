@@ -19,7 +19,13 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261016.1",
+    "@fontsource/amiri": "^5.3.0",
+    "@fontsource/aref-ruqaa": "^5.3.0",
     "@fontsource/aref-ruqaa-ink": "^5.3.0",
+    "@fontsource/cairo": "^5.3.0",
+    "@fontsource/noto-naskh-arabic": "^5.3.0",
+    "@fontsource/rakkas": "^5.3.0",
+    "@fontsource/reem-kufi": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^22.14.0",

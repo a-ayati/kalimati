@@ -5,6 +5,7 @@ import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
 import { pickDialect } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
+import { ensureCardFonts, quoteFont } from '../lib/quoteFonts';
 import { 
   X, 
   Download, 
@@ -56,16 +57,6 @@ const FORMATS: Record<CardFormat, FormatConfig> = {
   },
 };
 
-const CANVAS_FONTS: Record<FontId, string> = {
-  'ruqaa-ink': '"KalimatiInk", "Aref Ruqaa", serif',
-  ruqaa: '"Aref Ruqaa", serif',
-  rakkas: '"Rakkas", serif',
-  'kufi-ink': '"Reem Kufi", sans-serif',
-  amiri: '"Amiri", serif',
-  kufi: '"Reem Kufi", sans-serif',
-  naskh: '"Noto Naskh Arabic", serif',
-  cairo: '"Cairo", sans-serif',
-};
 
 export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }) => {
   const { author, customStyle, preferredDialect } = useKalimati();
@@ -192,9 +183,10 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     }
 
     // نفس الخط للفصحى واللهجة، والألوان ترسم بطبقتين (تعمل في كل المتصفحات)
-    const isInk = selectedFont === 'ruqaa-ink';
-    const fushaFamily = CANVAS_FONTS[selectedFont];
-    const darjaFamily = CANVAS_FONTS[selectedFont];
+    // خطوط بلونين في طبقة واحدة: الحروف بلون fillStyle، والتشكيل أحمر (للفصحى) أو ذهبي (نسخة اللهجة)
+    const qf = quoteFont(selectedFont);
+    const fushaFamily = `"KQ-${qf.fam}", ${qf.fallback}`;
+    const darjaFamily = `"KQ-${qf.fam}-gold", "KQ-${qf.fam}", ${qf.fallback}`;
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
     const darjaText = quote.language === 'darja' ? quote.text : pickDialect(quote, preferredDialect)?.variant.text || null;
@@ -225,8 +217,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     if (baseLen > 140) fushaSize -= 10;
     const darjaSize = fushaText ? Math.round(fushaSize * 0.7) : fushaSize;
 
-    const fushaFont = `bold ${fushaSize}px ${fushaFamily}`;
-    const darjaFont = `${isInk ? 'normal' : 'bold'} ${darjaSize}px ${darjaFamily}`;
+    const fushaFont = `${qf.fusha} ${fushaSize}px ${fushaFamily}`;
+    const darjaFont = `${qf.dialect} ${darjaSize}px ${darjaFamily}`;
     const fushaLines = fushaText ? wrap(fushaText, fushaFont) : [];
     const darjaLines = darjaText ? wrap(darjaText, darjaFont) : [];
     const fushaLH = fushaSize * 1.9;
@@ -242,11 +234,9 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // نفس ألوان المقولة في الصفحة: تتبع المظهر وحده، أياً كان الخط
     const palette = quoteColors({ themeId: selectedTheme, tashkeelColor: customStyle.tashkeelColor });
-    const drawTwoTone = (line: string, letters: string, marks: string, atY: number) => {
-      ctx.fillStyle = marks;
-      ctx.fillText(line, config.width / 2, atY);
+    const drawTwoTone = (line: string, letters: string, _marks: string, atY: number) => {
       ctx.fillStyle = letters;
-      ctx.fillText(stripTashkeel(line), config.width / 2, atY);
+      ctx.fillText(line, config.width / 2, atY);
     };
 
     fushaLines.forEach((line) => {
@@ -306,14 +296,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     // الرسم على اللوحة لا ينتظر الخطوط؛ نحمّلها ثم نعيد الرسم حتى لا تظهر البطاقة بخط بديل
     let cancelled = false;
     const sample = 'مَا لِي أُبَالِي';
-    Promise.all(
-      [
-        `bold 40px ${CANVAS_FONTS[selectedFont]}`,
-        '40px "KalimatiInk"',
-        'bold 40px "KalimatiInk"',
-        'bold 26px "Cairo"',
-      ].map((f) => document.fonts.load(f, sample).catch(() => []))
-    ).then(() => {
+    Promise.all([ensureCardFonts(selectedFont), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
       if (!cancelled) renderCanvas();
     });
     return () => {

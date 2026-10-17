@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* خطوط المقولات بلونين في طبقة واحدة (تُبنى بالأمر python3 scripts/build-fonts.py — رخصة OFL) */
+@import "./quote-fonts.css";
 
 @layer base {
   :root {
@@ -28,7 +30,7 @@
 }
 
 .font-cairo { font-family: 'Cairo', system-ui, -apple-system, sans-serif !important; }
-.font-ruqaa-ink { font-family: 'KalimatiInk', 'Aref Ruqaa', serif; font-weight: 700; }
+.font-ruqaa-ink { font-family: 'KQ-ruqaaink', 'Aref Ruqaa', serif; font-weight: 700; }
 .font-rakkas { font-family: 'Rakkas', 'Aref Ruqaa', cursive; }
 .font-kufi-ink { font-family: 'Reem Kufi Ink', 'Reem Kufi', sans-serif; font-weight: 600; }
 .font-amiri { font-family: 'Amiri', serif; }
@@ -36,12 +38,8 @@
 .font-kufi { font-family: 'Reem Kufi', sans-serif; }
 .font-naskh { font-family: 'Noto Naskh Arabic', serif; }
 
-/* خط الرقعة مستضاف داخل المنصة (رخصة OFL)، أحادي اللون حتى يعمل في كل المتصفحات بما فيها Safari،
-   ومعدّل بحيث يرتفع التشكيل فوق قمم الحروف. الألوان تُعطى من المنصة (طبقتان: التشكيل ثم الحروف).
-   يُبنى بالأمر: python3 scripts/build-fonts.py */
-@font-face { font-family: 'KalimatiInk'; src: url('/fonts/kalimati-ruqaa-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-@font-face { font-family: 'KalimatiInk'; src: url('/fonts/kalimati-ruqaa-700.woff2') format('woff2'); font-weight: 700; font-display: block; }
-.logo-ink { font-family: 'KalimatiInk', 'Aref Ruqaa', serif; font-weight: 700; color: #f3ead8; letter-spacing: 0; }
+/* خطوط المقولات بلونين في طبقة واحدة: انظر quote-fonts.css (مستورد في أعلى الملف) */
+.logo-ink { font-family: 'KQ-ruqaaink', 'Aref Ruqaa', serif; font-weight: 700; color: #f3ead8; font-palette: --kq-ruqaaink-red-dark; letter-spacing: 0; }
 
 /* ———— زجاج iOS: ضبابية قوية، حافة داكنة، ولمعة علوية ———— */
 .glass-bar {

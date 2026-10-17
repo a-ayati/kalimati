@@ -11,7 +11,7 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'favicon-64.png', 'apple-touch-icon.png', 'og.png', 'fonts/*.woff2'],
+        includeAssets: ['favicon.ico', 'favicon-64.png', 'apple-touch-icon.png', 'og.png'],
         manifest: {
           id: '/',
           name: 'كلماتي — كلمة تصل في وقتها',
@@ -48,6 +48,9 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          // نسخ بطاقة المشاركة تُحمَّل عند الحاجة فقط
+          globIgnores: ['**/*-gold.woff2'],
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
           // الخادم يتولى هذه المسارات — لا يجب أن يجيب عنها التطبيق المخزّن
           navigateFallbackDenylist: [/^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
           runtimeCaching: [
