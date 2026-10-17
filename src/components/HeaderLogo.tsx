@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useAnimate } from 'motion/react';
 import { shouldPlay as introWillPlay } from './LogoIntro';
+import { InkText } from './InkText';
 
 const BOX = 40; // المربع النهائي
 const WORD = 22; // حجم الكلمة داخل المربع وبجانبه
@@ -143,17 +144,17 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
           dir="rtl"
           style={{ fontSize: WORD, opacity: 0 }}
         >
-          كَلِمَاتِي
+          <InkText text="كَلِمَاتِي" />
         </span>
         <span data-kaf className="logo-ink absolute leading-none" dir="rtl" style={{ fontSize: KAF }}>
-          كَ
+          <InkText text="كَ" />
         </span>
       </div>
 
       <div className="flex flex-col justify-center">
         <div className="font-cairo text-base font-bold text-white flex items-center gap-2 leading-tight">
           <span data-mark className="logo-ink text-[22px] leading-none">
-            كَلِمَاتِي
+            <InkText text="كَلِمَاتِي" />
           </span>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-cairo hidden sm:inline-block">
             أصيلة

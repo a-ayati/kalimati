@@ -1,6 +1,7 @@
 import React from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { Feather, Heart, Lock, ShieldCheck } from 'lucide-react';
+import { InkText } from './InkText';
 
 export const Footer: React.FC = () => {
   const { setActiveTab, author } = useKalimati();
@@ -13,10 +14,10 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-[10px] bg-[#0d0d0f] border border-[#c9a227]/45 flex items-center justify-center">
-              <span className="logo-ink text-[22px] leading-none">كَ</span>
+              <span className="logo-ink text-[22px] leading-none"><InkText text="كَ" /></span>
             </div>
             <div>
-              <div className="logo-ink text-[19px] leading-none mb-1">كَلِمَاتِي</div>
+              <div className="logo-ink text-[19px] leading-none mb-1"><InkText text="كَلِمَاتِي" /></div>
               <div className="text-[10px] text-amber-500/80 font-cairo">كَلِمَةٌ تَصِلُ فِي وَقْتِهَا</div>
             </div>
           </div>

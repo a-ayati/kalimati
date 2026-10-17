@@ -57,7 +57,7 @@ const FORMATS: Record<CardFormat, FormatConfig> = {
 };
 
 const CANVAS_FONTS: Record<FontId, string> = {
-  'ruqaa-ink': '"Aref Ruqaa", serif',
+  'ruqaa-ink': '"KalimatiInk", "Aref Ruqaa", serif',
   ruqaa: '"Aref Ruqaa", serif',
   rakkas: '"Rakkas", serif',
   'kufi-ink': '"Reem Kufi", sans-serif',
@@ -191,11 +191,10 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
       contentTop = margin + 350;
     }
 
-    // الخطوط: الفصحى بالرقعة (حروف داكنة وتشكيل أحمر) والدارجة بالرقعة الحبري بألوانه، كالبطاقة الرسمية
+    // نفس الخط للفصحى واللهجة، والألوان ترسم بطبقتين (تعمل في كل المتصفحات)
     const isInk = selectedFont === 'ruqaa-ink';
-    // خطوط مستضافة بتشكيل لا يتداخل مع الحروف؛ للفصحى نسخة ملوّنة مسبقاً لأن اللوحة لا تبدّل ألوان الخط
-    const fushaFamily = isInk ? (selectedTheme === 'dark' ? '"KalimatiFushaLight", serif' : '"KalimatiFushaDark", serif') : CANVAS_FONTS[selectedFont];
-    const darjaFamily = isInk ? (selectedTheme === 'dark' ? '"KalimatiDarjaLight", serif' : '"KalimatiDarjaDark", serif') : CANVAS_FONTS[selectedFont];
+    const fushaFamily = CANVAS_FONTS[selectedFont];
+    const darjaFamily = CANVAS_FONTS[selectedFont];
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
     const darjaText = quote.language === 'darja' ? quote.text : pickDialect(quote, preferredDialect)?.variant.text || null;
@@ -244,12 +243,6 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     // نفس ألوان المقولة في الصفحة: تتبع المظهر وحده، أياً كان الخط
     const palette = quoteColors({ themeId: selectedTheme, tashkeelColor: customStyle.tashkeelColor });
     const drawTwoTone = (line: string, letters: string, marks: string, atY: number) => {
-      if (isInk) {
-        // خطوط الحبر المجهّزة تحمل ألوانها مسبقاً
-        ctx.fillStyle = letters;
-        ctx.fillText(line, config.width / 2, atY);
-        return;
-      }
       ctx.fillStyle = marks;
       ctx.fillText(line, config.width / 2, atY);
       ctx.fillStyle = letters;
@@ -316,10 +309,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     Promise.all(
       [
         `bold 40px ${CANVAS_FONTS[selectedFont]}`,
-        '40px "KalimatiDarjaLight"',
-        '40px "KalimatiDarjaDark"',
-        'bold 40px "KalimatiFushaLight"',
-        'bold 40px "KalimatiFushaDark"',
+        '40px "KalimatiInk"',
+        'bold 40px "KalimatiInk"',
         'bold 26px "Cairo"',
       ].map((f) => document.fonts.load(f, sample).catch(() => []))
     ).then(() => {

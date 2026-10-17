@@ -6,7 +6,7 @@ import { stripTashkeel } from '../utils/tashkeel';
 
 /** اسم الخط الفعلي لكل اختيار */
 export const FONT_FAMILIES: Record<FontId, string> = {
-  'ruqaa-ink': "'KalimatiInk', 'Aref Ruqaa Ink', 'Aref Ruqaa', serif",
+  'ruqaa-ink': "'KalimatiInk', 'Aref Ruqaa', serif",
   ruqaa: "'Aref Ruqaa', serif",
   rakkas: "'Rakkas', serif",
   // الكوفي الحبري يحمل ألواناً مدمجة لا تتبع المظهر، فنستعمل الكوفي نفسه بألوان المنصة
@@ -27,8 +27,6 @@ const FONT_WEIGHTS: Partial<Record<FontId, number>> = {
   cairo: 700,
 };
 
-/** الخط الملوّن الوحيد: ألوانه تُبدَّل عبر لوحات الألوان في index.css */
-const INK_FONTS: FontId[] = ['ruqaa-ink'];
 
 export function isLightTheme(theme: ThemeId) {
   return theme === 'vintage' || theme === 'white';
@@ -73,16 +71,6 @@ const TwoTone: React.FC<{ text: string; letters: string; marks: string; showMark
   );
 };
 
-/**
- * لوحة ألوان الخط الحبري للفصحى: حروف بلون النص وتشكيل باللون المختار
- * (معرّفة في index.css بالأسماء --fusha-<الخلفية>-<لون التشكيل>)
- */
-function fushaPalette(style: CustomStyle): string {
-  const bg = isLightTheme(style.themeId) ? 'light' : 'dark';
-  const accent = style.tashkeelColor === 'inherit' ? 'plain' : style.tashkeelColor;
-  return `--fusha-${bg}-${accent}`;
-}
-
 interface Props {
   quote: Pick<Quote, 'text' | 'language' | 'darja' | 'dialects'>;
   /** اللهجة المعروضة تحت الفصحى (افتراضياً: لهجة القارئ) */
@@ -104,7 +92,6 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
   const size = fontSize ?? style.fontSize;
   const family = FONT_FAMILIES[style.fontId] || FONT_FAMILIES['ruqaa-ink'];
   const weight = FONT_WEIGHTS[style.fontId] ?? 400;
-  const ink = INK_FONTS.includes(style.fontId);
   const light = isLightTheme(style.themeId);
   const lineHeight = Math.max(2, style.lineHeight);
   const show = (t: string) => (style.showTashkeel ? t : stripTashkeel(t));
@@ -121,29 +108,22 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
     fontSize: `${size}px`,
     lineHeight,
     letterSpacing: 0, // أي تباعد بين الحروف يفسد اتصال الخط العربي
-    ...(ink ? { fontPalette: fushaPalette(style) } : {}),
   };
   const colors = quoteColors(style);
 
   const darjaStyle: React.CSSProperties = {
     fontFamily: family,
-    fontWeight: ink ? 400 : weight,
+    fontWeight: style.fontId === 'ruqaa-ink' ? 400 : weight,
     fontSize: `${fushaText ? Math.round(size * 0.72) : size}px`,
     lineHeight: Math.max(1.9, lineHeight - 0.2),
     letterSpacing: 0,
-    // اللهجة: حروف رمادية وتشكيل ذهبي في كل الخطوط
-    ...(ink ? { fontPalette: light ? '--darja-light' : '--darja-dark' } : {}),
   };
 
   return (
     <div className={`text-center ${className}`} dir="rtl">
       {fushaText && (
         <p lang="ar" style={fushaStyle} className="m-0">
-          {ink ? (
-            show(fushaText)
-          ) : (
-            <TwoTone text={fushaText} letters={colors.fushaLetters} marks={colors.fushaMarks} showMarks={style.showTashkeel} />
-          )}
+          <TwoTone text={fushaText} letters={colors.fushaLetters} marks={colors.fushaMarks} showMarks={style.showTashkeel} />
         </p>
       )}
 
@@ -157,11 +137,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
 
       {darjaText && (
         <p lang={darjaLang} style={darjaStyle} className="m-0">
-          {ink ? (
-            show(darjaText)
-          ) : (
-            <TwoTone text={darjaText} letters={colors.dialectLetters} marks={colors.dialectMarks} showMarks={style.showTashkeel} />
-          )}
+          <TwoTone text={darjaText} letters={colors.dialectLetters} marks={colors.dialectMarks} showMarks={style.showTashkeel} />
         </p>
       )}
     </div>

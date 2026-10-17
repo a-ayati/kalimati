@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { InkText } from './InkText';
 
 const WORD_SIZE = 76; // حجم «كلماتي» داخل المربع
 const ICON_SIZE = 120; // المربع النهائي
@@ -131,7 +132,7 @@ export const LogoIntro: React.FC = () => {
                     filter: { delay: T_SHRINK, duration: 0.28 },
                   }}
                 >
-                  كَلِمَاتِي
+                  <InkText text="كَلِمَاتِي" />
                 </motion.span>
 
                 {/* «كَ» وحدها: تنطلق من مكانها في الكلمة وتستقر في وسط المربع */}
@@ -147,7 +148,7 @@ export const LogoIntro: React.FC = () => {
                     fontSize: { delay: T_SHRINK, duration: D_SHRINK, ease: EASE },
                   }}
                 >
-                  كَ
+                  <InkText text="كَ" />
                 </motion.span>
               </motion.div>
 

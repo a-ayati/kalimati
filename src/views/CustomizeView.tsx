@@ -22,7 +22,7 @@ export const CustomizeView: React.FC = () => {
   const previewQuote = quotes.find((q) => q.dialects || q.darja) || quotes[0];
 
   const FONTS: { id: FontId; name: string; desc: string; sample: string }[] = [
-    { id: 'ruqaa-ink', name: 'الرقعة الحبري (Aref Ruqaa Ink) — المطابق للبطاقة الرسمية', desc: 'خط رقعة حبري غني بالتشكيل المطابق تمامًا للصورة المرجعية الرسمية', sample: 'مَا لِي أُبَالِي بِمَنْ لَا يُبَالِي' },
+    { id: 'ruqaa-ink', name: 'الرقعة — المطابق للبطاقة الرسمية', desc: 'خط رقعة حبري غني بالتشكيل المطابق تمامًا للصورة المرجعية الرسمية', sample: 'مَا لِي أُبَالِي بِمَنْ لَا يُبَالِي' },
     { id: 'ruqaa', name: 'الرقعة الكلاسيكي (Aref Ruqaa)', desc: 'خط وجداني انسيابي يعكس روح الخط اليدوي الأصيل', sample: 'خط الرقعة الجميل' },
     { id: 'rakkas', name: 'الخط المسرحي البارز (Rakkas)', desc: 'خط عربي جريء مستوحى من ملصقات الخط العربي الكلاسيكية', sample: 'جمال الحرف المسرحي' },
     { id: 'kufi-ink', name: 'الكوفي الحبري (Reem Kufi Ink)', desc: 'خط كوفي بنكهة حبرية رصينة يحاكي صياغة العبارات الجزائرية', sample: 'أصالة الخط الكوفي الحبري' },

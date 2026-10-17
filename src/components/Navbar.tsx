@@ -30,7 +30,8 @@ export const Navbar: React.FC = () => {
   return (
     <>
       {/* Top Desktop/Tablet Header */}
-      <header className="glass-header sticky top-0 z-40 w-full">
+      {/* مسافة الأمان العلوية: على الآيفون يمتد المحتوى تحت شريط الساعة، فننزل الشريط تحته */}
+      <header className="glass-header sticky top-0 z-40 w-full" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           
           {/* Brand Logo & Slogan */}
