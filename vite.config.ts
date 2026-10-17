@@ -52,6 +52,8 @@ export default defineConfig(() => {
           skipWaiting: true,
           clientsClaim: true,
           cleanupOutdatedCaches: true,
+          // استقبال الإشعار اليومي وفتح المقولة عند النقر عليه
+          importScripts: ['push-sw.js'],
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           // نسخ بطاقة المشاركة تُحمَّل عند الحاجة فقط
           globIgnores: ['**/*-gold.woff2'],

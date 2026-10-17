@@ -11,6 +11,7 @@
 
 import { SEED } from './seed';
 import { DIALECTS_FILL } from './dialects-fill';
+import { handlePush, runDailyPush } from './push';
 
 export interface Env {
   DB: D1Database;
@@ -674,6 +675,12 @@ export default {
       if (path.startsWith('/api/admin/')) return await handleAdmin(req, env, path);
       if (path === '/api/quotes' && req.method === 'GET') return await handlePublicQuotes(env);
       if (path === '/api/events' && req.method === 'POST') return await handleEvent(req, env);
+      if (path.startsWith('/api/push/')) {
+        // نحفظ عنوان الموقع لتستعمله المهمة المجدولة في روابط الإشعارات
+        await env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('site_origin', ?)").bind(url.origin).run();
+        const res = await handlePush(req, env, path);
+        if (res) return res;
+      }
       if (path.startsWith('/api/')) return error('المسار غير موجود.', 404);
       if (path === '/sitemap.xml') return await handleSitemap(req, env);
       if (path === '/robots.txt') return handleRobots(req);
@@ -689,5 +696,18 @@ export default {
     }
 
     return env.ASSETS.fetch(req);
+  },
+
+  /** كل 15 دقيقة: إرسال «كلمة اليوم» لمن حلّ موعده */
+  async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(
+      (async () => {
+        await ensureSchema(env);
+        const row = await env.DB.prepare("SELECT value FROM meta WHERE key = 'site_origin'").first<{ value: string }>();
+        if (!row) return; // لا اشتراكات بعد
+        const result = await runDailyPush(env, row.value);
+        if (result.sent || result.failed) console.log('daily push', result);
+      })()
+    );
   },
 } satisfies ExportedHandler<Env>;

@@ -15,6 +15,7 @@ import confetti from 'canvas-confetti';
 import { fetchPublicQuotes, trackEvent } from '../lib/api';
 import { mergePairs } from '../utils/pairs';
 import { DEFAULT_DIALECT, isDialectId } from '../utils/dialects';
+import { subscribeDaily } from '../lib/push';
 
 // ---------------------------------------------------------------------------
 // الروابط: كل صفحة وكل قول لها عنوان حقيقي في المتصفح
@@ -494,24 +495,12 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   // Notifications
+  /** تفعيل الإشعار اليومي: إذن + اشتراك على الخادم بالموعد المختار (يرمي خطأ برسالة واضحة عند الفشل) */
   const requestNotificationPermission = useCallback(async () => {
-    if (!('Notification' in window)) {
-      alert('متصفحك الحالي لا يدعم إشعارات الويب.');
-      return false;
-    }
-    const permission = await Notification.requestPermission();
-    const granted = permission === 'granted';
-    setNotificationSettings((prev) => ({ ...prev, granted, enabled: granted }));
-    if (granted) {
-      new Notification('كلماتي — مرحبًا بك', {
-        body: 'سَتَصِلُكَ كَلِمَةُ الْيَوْمِ فِي مَوْعِدِهَا الْمُحَدَّدِ بِإِذْنِ اللَّهِ.',
-        icon: '/pwa-192x192.png',
-        dir: 'rtl',
-        lang: 'ar',
-      });
-    }
-    return granted;
-  }, []);
+    await subscribeDaily(notificationSettings.scheduledTime);
+    setNotificationSettings((prev) => ({ ...prev, granted: true, enabled: true }));
+    return true;
+  }, [notificationSettings.scheduledTime]);
 
   // Backup & Restore
   const exportBackupJson = useCallback(() => {

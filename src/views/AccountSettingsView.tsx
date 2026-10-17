@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { pushSupport, sendTestPush, subscribeDaily, unsubscribeDaily } from '../lib/push';
 import { useKalimati } from '../context/KalimatiContext';
 import { 
   Bell, 
@@ -33,18 +34,62 @@ export const AccountSettingsView: React.FC = () => {
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
   const [dataMsg, setDataMsg] = useState<string | null>(null);
 
-  // Toggle notifications
+  const support = pushSupport();
+  const [busy, setBusy] = useState(false);
+  const flashNote = (text: string) => {
+    setNotificationMsg(text);
+    window.setTimeout(() => setNotificationMsg(null), 5000);
+  };
+
+  // تفعيل / إيقاف الإشعار اليومي
   const handleToggleNotification = async () => {
-    if (!notificationSettings.enabled) {
-      const granted = await requestNotificationPermission();
-      if (granted) {
-        setNotificationMsg('تم تفعيل إشعار الكلمة اليومية بنجاح.');
-      }
-    } else {
-      setNotificationSettings((prev) => ({ ...prev, enabled: false }));
-      setNotificationMsg('تم إيقاف الإشعارات اليومية.');
+    if (busy) return;
+    if (support === 'install-first') {
+      flashNote('على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»، وافتح كلماتي من أيقونتها ثم فعّل الإشعار.');
+      return;
     }
-    setTimeout(() => setNotificationMsg(null), 3000);
+    if (support === 'unsupported') {
+      flashNote('هذا المتصفح لا يدعم الإشعارات.');
+      return;
+    }
+    setBusy(true);
+    try {
+      if (!notificationSettings.enabled) {
+        await requestNotificationPermission();
+        flashNote(`تم التفعيل: ستصلك كلمة اليوم كل يوم الساعة ${notificationSettings.scheduledTime}.`);
+      } else {
+        await unsubscribeDaily();
+        setNotificationSettings((prev) => ({ ...prev, enabled: false }));
+        flashNote('تم إيقاف الإشعار اليومي.');
+      }
+    } catch (e) {
+      flashNote(e instanceof Error ? e.message : 'تعذّر تفعيل الإشعار.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // تغيير الموعد: يُحدَّث على الخادم مباشرة إن كان الإشعار مفعّلاً
+  const handleTimeChange = async (time: string) => {
+    setNotificationSettings((prev) => ({ ...prev, scheduledTime: time }));
+    if (!notificationSettings.enabled || !/^\d{2}:\d{2}$/.test(time)) return;
+    try {
+      await subscribeDaily(time);
+    } catch {
+      // يُعاد المحاولة عند التعديل التالي
+    }
+  };
+
+  const handleTest = async () => {
+    setBusy(true);
+    try {
+      await sendTestPush();
+      flashNote('أُرسل إشعار تجريبي — يصلك خلال ثوانٍ.');
+    } catch (e) {
+      flashNote(e instanceof Error ? e.message : 'تعذّر الإرسال.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   // Export JSON
@@ -137,15 +182,27 @@ export const AccountSettingsView: React.FC = () => {
               <input
                 type="time"
                 value={notificationSettings.scheduledTime}
-                onChange={(e) => setNotificationSettings((prev) => ({ ...prev, scheduledTime: e.target.value }))}
+                onChange={(e) => handleTimeChange(e.target.value)}
                 className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 text-xs focus:outline-none focus:border-amber-500"
               />
               <span className="text-[11px] text-stone-500">(الموعد المقترح: الواحدة ظهرًا 13:00)</span>
             </div>
           </div>
 
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-[11px] text-stone-400 leading-relaxed">
-            * تنبيه تقني: تعتمد الإشعارات على ميزة Web Notifications بالمتصفح، وتتطلب إبقاء التطبيق مثبتًا على شاشتك أو فتح المتصفح بشكل دوري.
+          <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-[11px] text-stone-400 leading-relaxed space-y-2">
+            <p>تصلك الكلمة حتى والمنصة مغلقة، في الموعد بتوقيتك المحلي.</p>
+            {support === 'install-first' && (
+              <p className="text-amber-300">على الآيفون: أضف كلماتي إلى الشاشة الرئيسية أولاً، ثم فعّل الإشعار من داخلها.</p>
+            )}
+            {notificationSettings.enabled && (
+              <button
+                onClick={handleTest}
+                disabled={busy}
+                className="px-3 py-1.5 rounded-full text-[11px] font-bold glass-pill text-[#e8b931] cursor-pointer disabled:opacity-60"
+              >
+                أرسل إشعاراً تجريبياً الآن
+              </button>
+            )}
           </div>
         </div>
       </div>
