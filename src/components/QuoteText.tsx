@@ -4,7 +4,7 @@ import { stripTashkeel } from '../utils/tashkeel';
 
 /** اسم الخط الفعلي لكل اختيار */
 export const FONT_FAMILIES: Record<FontId, string> = {
-  'ruqaa-ink': "'Aref Ruqaa Ink', 'Aref Ruqaa', serif",
+  'ruqaa-ink': "'KalimatiInk', 'Aref Ruqaa Ink', 'Aref Ruqaa', serif",
   ruqaa: "'Aref Ruqaa', serif",
   rakkas: "'Rakkas', serif",
   'kufi-ink': "'Reem Kufi Ink', 'Reem Kufi', sans-serif",

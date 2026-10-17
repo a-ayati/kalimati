@@ -191,8 +191,9 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // الخطوط: الفصحى بالرقعة (حروف داكنة وتشكيل أحمر) والدارجة بالرقعة الحبري بألوانه، كالبطاقة الرسمية
     const isInk = selectedFont === 'ruqaa-ink';
-    const fushaFamily = isInk ? '"Aref Ruqaa", serif' : CANVAS_FONTS[selectedFont];
-    const darjaFamily = isInk ? '"Aref Ruqaa Ink", "Aref Ruqaa", serif' : CANVAS_FONTS[selectedFont];
+    // خطوط مستضافة بتشكيل لا يتداخل مع الحروف؛ للفصحى نسخة ملوّنة مسبقاً لأن اللوحة لا تبدّل ألوان الخط
+    const fushaFamily = isInk ? (selectedTheme === 'dark' ? '"KalimatiFushaLight", serif' : '"KalimatiFushaDark", serif') : CANVAS_FONTS[selectedFont];
+    const darjaFamily = isInk ? '"KalimatiInk", "Aref Ruqaa Ink", serif' : CANVAS_FONTS[selectedFont];
     const accent = selectedTheme === 'dark' ? '#ef5350' : '#c62828';
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
@@ -239,13 +240,10 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.textAlign = 'center';
     let y = startY;
 
-    // الفصحى: نرسم النص كاملاً بلون التشكيل ثم الحروف وحدها فوقه بلون النص، فيبقى التشكيل ملوّناً
     fushaLines.forEach((line) => {
       ctx.font = fushaFont;
-      ctx.fillStyle = accent;
-      ctx.fillText(line, config.width / 2, y);
       ctx.fillStyle = textColor;
-      ctx.fillText(stripTashkeel(line), config.width / 2, y);
+      ctx.fillText(line, config.width / 2, y);
       y += fushaLH;
     });
 
@@ -304,8 +302,9 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     Promise.all(
       [
         `bold 40px ${CANVAS_FONTS[selectedFont]}`,
-        '40px "Aref Ruqaa Ink"',
-        'bold 40px "Aref Ruqaa"',
+        '40px "KalimatiInk"',
+        'bold 40px "KalimatiFushaLight"',
+        'bold 40px "KalimatiFushaDark"',
         'bold 26px "Cairo"',
       ].map((f) => document.fonts.load(f, sample).catch(() => []))
     ).then(() => {
