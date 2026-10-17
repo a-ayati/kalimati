@@ -502,7 +502,8 @@ async function serveShell(
 
   const res = rewriter.transform(shell);
   const headers = new Headers(res.headers);
-  headers.set('cache-control', 'public, max-age=300');
+  // الصفحة نفسها لا تُخزَّن: بعد كل تحديث يجب أن تشير إلى ملفات البرمجة الجديدة، وإلا ظهرت صفحة بيضاء
+  headers.set('cache-control', 'no-cache');
   return new Response(res.body, { status, headers });
 }
 
