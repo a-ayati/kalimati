@@ -362,6 +362,7 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // توحيد الروابط غير المعروفة إلى الصفحة الرئيسية
   useEffect(() => {
     if (route.tab === 'quote-detail') return;
+    if (/^\/zen\/?$/.test(window.location.pathname)) return; // شاشة السكون المستقلة
     const path = routeToPath(route);
     const current = window.location.pathname.replace(/\/+$/, '') || '/';
     if (current !== path) window.history.replaceState(null, '', path);

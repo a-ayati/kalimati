@@ -17,6 +17,10 @@ import { CardShareModal } from './components/CardShareModal';
 import { ZenMode } from './components/ZenMode';
 import { OfflineBanner } from './components/OfflineBanner';
 import { LogoIntro } from './components/LogoIntro';
+import { ScreenSaverView } from './views/ScreenSaverView';
+
+/** رابط شاشة السكون المستقلة (لشاشة توقف الحاسوب أو الهاتف أثناء الشحن) */
+const IS_SCREENSAVER = /^\/zen\/?$/.test(window.location.pathname);
 import { useIdleDetector } from './hooks/useIdleDetector';
 
 const AppContent: React.FC = () => {
@@ -88,7 +92,7 @@ const AppContent: React.FC = () => {
 export default function App() {
   return (
     <KalimatiProvider>
-      <AppContent />
+      {IS_SCREENSAVER ? <ScreenSaverView /> : <AppContent />}
     </KalimatiProvider>
   );
 }
