@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteText } from '../components/QuoteText';
@@ -106,11 +106,33 @@ export const ScreenSaverView: React.FC = () => {
     exitTimer.current = window.setTimeout(() => setShowExit(false), 3500);
   };
 
-  const fontSize = Math.round(Math.max(26, Math.min(w * 0.05, h * 0.075, 76)));
-  const style = { ...customStyle, themeId: 'dark' as const, showTashkeel: true };
+  // الحجم الأقصى حسب الشاشة، ثم يُصغَّر تلقائياً حتى تتسع المقولة كاملة في مساحتها
+  const maxFont = Math.round(Math.max(26, Math.min(w * 0.05, h * 0.075, 76)));
+  const [fit, setFit] = useState(maxFont);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const fontSize = Math.min(fit, maxFont);
+  const style = { ...customStyle, themeId: 'dark' as const, showTashkeel: true, lineHeight: 2 };
   const dialect = params.dialect === 'none' ? undefined : params.dialect ?? preferredDialect;
   const shownQuote =
     quote && params.dialect === 'none' ? { ...quote, dialects: undefined, darja: undefined } : quote;
+
+  // عند تغيّر القول أو حجم الشاشة: نبدأ من الحجم الأقصى ثم نقيس
+  useLayoutEffect(() => {
+    setFit(maxFont);
+  }, [shownQuote?.id, index, maxFont]);
+
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const content = contentRef.current;
+    if (!stage || !content) return;
+    const avail = stage.clientHeight * 0.94;
+    const used = content.scrollHeight;
+    if (used > avail && fit > 18) {
+      // تصغير يتناسب مع الفائض (المساحة تتغير مع مربع الحجم تقريباً)
+      setFit((f) => Math.max(18, Math.floor(f * Math.min(0.95, Math.sqrt(avail / used)))));
+    }
+  });
 
   const time = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const date = now.toLocaleDateString('ar-DZ-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -131,8 +153,9 @@ export const ScreenSaverView: React.FC = () => {
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       />
 
+      <div className="relative h-full flex flex-col">
       {params.clock && (
-        <div className="absolute top-0 inset-x-0 flex flex-col items-center pt-[6vh] gap-1 pointer-events-none">
+        <div className="shrink-0 flex flex-col items-center pt-[5vh] pb-[2vh] gap-1 pointer-events-none">
           <div className="font-cairo font-light tabular-nums text-[#f3ead8]/85" style={{ fontSize: Math.max(34, Math.min(w, h) * 0.075) }} dir="ltr">
             {time}
           </div>
@@ -142,11 +165,13 @@ export const ScreenSaverView: React.FC = () => {
         </div>
       )}
 
-      <div className="absolute inset-0 flex items-center justify-center px-[7vw]">
+      {/* مساحة المقولة: بين الساعة والشعار، ولا تتجاوزهما أبداً */}
+      <div ref={stageRef} className="flex-1 min-h-0 flex items-center justify-center px-[7vw] overflow-hidden">
         <AnimatePresence mode="wait">
           {shownQuote && (
             <motion.div
               key={`${shownQuote.id}-${index % Math.max(1, order.length)}`}
+              ref={contentRef}
               className="w-full max-w-[1100px]"
               initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -165,7 +190,7 @@ export const ScreenSaverView: React.FC = () => {
       </div>
 
       {/* الشعار */}
-      <div className="absolute bottom-[5vh] inset-x-0 flex justify-center pointer-events-none">
+      <div className="shrink-0 pt-[2vh] pb-[4vh] flex justify-center pointer-events-none">
         <div className="flex items-center gap-2.5 opacity-70">
           <span className="w-8 h-8 rounded-[9px] border border-[#c9a227]/45 flex items-center justify-center">
             <span className="logo-ink text-[19px] leading-none">
@@ -176,6 +201,7 @@ export const ScreenSaverView: React.FC = () => {
             <InkText text="كَلِمَاتِي" />
           </span>
         </div>
+      </div>
       </div>
 
       <AnimatePresence>
