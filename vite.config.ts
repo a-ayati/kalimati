@@ -54,7 +54,7 @@ export default defineConfig(() => {
           cleanupOutdatedCaches: true,
           // استقبال الإشعار اليومي وفتح المقولة عند النقر عليه
           importScripts: ['push-sw.js'],
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
           // نسخ بطاقة المشاركة تُحمَّل عند الحاجة فقط
           globIgnores: ['**/*-gold.woff2'],
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,

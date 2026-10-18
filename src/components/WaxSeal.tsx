@@ -1,41 +1,21 @@
-import React, { useEffect, useRef } from 'react';
-import { drawWaxSeal, loadSealFont } from '../lib/waxSeal';
+import React from 'react';
+import { SEAL_SRC } from '../lib/waxSeal';
 
-/** ختم شمع أحمر بحرف X على خواطر الكاتب */
-export const WaxSeal: React.FC<{ size?: number; light?: boolean; className?: string }> = ({ size = 64, light = false, className = '' }) => {
-  const ref = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    // هامش حول الطابع للظل
-    const box = Math.round(size * 1.5);
-    const dpr = Math.min(3, window.devicePixelRatio || 1);
-    canvas.width = box * dpr;
-    canvas.height = box * dpr;
-    const draw = () => {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, box, box);
-      drawWaxSeal(ctx, box / 2, box / 2 - size * 0.05, size / 2, { light });
-    };
-    draw();
-    let alive = true;
-    loadSealFont().then(() => alive && draw());
-    return () => {
-      alive = false;
-    };
-  }, [size, light]);
-
-  const box = Math.round(size * 1.5);
-  return (
-    <canvas
-      ref={ref}
-      role="img"
-      aria-label="ختم الكاتب"
-      className={`select-none pointer-events-none ${className}`}
-      style={{ width: box, height: box, margin: -(box - size) / 2 }}
-    />
-  );
-};
+/** ختم الشمع الأحمر بحرف X على كتابات الكاتب — الصورة المعتمدة كما هي */
+export const WaxSeal: React.FC<{ size?: number; light?: boolean; className?: string }> = ({ size = 64, light = false, className = '' }) => (
+  <img
+    src={SEAL_SRC}
+    alt="ختم الكاتب"
+    width={size}
+    height={size}
+    loading="lazy"
+    decoding="async"
+    draggable={false}
+    className={`select-none pointer-events-none shrink-0 ${className}`}
+    style={{
+      width: size,
+      height: size,
+      filter: light ? 'drop-shadow(0 3px 5px rgba(60,12,8,0.28))' : 'drop-shadow(0 4px 7px rgba(0,0,0,0.55))',
+    }}
+  />
+);

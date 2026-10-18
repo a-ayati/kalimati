@@ -5,7 +5,7 @@ import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
 import { isFolk, pickDialect, quoteByline } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
-import { drawWaxSeal, loadSealFont } from '../lib/waxSeal';
+import { drawWaxSeal, loadSealImage } from '../lib/waxSeal';
 import { dialectFontOf, dialectRatio, ensureCardFonts, quoteFont } from '../lib/quoteFonts';
 import { 
   X, 
@@ -321,7 +321,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     // الرسم على اللوحة لا ينتظر الخطوط؛ نحمّلها ثم نعيد الرسم حتى لا تظهر البطاقة بخط بديل
     let cancelled = false;
     const sample = 'مَا لِي أُبَالِي';
-    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), loadSealFont(), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
+    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), loadSealImage(), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
       if (!cancelled) renderCanvas();
     });
     return () => {
