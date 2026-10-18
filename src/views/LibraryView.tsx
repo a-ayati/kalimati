@@ -2,10 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { ALL_TOPICS } from '../data/seedQuotes';
-import { allQuoteText } from '../utils/dialects';
+import { DIALECTS, allQuoteText, quoteDialectId } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
 import { Search, Filter, BookOpen, Sparkles, X } from 'lucide-react';
-import { Language } from '../types';
+import { DialectId, Language } from '../types';
 
 export const LibraryView: React.FC = () => {
   const { quotes } = useKalimati();
@@ -13,6 +13,7 @@ export const LibraryView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
   const [selectedLanguage, setSelectedLanguage] = useState<'all' | Language>('all');
+  const [selectedDialect, setSelectedDialect] = useState<'all' | DialectId>('all');
 
   // Filter only published quotes for public library
   const publishedQuotes = useMemo(() => {
@@ -26,6 +27,9 @@ export const LibraryView: React.FC = () => {
     return publishedQuotes.filter((quote) => {
       // Dialect filter
       if (selectedLanguage !== 'all' && quote.language !== selectedLanguage) {
+        return false;
+      }
+      if (selectedLanguage === 'darja' && selectedDialect !== 'all' && quoteDialectId(quote) !== selectedDialect) {
         return false;
       }
 
@@ -51,7 +55,7 @@ export const LibraryView: React.FC = () => {
 
       return true;
     });
-  }, [publishedQuotes, searchQuery, selectedTopic, selectedLanguage]);
+  }, [publishedQuotes, searchQuery, selectedTopic, selectedLanguage, selectedDialect]);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 sm:py-8 space-y-6">
@@ -66,7 +70,7 @@ export const LibraryView: React.FC = () => {
           مَكْتَبَةُ الْكَلِمَاتِ
         </h1>
         <p className="text-xs sm:text-sm text-stone-400 font-cairo">
-          استكشف جميع الخواطر والأقوال الأصلية؛ ابحث بالمعنى أو الموضوع أو اللهجة.
+          خواطر الكاتب بالفصحى، وأمثال شعبية معروفة من كل لهجة؛ ابحث بالمعنى أو الموضوع أو اللهجة.
         </p>
       </div>
 
@@ -117,14 +121,17 @@ export const LibraryView: React.FC = () => {
               عربية فصحى
             </button>
             <button
-              onClick={() => setSelectedLanguage('darja')}
+              onClick={() => {
+              setSelectedLanguage('darja');
+              setSelectedDialect('all');
+            }}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 selectedLanguage === 'darja'
                   ? 'bg-amber-500/30 text-amber-300 font-bold border border-amber-500/40'
                   : 'text-stone-400 hover:text-stone-200'
               }`}
             >
-              دارجة جزائرية
+              أمثال باللهجات
             </button>
           </div>
 
@@ -133,6 +140,24 @@ export const LibraryView: React.FC = () => {
             عرض <strong className="text-amber-400 font-bold">{filteredQuotes.length}</strong> من أصل {publishedQuotes.length} خاطرة
           </div>
         </div>
+
+        {/* اللهجات: تظهر عند اختيار الأمثال */}
+        {selectedLanguage === 'darja' && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" role="group" aria-label="اللهجة">
+            {([{ id: 'all', name: 'كل اللهجات' }, ...DIALECTS] as { id: 'all' | DialectId; name: string }[]).map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setSelectedDialect(d.id)}
+                aria-pressed={selectedDialect === d.id}
+                className={`px-3 py-1 rounded-full text-xs shrink-0 transition-all cursor-pointer ${
+                  selectedDialect === d.id ? 'glass-pill text-[#e8b931] font-bold' : 'text-stone-400 hover:text-stone-200 border border-white/10'
+                }`}
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Topic Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 scrollbar-none">

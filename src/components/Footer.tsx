@@ -54,7 +54,7 @@ export const Footer: React.FC = () => {
         {/* Bottom footer row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] text-stone-500">
           <div>
-            جميع النصوص والخواطر المنشورة هي كتابات أصلية بقلم الكاتب <strong>{author.name}</strong>.
+            جميع الخواطر المنشورة كتابات أصلية بقلم الكاتب <strong>{author.name}</strong>، أما الأمثال الشعبية فمن تراث أهلها.
           </div>
           <div className="flex items-center gap-1">
             <span>صُمِّمت بحب ورعاية للحرف العربي</span>

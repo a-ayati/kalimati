@@ -62,7 +62,7 @@ export const PrivacyTermsView: React.FC = () => {
         </h2>
         <div className="space-y-2.5 text-stone-300 leading-relaxed font-cairo">
           <p>
-            جميع النصوص والخواطر المنشورة في «كلماتي» هي نتاج أدبي أصيل بقلم الكاتب <strong>شعيب المطوع</strong>.
+            جميع الخواطر المنشورة في «كلماتي» نتاج أدبي أصيل بقلم الكاتب <strong>شعيب المطوع</strong>. أما الأمثال الشعبية باللهجات فهي من التراث، وتُنسب إليه لا إلى الكاتب.
           </p>
           <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/20 text-xs text-stone-300 space-y-2">
             <div className="font-bold text-amber-300 flex items-center gap-1.5">

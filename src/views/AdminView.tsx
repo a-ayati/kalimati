@@ -4,7 +4,7 @@ import { Quote, Language, QuoteStatus, DialectId } from '../types';
 import { ALL_TOPICS, INITIAL_AUTHOR } from '../data/seedQuotes';
 import { stripTashkeel } from '../utils/tashkeel';
 import { adminApi, ApiError, QuoteInput } from '../lib/api';
-import { DIALECTS, quoteDialects } from '../utils/dialects';
+import { DIALECTS, FOLK_AUTHOR, isFolk, quoteDialectId, quoteLabel } from '../utils/dialects';
 import { 
   Lock, 
   Unlock, 
@@ -100,6 +100,9 @@ export const AdminView: React.FC = () => {
   const [formDialects, setFormDialects] = useState<Partial<Record<DialectId, string>>>({});
   const [formAuthor, setFormAuthor] = useState(author.name);
   const [formLanguage, setFormLanguage] = useState<Language>('fusha');
+  // القول باللهجة: لهجته، وهل هو مثل شعبي أم من كتابة شعيب
+  const [formDialect, setFormDialect] = useState<DialectId>('dz');
+  const [formFolk, setFormFolk] = useState(false);
   const [formTopics, setFormTopics] = useState<string[]>(['الطمأنينة']);
   const [formStatus, setFormStatus] = useState<QuoteStatus>('published');
   const [formPublishedAt, setFormPublishedAt] = useState(toLocalInput(new Date().toISOString()));
@@ -184,6 +187,8 @@ export const AdminView: React.FC = () => {
     setFormDialects({});
     setFormAuthor(author.name);
     setFormLanguage('fusha');
+    setFormDialect('dz');
+    setFormFolk(false);
     setFormTopics(['الطمأنينة']);
     setFormStatus('published');
     setFormPublishedAt(toLocalInput(new Date().toISOString()));
@@ -197,11 +202,11 @@ export const AdminView: React.FC = () => {
     setEditingQuoteId(quote.id);
     setIsCreatingNew(false);
     setFormText(quote.text);
-    setFormDialects(
-      Object.fromEntries(Object.entries(quoteDialects(quote)).map(([k, v]) => [k, v?.text || '']))
-    );
+    setFormDialects({});
     setFormAuthor(quote.author);
     setFormLanguage(quote.language);
+    setFormDialect(quoteDialectId(quote));
+    setFormFolk(isFolk(quote));
     setFormTopics(quote.topics);
     setFormStatus(quote.status);
     setFormPublishedAt(toLocalInput(quote.publishedAt));
@@ -221,10 +226,10 @@ export const AdminView: React.FC = () => {
       // الرابط يُولَّد على الخادم للقول الجديد، ويُحفظ كما هو عند التعديل حتى لا تنكسر الروابط المشاركة
       slug: existing?.slug || plainText,
       text: formText,
-      dialectTexts: formLanguage === 'fusha' ? formDialects : undefined,
       plainText,
-      author: INITIAL_AUTHOR.name,
+      author: formLanguage === 'darja' && formFolk ? FOLK_AUTHOR : INITIAL_AUTHOR.name,
       language: formLanguage,
+      dialect: formLanguage === 'darja' ? formDialect : undefined,
       topics: formTopics,
       status: formStatus,
       publishedAt: new Date(formPublishedAt).toISOString(),
@@ -553,7 +558,7 @@ export const AdminView: React.FC = () => {
                       <span className={`px-2 py-0.5 rounded-full text-[10px] border ${
                         isDarja ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                       }`}>
-                        {isDarja ? 'دارجة' : 'فصحى'}
+                        {quoteLabel(q)}
                       </span>
                     </td>
 
@@ -648,49 +653,41 @@ export const AdminView: React.FC = () => {
                 />
               </div>
 
-              {/* الصيغ باللهجات: تظهر تحت الفصحى حسب لهجة القارئ — اترك الحقل فارغاً إن لم تكتبها بعد */}
-              {formLanguage === 'fusha' && (
-                <div className="space-y-2.5 p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-stone-300 font-semibold">
-                    الصيغ باللهجات (يرى كل قارئ لهجته تحت الفصحى):
-                  </div>
-                  {DIALECTS.map((d) => (
-                    <div key={d.id}>
-                      <label className="block text-stone-400 mb-1" htmlFor={`dialect-${d.id}`}>
-                        {d.name}
-                      </label>
-                      <textarea
-                        id={`dialect-${d.id}`}
-                        value={formDialects[d.id] || ''}
-                        onChange={(e) => setFormDialects((prev) => ({ ...prev, [d.id]: e.target.value }))}
-                        rows={2}
-                        className="w-full p-2.5 rounded-xl bg-black/50 border border-white/10 text-stone-100 font-serif text-sm leading-relaxed focus:outline-none focus:border-amber-500 resize-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Author & Dialect */}
+              {/* النوع: خاطرة بالفصحى لشعيب، أو قول باللهجة (له أو مثل من التراث الشعبي) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-stone-300 font-semibold mb-1">الكاتب:</label>
-                  <div className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200">
-                    {INITIAL_AUTHOR.name} <span className="text-[10px] text-stone-500">— المنصة خاصة بكتاباته وحده</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-stone-300 font-semibold mb-1">اللغة / اللهجة:</label>
+                  <label className="block text-stone-300 font-semibold mb-1">النوع:</label>
                   <select
-                    value={formLanguage}
-                    onChange={(e) => setFormLanguage(e.target.value as Language)}
+                    value={formLanguage === 'fusha' ? 'fusha' : formFolk ? 'folk' : 'own'}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFormLanguage(v === 'fusha' ? 'fusha' : 'darja');
+                      setFormFolk(v === 'folk');
+                    }}
                     className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
                   >
-                    <option value="fusha">فصحى (مع صيغها باللهجات)</option>
-                    <option value="darja">دارجة جزائرية فقط</option>
+                    <option value="fusha">خاطرة بالفصحى — بقلم {INITIAL_AUTHOR.name}</option>
+                    <option value="folk">مثل شعبي باللهجة — من التراث</option>
+                    <option value="own">قول باللهجة — بقلم {INITIAL_AUTHOR.name}</option>
                   </select>
                 </div>
+
+                {formLanguage === 'darja' && (
+                  <div>
+                    <label className="block text-stone-300 font-semibold mb-1">اللهجة:</label>
+                    <select
+                      value={formDialect}
+                      onChange={(e) => setFormDialect(e.target.value as DialectId)}
+                      className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
+                    >
+                      {DIALECTS.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Publication Status & Date */}

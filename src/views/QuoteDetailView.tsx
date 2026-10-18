@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { quoteUrl as quoteLink } from '../lib/links';
-import { pickDialect } from '../utils/dialects';
+import { dialectInfo, isFolk, pickDialect, quoteByline, quoteDialectId, quoteLabel } from '../utils/dialects';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { stripTashkeel } from '../utils/tashkeel';
@@ -80,7 +80,7 @@ export const QuoteDetailView: React.FC = () => {
     try {
       const picked = pickDialect(quote, preferredDialect);
       const darjaLine = picked ? `\n"${stripTashkeel(picked.variant.text)}"` : '';
-      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}\n\n— بقلم: ${quote.author}\nالمصدر: منصة كلماتي (${quoteUrl})`;
+      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}\n\n— ${quoteByline(quote)}\nالمصدر: منصة كلماتي (${quoteUrl})`;
       await navigator.clipboard.writeText(fullCitation);
       setCopiedText(true);
       setTimeout(() => setCopiedText(false), 2000);
@@ -104,7 +104,7 @@ export const QuoteDetailView: React.FC = () => {
               'url': `${window.location.origin}/author`,
             },
             'datePublished': quote.publishedAt,
-            'inLanguage': quote.language === 'darja' ? 'ar-DZ' : 'ar',
+            'inLanguage': quote.language === 'darja' ? dialectInfo(quoteDialectId(quote)).lang : 'ar',
             'isPartOf': {
               '@type': 'WebSite',
               'name': 'كلماتي',
@@ -181,12 +181,16 @@ export const QuoteDetailView: React.FC = () => {
               <User className="w-3.5 h-3.5 text-amber-400" />
               <span>الكاتب والمؤلف:</span>
             </div>
-            <button
-              onClick={() => setActiveTab('author')}
-              className="font-bold text-stone-200 hover:text-amber-300 transition-colors text-sm underline cursor-pointer"
-            >
-              {quote.author}
-            </button>
+            {isFolk(quote) ? (
+              <div className="font-bold text-stone-200 text-sm">{quoteByline(quote)}</div>
+            ) : (
+              <button
+                onClick={() => setActiveTab('author')}
+                className="font-bold text-stone-200 hover:text-amber-300 transition-colors text-sm underline cursor-pointer"
+              >
+                {quote.author}
+              </button>
+            )}
           </div>
 
           <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
@@ -203,7 +207,7 @@ export const QuoteDetailView: React.FC = () => {
               <span>اللغة والأسلوب:</span>
             </div>
             <div className="font-semibold text-stone-200">
-              {quote.language === 'darja' ? 'الدارجة الجزائرية الأصيلة' : 'اللغة العربية الفصحى'}
+              {quoteLabel(quote)}
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ import {
   Eye,
   Languages
 } from 'lucide-react';
-import { DIALECTS } from '../utils/dialects';
+import { quoteByline } from '../utils/dialects';
 import { dialectFontOf } from '../lib/quoteFonts';
 
 export const CustomizeView: React.FC = () => {
@@ -23,14 +23,16 @@ export const CustomizeView: React.FC = () => {
   const [fontTarget, setFontTarget] = useState<'fusha' | 'dialect'>('fusha');
   const isDialect = fontTarget === 'dialect';
   const currentFontId = isDialect ? dialectFontOf(customStyle) : customStyle.fontId;
-  const currentSize = isDialect ? customStyle.dialectFontSize ?? Math.round(customStyle.fontSize * 0.72) : customStyle.fontSize;
+  const currentSize = isDialect ? customStyle.dialectFontSize ?? customStyle.fontSize : customStyle.fontSize;
   const setFontFor = (id: FontId) =>
     setCustomStyle((prev) => (isDialect ? { ...prev, dialectFontId: id } : { ...prev, fontId: id }));
   const setSizeFor = (n: number) =>
     setCustomStyle((prev) => (isDialect ? { ...prev, dialectFontSize: n } : { ...prev, fontSize: n }));
 
   // Sample quote for live preview
-  const previewQuote = quotes.find((q) => q.dialects || q.darja) || quotes[0];
+  const previewQuote = quotes.find((q) => q.language === 'fusha') || quotes[0];
+  // مثل باللهجة لمعاينة خط اللهجة وحجمه
+  const previewDialect = quotes.find((q) => q.language === 'darja');
 
   const FONTS: { id: FontId; name: string; desc: string; sample: string }[] = [
     { id: 'ruqaa-ink', name: 'الرقعة — المطابق للبطاقة الرسمية', desc: 'خط رقعة حبري غني بالتشكيل المطابق تمامًا للصورة المرجعية الرسمية', sample: 'مَا لِي أُبَالِي بِمَنْ لَا يُبَالِي' },
@@ -132,9 +134,13 @@ export const CustomizeView: React.FC = () => {
           <div className="border border-white/10 p-5 sm:p-8 rounded-2xl text-center">
             <div className="text-amber-500/40 text-xs mb-3">❦ ✦ ❦</div>
             <QuoteText quote={previewQuote} style={customStyle} className="transition-all" />
-            <div className="mt-4 pt-3 border-t border-white/10 text-xs opacity-75">
-              بقلم: {previewQuote.author} — منصة كلماتي
-            </div>
+            <div className="mt-2 text-xs opacity-75">بقلم: {previewQuote.author}</div>
+            {previewDialect && (
+              <div className="mt-5 pt-4 border-t border-white/10">
+                <QuoteText quote={previewDialect} style={customStyle} className="transition-all" />
+                <div className="mt-2 text-xs opacity-75">{quoteByline(previewDialect)}</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -173,36 +179,6 @@ export const CustomizeView: React.FC = () => {
                     </div>
                   </div>
                   {active && <Check className="w-4 h-4 text-amber-400 shrink-0" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* لهجتي: الصيغة التي تظهر تحت الفصحى */}
-        <div className="bg-[#141518] p-5 rounded-3xl border border-white/10 space-y-3.5">
-          <div className="flex items-center gap-2 text-sm font-bold text-white">
-            <Languages className="w-4 h-4 text-amber-400" />
-            <span>لهجتي</span>
-          </div>
-          <p className="text-stone-400 text-[11px]">
-            الفصحى دائماً في الأعلى، وتحتها صيغة القول بلهجتك متى كتبها الكاتب.
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {DIALECTS.map((d) => {
-              const active = preferredDialect === d.id;
-              return (
-                <button
-                  key={d.id}
-                  onClick={() => setPreferredDialect(d.id)}
-                  aria-pressed={active}
-                  className={`h-11 rounded-2xl text-xs transition-all cursor-pointer ${
-                    active
-                      ? 'glass-pill text-[#e8b931] font-bold'
-                      : 'bg-white/5 text-stone-300 border border-white/10 hover:border-white/20 font-medium'
-                  }`}
-                >
-                  {d.name}
                 </button>
               );
             })}

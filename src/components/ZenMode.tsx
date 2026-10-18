@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
+import { quoteByline } from '../utils/dialects';
 import { QuoteText } from './QuoteText';
 import { Quote } from '../types';
 import { Moon, Sparkles, X, Clock, Eye } from 'lucide-react';
@@ -184,7 +185,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
         </div>
 
         <div className="mt-5 text-sm sm:text-base text-stone-300 font-cairo font-medium tracking-normal">
-          بقلم: {activeQuote.author || author.name}
+          {activeQuote.author ? quoteByline(activeQuote) : `بقلم: ${author.name}`}
         </div>
       </div>
 

@@ -128,7 +128,7 @@ const DEFAULT_STYLE: CustomStyle = {
   fontId: 'ruqaa-ink',
   fontSize: 29,
   dialectFontId: 'ruqaa-ink',
-  dialectFontSize: 21,
+  dialectFontSize: 29,
   lineHeight: 2.3,
   tashkeelColor: 'red',
   showTashkeel: true,
@@ -230,6 +230,8 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!parsed.lineHeight || parsed.lineHeight < 2.2) {
           parsed.lineHeight = 2.3;
         }
+        // الأمثال باللهجات صارت مستقلة: الحجم القديم الصغير (21) يعود مساوياً للفصحى
+        if (parsed.dialectFontSize === 21) parsed.dialectFontSize = parsed.fontSize || 29;
         if (parsed.fontId === 'ruqaa') {
           parsed.fontId = 'ruqaa-ink';
         }

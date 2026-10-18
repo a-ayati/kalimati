@@ -20,10 +20,9 @@ export function isDialectId(v: unknown): v is DialectId {
 }
 
 /** الصيغ المتوفرة لقول ما (مع دعم الحقل القديم darja) */
-export function quoteDialects(q: Pick<Quote, 'dialects' | 'darja'>): Partial<Record<DialectId, QuoteVariant>> {
-  const out: Partial<Record<DialectId, QuoteVariant>> = { ...(q.dialects || {}) };
-  if (q.darja && !out.dz) out.dz = q.darja;
-  return out;
+export function quoteDialects(_q: Pick<Quote, 'dialects' | 'darja'>): Partial<Record<DialectId, QuoteVariant>> {
+  // الفصحى تُعرض وحدها والأمثال باللهجات أقوال مستقلة: لا صيغ مرافقة
+  return {};
 }
 
 export function availableDialects(q: Pick<Quote, 'dialects' | 'darja'>): DialectId[] {
@@ -45,4 +44,28 @@ export function pickDialect(
 export function allQuoteText(q: Quote): string {
   const d = quoteDialects(q);
   return [q.text, ...Object.values(d).map((v) => v?.text || '')].join(' ');
+}
+
+/** كاتب الأمثال الشعبية */
+export const FOLK_AUTHOR = 'تراث شعبي';
+
+export function isFolk(q: Pick<Quote, 'author'>): boolean {
+  return q.author === FOLK_AUTHOR;
+}
+
+/** لهجة القول المكتوب بالدارجة (الجزائرية افتراضياً للأقوال القديمة) */
+export function quoteDialectId(q: Pick<Quote, 'dialect'>): DialectId {
+  return isDialectId(q.dialect) ? q.dialect : DEFAULT_DIALECT;
+}
+
+/** وسم القول: فصحى، أو دارجة بلهجتها، أو مثل شعبي بلهجته */
+export function quoteLabel(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
+  if (q.language === 'fusha') return 'عربية فصحى';
+  const name = dialectInfo(quoteDialectId(q)).name.replace(/^ال/, ''); // جزائرية، مغربية…
+  return isFolk(q) ? `مثل شعبي ${name.replace(/ة$/, '')}` : `دارجة ${name}`;
+}
+
+/** نسبة القول: «بقلم: …» للكاتب، و«من التراث الشعبي …» للأمثال */
+export function quoteByline(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
+  return isFolk(q) ? `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}` : `بقلم: ${q.author}`;
 }

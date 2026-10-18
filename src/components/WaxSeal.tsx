@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { drawWaxSeal, loadSealFont, SEAL_NAME } from '../lib/waxSeal';
+import { drawWaxSeal, loadSealFont } from '../lib/waxSeal';
 
-/** طابع شمع أحمر ثلاثي الأبعاد باسم «شعيب» */
+/** ختم شمع أحمر بحرف X على خواطر الكاتب */
 export const WaxSeal: React.FC<{ size?: number; light?: boolean; className?: string }> = ({ size = 64, light = false, className = '' }) => {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -33,7 +33,7 @@ export const WaxSeal: React.FC<{ size?: number; light?: boolean; className?: str
     <canvas
       ref={ref}
       role="img"
-      aria-label={`ختم ${SEAL_NAME}`}
+      aria-label="ختم الكاتب"
       className={`select-none pointer-events-none ${className}`}
       style={{ width: box, height: box, margin: -(box - size) / 2 }}
     />

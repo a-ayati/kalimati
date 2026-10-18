@@ -11,6 +11,7 @@
 
 import { SEED } from './seed';
 import { DIALECTS_FILL } from './dialects-fill';
+import { FOLK_AUTHOR, FOLK_PROVERBS } from './folk-proverbs';
 import { handlePush, runDailyPush } from './push';
 
 export interface Env {
@@ -217,6 +218,8 @@ interface QuoteInput {
   calligraphyManuscriptUrl?: string;
   audioRecitationUrl?: string;
   dialects?: Record<string, { text: string; plainText: string }>;
+  /** لهجة القول حين يكون بالدارجة (dz, ma, tn, eg, gulf, sham) */
+  dialect?: string;
 }
 
 const DIALECT_IDS = ['dz', 'ma', 'tn', 'eg', 'gulf', 'sham'];
@@ -237,7 +240,9 @@ const SOLE_AUTHOR = 'شعيب المطوع';
 function validateQuote(body: any): QuoteInput | string {
   const text = str(body?.text, 4000);
   const plainText = str(body?.plainText, 4000);
-  const author = SOLE_AUTHOR;
+  // الفصحى لشعيب وحده؛ القول باللهجة إما له أو مثل من التراث الشعبي
+  const author = body?.language === 'darja' && body?.author === FOLK_AUTHOR ? FOLK_AUTHOR : SOLE_AUTHOR;
+  const dialect = body?.language === 'darja' ? (DIALECT_IDS.includes(body?.dialect) ? body.dialect : 'dz') : undefined;
   if (!text || !plainText) return 'نص القول مطلوب.';
   if (body.language !== 'fusha' && body.language !== 'darja') return 'اللغة غير صحيحة.';
   if (!STATUSES.includes(body.status)) return 'حالة النشر غير صحيحة.';
@@ -260,8 +265,10 @@ function validateQuote(body: any): QuoteInput | string {
     const t = str(rawDialects[id], 4000);
     if (t) dialects[id] = { text: t, plainText: stripMarks(t) };
   }
+  void dialects; // الفصحى تُعرض وحدها: لا صيغ لهجات مرافقة بعد اليوم
   return {
-    dialects: Object.keys(dialects).length ? dialects : undefined,
+    dialects: undefined,
+    dialect,
     text,
     plainText,
     author,
@@ -630,6 +637,84 @@ async function mergeLegacyPairs(env: Env): Promise<void> {
   await env.DB.batch(stmts);
 }
 
+/**
+ * فصل الفصحى عن اللهجات (مرة واحدة):
+ * - الصيغ التي أضافها المساعد تحت الفصحى تُحذف.
+ * - ما كتبه شعيب بالدارجة يعود قولاً مستقلاً باسمه (وما أُضيف له من فصحى يُحذف).
+ * - تُضاف أمثال شعبية معروفة من كل لهجة باسم «تراث شعبي».
+ */
+async function splitStandalone(env: Env): Promise<void> {
+  const done = await env.DB.prepare("SELECT value FROM meta WHERE key = 'split_v2'").first();
+  if (done) return;
+  const { results } = await env.DB.prepare('SELECT * FROM quotes').all<QuoteRow>();
+  const now = new Date().toISOString();
+  const stmts: D1PreparedStatement[] = [];
+  const insert = (id: string, slug: string, status: string, publishedAt: string, createdAt: string, data: unknown) =>
+    env.DB.prepare(
+      'INSERT OR IGNORE INTO quotes (id, slug, status, published_at, created_at, updated_at, data) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(id, slug, status, publishedAt, createdAt, now, JSON.stringify(data));
+
+  for (const row of results) {
+    const data = JSON.parse(row.data);
+    const fill = (DIALECTS_FILL[row.id] || {}) as Record<string, string | undefined>;
+    const dialects: Record<string, { text: string; plainText: string }> = { ...(data.dialects || {}) };
+    if (data.darja && !dialects.dz) dialects.dz = data.darja;
+    if (!Object.keys(dialects).length && !data.darja) continue;
+    delete data.darja;
+
+    if (data.language === 'fusha' && fill.fusha && data.text === fill.fusha && dialects.dz) {
+      // قول كُتب بالدارجة أصلاً: نعيده كما كتبه الكاتب
+      data.text = dialects.dz.text;
+      data.plainText = dialects.dz.plainText || stripMarks(dialects.dz.text);
+      data.language = 'darja';
+      data.dialect = 'dz';
+    } else {
+      // صيغ كتبها الكاتب نفسه (غير مضافة): تصير أقوالاً مستقلة باسمه
+      for (const id of DIALECT_IDS) {
+        const v = dialects[id];
+        if (!v?.text || fill[id] === v.text) continue;
+        const own = {
+          ...data,
+          text: v.text,
+          plainText: v.plainText || stripMarks(v.text),
+          language: 'darja',
+          dialect: id,
+          author: SOLE_AUTHOR,
+          dialects: undefined,
+          revisions: [{ id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'فُصلت عن صيغتها الفصحى', textSnippet: snippet(v.text) }],
+        };
+        stmts.push(insert(`${row.id}-${id}`, `${row.slug}-${id}`, row.status, row.published_at, row.created_at, own));
+      }
+    }
+    delete data.dialects;
+    data.revisions = [
+      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'فصل الفصحى عن اللهجات', textSnippet: snippet(data.text) },
+      ...(Array.isArray(data.revisions) ? data.revisions : []),
+    ].slice(0, 200);
+    stmts.push(env.DB.prepare('UPDATE quotes SET data = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(data), now, row.id));
+  }
+
+  // الأمثال الشعبية: تواريخ نشر متتابعة قبل اليوم حتى لا تتصدّر كلها
+  const base = Date.now() - 1000 * 60 * 60 * 24 * 40;
+  FOLK_PROVERBS.forEach((p, i) => {
+    const at = new Date(base + i * 1000 * 60 * 60 * 31).toISOString();
+    stmts.push(
+      insert(p.id, p.slug, 'published', at, at, {
+        text: p.text,
+        plainText: stripMarks(p.text),
+        language: 'darja',
+        dialect: p.dialect,
+        author: FOLK_AUTHOR,
+        topics: p.topics,
+        revisions: [{ id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'مثل من التراث الشعبي', textSnippet: snippet(p.text) }],
+      })
+    );
+  });
+
+  stmts.push(env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('split_v2', ?)").bind(now));
+  await env.DB.batch(stmts);
+}
+
 function ensureSchema(env: Env): Promise<void> {
   if (!schemaReady) {
     schemaReady = (async () => {
@@ -658,6 +743,7 @@ function ensureSchema(env: Env): Promise<void> {
         );
       }
       await fillDialects(env);
+      await splitStandalone(env);
       // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع (الاسم محفوظ داخل بيانات القول)
       await env.DB.prepare("UPDATE quotes SET data = json_set(data, '$.author', ?1) WHERE json_extract(data, '$.author') NOT IN (?1, 'تراث شعبي')").bind(SOLE_AUTHOR).run();
     })().catch((e) => {

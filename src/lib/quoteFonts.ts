@@ -45,6 +45,6 @@ export function dialectFontOf(style: Pick<CustomStyle, 'fontId' | 'dialectFontId
 
 /** نسبة حجم اللهجة إلى حجم الفصحى، لتبقى ثابتة حين يُكبَّر النص (شاشة السكون، البطاقة) */
 export function dialectRatio(style: Pick<CustomStyle, 'fontSize' | 'dialectFontSize'>): number {
-  if (!style.dialectFontSize || !style.fontSize) return 0.72;
+  if (!style.dialectFontSize || !style.fontSize) return 1;
   return Math.min(1.2, Math.max(0.4, style.dialectFontSize / style.fontSize));
 }

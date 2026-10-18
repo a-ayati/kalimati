@@ -30,7 +30,8 @@ export interface Quote {
   behindTheWords?: string; // الشرح من الكاتب «وراء الكلمات»
   pairedQuoteId?: string; // (قديم) رابط بصيغة مقابلة — استُبدل بالحقل darja
   darja?: QuoteVariant; // (قديم) الصيغة الجزائرية — صارت dialects.dz
-  dialects?: Partial<Record<DialectId, QuoteVariant>>; // الصيغ باللهجات، تُعرض تحت الفصحى حسب اختيار القارئ
+  dialects?: Partial<Record<DialectId, QuoteVariant>>; // (قديم) صيغ باللهجات تحت الفصحى — أُلغيت: كل قول يُعرض وحده
+  dialect?: DialectId; // لهجة القول حين يكون بالدارجة
   calligraphyManuscriptUrl?: string; // مخطوطة فنية مستقبلية
   audioRecitationUrl?: string; // تسجيل صوتي مستقبلي
   stats: {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CustomStyle, DialectId, FontId, Quote, ThemeId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
-import { dialectInfo, pickDialect } from '../utils/dialects';
+import { dialectInfo, pickDialect, quoteDialectId } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
 import { QUOTE_FONTS, dialectFontOf, dialectRatio, fontFamilyCss, quoteFont } from '../lib/quoteFonts';
 import { TwoLayerText } from './InkText';
@@ -34,7 +34,7 @@ export function quoteColors(style: Pick<CustomStyle, 'themeId' | 'tashkeelColor'
 }
 
 interface Props {
-  quote: Pick<Quote, 'text' | 'language' | 'darja' | 'dialects'>;
+  quote: Pick<Quote, 'text' | 'language' | 'darja' | 'dialects' | 'dialect'>;
   /** اللهجة المعروضة تحت الفصحى (افتراضياً: لهجة القارئ) */
   dialect?: DialectId;
   style: CustomStyle;
@@ -69,7 +69,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
   const fushaText = quote.language === 'fusha' ? quote.text : null;
   const picked = pickDialect(quote, dialect ?? preferredDialect);
   const darjaText = quote.language === 'darja' ? quote.text : picked?.variant.text || null;
-  const darjaLang = quote.language === 'darja' ? 'ar-DZ' : picked ? dialectInfo(picked.id).lang : 'ar';
+  const darjaLang = quote.language === 'darja' ? dialectInfo(quoteDialectId(quote)).lang : picked ? dialectInfo(picked.id).lang : 'ar';
 
   const fushaStyle: React.CSSProperties = {
     fontFamily: family,
@@ -82,7 +82,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
   const darjaStyle: React.CSSProperties = {
     fontFamily: dLettersFont,
     fontWeight: dFont.dialect,
-    fontSize: `${fushaText ? Math.round(size * dialectRatio(style)) : size}px`,
+    fontSize: `${Math.round(size * dialectRatio(style))}px`, // حجم خط اللهجة الذي اختاره القارئ
     lineHeight: Math.max(1.9, lineHeight - 0.2),
     letterSpacing: 0,
   };

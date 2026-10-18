@@ -5,7 +5,7 @@ import { useKalimati } from '../context/KalimatiContext';
 import { stripTashkeel } from '../utils/tashkeel';
 import { WaxSeal } from './WaxSeal';
 import { QuoteText } from './QuoteText';
-import { availableDialects, dialectInfo, pickDialect } from '../utils/dialects';
+import { availableDialects, dialectInfo, isFolk, pickDialect, quoteByline, quoteLabel } from '../utils/dialects';
 import { 
   Heart, 
   Share2, 
@@ -88,7 +88,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
     try {
       const picked = pickDialect(currentQuote, preferredDialect);
       const darjaLine = picked ? `\n${stripTashkeel(picked.variant.text)}` : '';
-      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}\n\n— بقلم: ${currentQuote.author}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
+      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}\n\n— ${quoteByline(currentQuote)}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -153,7 +153,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
                   : 'bg-rose-500/15 text-rose-400 border-rose-500/40'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isDarja ? 'bg-amber-400' : 'bg-rose-400'}`} />
-                {isDarja ? 'دارجة جزائرية' : shownDialect ? `فصحى · ${dialectInfo(shownDialect).name}` : 'عربية فصحى'}
+                {shownDialect ? `فصحى · ${dialectInfo(shownDialect).name}` : quoteLabel(currentQuote)}
               </span>
 
               {/* Topics */}
@@ -221,7 +221,11 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             {/* ختم الشمع باسم الكاتب يختم المقولة */}
             <div className="flex items-center justify-center gap-3 mt-6 select-none">
               <span className="w-12 h-[1px] bg-amber-500/30" />
-              <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
+              {isFolk(currentQuote) ? (
+                <span className="text-xs">✦ ✧ ✦</span>
+              ) : (
+                <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
+              )}
               <span className="w-12 h-[1px] bg-amber-500/30" />
             </div>
           </div>
@@ -230,12 +234,18 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
           <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-6 text-xs text-stone-400">
             <button
               onClick={() => {
-                setActiveTab('author');
+                if (!isFolk(currentQuote)) setActiveTab('author');
               }}
               className="flex items-center gap-1.5 hover:text-amber-400 transition-colors font-medium font-cairo cursor-pointer"
             >
               <User className="w-3.5 h-3.5 text-amber-500" />
-              <span className="font-cairo">بقلم: <strong className="text-stone-200 font-semibold font-cairo">{currentQuote.author}</strong></span>
+              <span className="font-cairo">
+                {isFolk(currentQuote) ? (
+                  <strong className="text-stone-200 font-semibold font-cairo">{quoteByline(currentQuote)}</strong>
+                ) : (
+                  <>بقلم: <strong className="text-stone-200 font-semibold font-cairo">{currentQuote.author}</strong></>
+                )}
+              </span>
             </button>
 
             <div className="flex items-center gap-1.5 text-stone-400 text-[11px]">
