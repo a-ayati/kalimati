@@ -60,6 +60,8 @@ export function quoteDialectId(q: Pick<Quote, 'dialect'>): DialectId {
 
 /** وسم القول: فصحى، أو دارجة بلهجتها، أو مثل شعبي بلهجته */
 export function quoteLabel(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
+  if (q.language === 'en') return 'اقتباس بالإنجليزية';
+  if (q.language === 'fr') return 'اقتباس بالفرنسية';
   if (q.language === 'fusha') return 'عربية فصحى';
   const name = dialectInfo(quoteDialectId(q)).name.replace(/^ال/, ''); // جزائرية، مغربية…
   return isFolk(q) ? `مثل شعبي ${name.replace(/ة$/, '')}` : `دارجة ${name}`;
@@ -67,7 +69,7 @@ export function quoteLabel(q: Pick<Quote, 'language' | 'dialect' | 'author'>): s
 
 /** نسبة القول: «من التراث الشعبي …» للأمثال فقط؛ خواطر الكاتب بلا اسم (يكفيها الختم) */
 export function quoteByline(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
-  return isFolk(q) ? `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}` : '';
+  return isFolk(q) ? `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}` : q.author ? `— ${q.author}` : '';
 }
 
 /** سطر النسبة في النص المنسوخ أو المشارَك (فارغ لخواطر الكاتب) */

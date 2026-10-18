@@ -4,6 +4,7 @@ import { useKalimati } from '../context/KalimatiContext';
 import { QuoteText } from '../components/QuoteText';
 import { InkText } from '../components/InkText';
 import { isDialectId, quoteByline } from '../utils/dialects';
+import { useZenQuote } from '../hooks/useZenQuote';
 import { DialectId, Quote } from '../types';
 
 /**
@@ -53,27 +54,12 @@ export const ScreenSaverView: React.FC = () => {
   const [showExit, setShowExit] = useState(false);
   const exitTimer = useRef<number | undefined>(undefined);
 
-  // ترتيب عشوائي يتجدد مع كل تحميل
-  // نرتّب المعرّفات مرة واحدة فقط، حتى لا يتبدّل القول عند وصول نسخة أحدث من الخادم
-  const published = useMemo(() => quotes.filter((q) => q.status === 'published'), [quotes]);
-  const idsKey = published.map((q) => q.id).sort().join('|');
-  const orderIds = useMemo(() => shuffle(published.map((q) => q.id)), [idsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  const order: Quote[] = useMemo(
-    () => orderIds.map((id) => published.find((q) => q.id === id)).filter((q): q is Quote => Boolean(q)),
-    [orderIds, published]
-  );
-  const quote = order.length ? order[index % order.length] : null;
-
+  const published = useMemo(() => quotes.filter(q => q.status === 'published'), [quotes]);
+  const quote = useZenQuote(published, 'all', true, params.every);
   useEffect(() => {
     const t = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(t);
   }, []);
-
-  useEffect(() => {
-    if (order.length < 2) return;
-    const t = window.setInterval(() => setIndex((i) => i + 1), params.every * 1000);
-    return () => window.clearInterval(t);
-  }, [order.length, params.every]);
 
   // إبقاء الشاشة مضاءة (للهاتف أثناء الشحن)
   useEffect(() => {
@@ -170,7 +156,7 @@ export const ScreenSaverView: React.FC = () => {
         <AnimatePresence mode="wait">
           {shownQuote && (
             <motion.div
-              key={`${shownQuote.id}-${index % Math.max(1, order.length)}`}
+              key={shownQuote.id}
               ref={contentRef}
               className="w-full max-w-[1100px]"
               initial={{ opacity: 0, y: 14, filter: 'blur(6px)' }}

@@ -9,6 +9,7 @@
  * - /sitemap.xml         خريطة موقع تُبنى تلقائياً من الأقوال المنشورة.
  */
 
+import { handleStudio } from './studio';
 import { SEED } from './seed';
 import { DIALECTS_FILL } from './dialects-fill';
 import { FOLK_AUTHOR, FOLK_ORIGINAL_TEXT, FOLK_PROVERBS } from './folk-proverbs';
@@ -18,6 +19,7 @@ export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
   ADMIN_PASSWORD?: string;
+  AI?: Ai;
 }
 
 type Status = 'draft' | 'review' | 'scheduled' | 'published';
@@ -43,6 +45,7 @@ interface Revision {
   timestamp: string;
   note: string;
   textSnippet: string;
+  text?: string;
 }
 
 const SESSION_COOKIE = 'kalimati_admin';
@@ -125,6 +128,7 @@ function rowToQuote(row: QuoteRow, includeAll = false) {
     stats: { readsCount: row.reads, savesCount: row.saves, sharesCount: row.shares },
   };
   if (!includeAll) {
+    delete quote.aiAssisted;
     delete quote.revisions; // سجل التعديلات خاص بالكاتب
     quote.status = 'published'; // المجدول الذي حلّ موعده يظهر للقارئ كمنشور
   }
@@ -207,7 +211,11 @@ async function handleLogin(req: Request, env: Env): Promise<Response> {
 interface QuoteInput {
   text: string;
   plainText: string;
-  language: 'fusha' | 'darja';
+  language: 'fusha' | 'darja' | 'en' | 'fr';
+  sourceUrl?: string;
+  sourceNote?: string;
+  featuredDate?: string;
+  aiAssisted?: boolean;
   author: string;
   topics: string[];
   status: Status;
@@ -241,10 +249,18 @@ function validateQuote(body: any): QuoteInput | string {
   const text = str(body?.text, 4000);
   const plainText = str(body?.plainText, 4000);
   // الفصحى لشعيب وحده؛ القول باللهجة إما له أو مثل من التراث الشعبي
-  const author = body?.language === 'darja' && body?.author === FOLK_AUTHOR ? FOLK_AUTHOR : SOLE_AUTHOR;
+  const world = body?.language === 'en' || body?.language === 'fr';
+  const author = world ? str(body?.author, 200) : body?.language === 'darja' && body?.author === FOLK_AUTHOR ? FOLK_AUTHOR : SOLE_AUTHOR;
+  if (!author) return 'اسم قائل الاقتباس مطلوب.';
+  const sourceNote = str(body?.sourceNote, 1000);
+  const sourceUrl = str(body?.sourceUrl, 1000);
+  if (sourceUrl) { try { if (!['https:', 'http:'].includes(new URL(sourceUrl).protocol)) return 'رابط المصدر غير صالح.'; } catch { return 'رابط المصدر غير صالح.'; } }
+  if (world && !sourceNote && !sourceUrl) return 'أضف مصدر الاقتباس العالمي قبل الحفظ.';
+  const featuredDate = str(body?.featuredDate, 10);
+  if (featuredDate && (!/^\d{4}-\d{2}-\d{2}$/.test(featuredDate) || !Number.isFinite(Date.parse(featuredDate + 'T00:00:00Z')) || new Date(featuredDate + 'T00:00:00Z').toISOString().slice(0,10) !== featuredDate)) return 'تاريخ حكمة اليوم غير صالح.';
   const dialect = body?.language === 'darja' ? (DIALECT_IDS.includes(body?.dialect) ? body.dialect : 'dz') : undefined;
   if (!text || !plainText) return 'نص القول مطلوب.';
-  if (body.language !== 'fusha' && body.language !== 'darja') return 'اللغة غير صحيحة.';
+  if (!['fusha', 'darja', 'en', 'fr'].includes(body.language)) return 'اللغة غير صحيحة.';
   if (!STATUSES.includes(body.status)) return 'حالة النشر غير صحيحة.';
   const date = new Date(body.publishedAt);
   if (isNaN(date.getTime())) return 'تاريخ النشر غير صحيح.';
@@ -273,6 +289,7 @@ function validateQuote(body: any): QuoteInput | string {
     plainText,
     author,
     language: body.language,
+    sourceUrl, sourceNote, featuredDate, aiAssisted: body.aiAssisted === true,
     status: body.status,
     publishedAt: date.toISOString(),
     topics,
@@ -322,6 +339,11 @@ function splitInput(input: QuoteInput) {
 // مسارات الإدارة
 // ---------------------------------------------------------------------------
 
+async function featuredConflict(env: Env, input: QuoteInput, exceptId = ''): Promise<boolean> {
+  if (!input.featuredDate || !['scheduled', 'published'].includes(input.status)) return false;
+  return Boolean(await env.DB.prepare("SELECT id FROM quotes WHERE id != ? AND status IN ('scheduled','published') AND json_extract(data, '$.featuredDate') = ? LIMIT 1").bind(exceptId, input.featuredDate).first());
+}
+
 async function handleAdmin(req: Request, env: Env, path: string): Promise<Response> {
   const method = req.method;
 
@@ -341,6 +363,8 @@ async function handleAdmin(req: Request, env: Env, path: string): Promise<Respon
     if (origin && origin !== new URL(req.url).origin) return error('طلب مرفوض.', 403);
   }
 
+  if (path === '/api/admin/studio') return handleStudio(req, env);
+
   if (path === '/api/admin/quotes' && method === 'GET') {
     const { results } = await env.DB.prepare('SELECT * FROM quotes ORDER BY published_at DESC').all<QuoteRow>();
     return json({ quotes: results.map((r) => rowToQuote(r, true)) });
@@ -349,11 +373,12 @@ async function handleAdmin(req: Request, env: Env, path: string): Promise<Respon
   if (path === '/api/admin/quotes' && method === 'POST') {
     const parsed = validateQuote(await req.json().catch(() => null));
     if (typeof parsed === 'string') return error(parsed, 400);
+    if (await featuredConflict(env, parsed)) return error('توجد بطاقة أخرى مخصصة لهذا اليوم. عدّل تخصيصها أولًا.', 409);
     const { status, publishedAt, slug, data } = splitInput(parsed);
     const now = new Date().toISOString();
     const id = `quote-${crypto.randomUUID()}`;
     const revisions: Revision[] = [
-      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إنشاء النص الأولي', textSnippet: snippet(data.text) },
+      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إنشاء النص الأولي', textSnippet: snippet(data.text), text: data.text },
     ];
     const finalSlug = await uniqueSlug(env, slug || data.plainText);
     await env.DB.prepare(
@@ -415,12 +440,13 @@ async function handleAdmin(req: Request, env: Env, path: string): Promise<Respon
       const body = (await req.json().catch(() => null)) as any;
       const parsed = validateQuote(body);
       if (typeof parsed === 'string') return error(parsed, 400);
+      if (await featuredConflict(env, parsed, id)) return error('توجد بطاقة أخرى مخصصة لهذا اليوم. عدّل تخصيصها أولًا.', 409);
       const { status, publishedAt, slug, data } = splitInput(parsed);
       const old = JSON.parse(existing.data);
       const now = new Date().toISOString();
       const note = str(body?.revisionNote, 300) || 'تحديث وتنقيح النص';
       const revisions: Revision[] = [
-        { id: `rev-${crypto.randomUUID()}`, timestamp: now, note, textSnippet: snippet(data.text) },
+        { id: `rev-${crypto.randomUUID()}`, timestamp: now, note, textSnippet: snippet(data.text), text: data.text },
         ...(Array.isArray(old.revisions) ? old.revisions : []),
       ].slice(0, 200);
       // نحافظ على الرابط القديم ما لم يطلب الكاتب رابطاً جديداً — حتى لا تنكسر الروابط المشاركة
@@ -594,7 +620,7 @@ async function fillDialects(env: Env): Promise<void> {
     }
     data.dialects = dialects;
     data.revisions = [
-      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إضافة صيغ اللهجات', textSnippet: snippet(data.text) },
+      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إضافة صيغ اللهجات', textSnippet: snippet(data.text), text: data.text },
       ...(Array.isArray(data.revisions) ? data.revisions : []),
     ].slice(0, 200);
     stmts.push(env.DB.prepare('UPDATE quotes SET data = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(data), now, row.id));
@@ -688,7 +714,7 @@ async function splitStandalone(env: Env): Promise<void> {
     }
     delete data.dialects;
     data.revisions = [
-      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'فصل الفصحى عن اللهجات', textSnippet: snippet(data.text) },
+      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'فصل الفصحى عن اللهجات', textSnippet: snippet(data.text), text: data.text },
       ...(Array.isArray(data.revisions) ? data.revisions : []),
     ].slice(0, 200);
     stmts.push(env.DB.prepare('UPDATE quotes SET data = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(data), now, row.id));
@@ -769,7 +795,7 @@ function ensureSchema(env: Env): Promise<void> {
       await splitStandalone(env);
       await vocalizeFolk(env);
       // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع (الاسم محفوظ داخل بيانات القول)
-      await env.DB.prepare("UPDATE quotes SET data = json_set(data, '$.author', ?1) WHERE json_extract(data, '$.author') NOT IN (?1, 'تراث شعبي')").bind(SOLE_AUTHOR).run();
+      await env.DB.prepare("UPDATE quotes SET data = json_set(data, '$.author', ?1) WHERE json_extract(data, '$.author') NOT IN (?1, 'تراث شعبي') AND json_extract(data, '$.language') NOT IN ('en', 'fr')").bind(SOLE_AUTHOR).run();
     })().catch((e) => {
       schemaReady = null; // نعيد المحاولة في الطلب التالي
       throw e;

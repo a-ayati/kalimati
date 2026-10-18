@@ -4,6 +4,7 @@
  * - كل جهاز مشترك يختار ساعة الإشعار، ويُرسَل له مرة واحدة يومياً حسب توقيته المحلي.
  * - المهمة المجدولة تعمل كل 15 دقيقة.
  */
+import { dailyQuote } from '../shared/daily';
 import { buildPushHTTPRequest } from '@pushforge/builder';
 
 export interface PushEnv {
@@ -13,6 +14,10 @@ export interface PushEnv {
 interface QuoteLite {
   slug: string;
   plainText: string;
+  language: string;
+  author?: string;
+  featuredDate?: string;
+  id?: string;
 }
 
 const ALLOWED_PUSH_HOSTS = [
@@ -104,18 +109,16 @@ function localNow(tz: string, now = new Date()) {
 
 /** كلمة اليوم: نفس اختيار الصفحة الرئيسية (اليوم من السنة ÷ عدد الأقوال المنشورة) */
 function quoteOfDay(quotes: QuoteLite[], y: number, m: number, d: number): QuoteLite | null {
-  if (!quotes.length) return null;
-  const dayOfYear = Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 86400000);
-  return quotes[dayOfYear % quotes.length];
+  return dailyQuote(quotes, y, m, d) || null;
 }
 
 async function publishedQuotes(env: PushEnv): Promise<QuoteLite[]> {
   const { results } = await env.DB.prepare(
-    "SELECT slug, data FROM quotes WHERE status IN ('published','scheduled') AND published_at <= ? ORDER BY published_at DESC"
+    "SELECT id, slug, data FROM quotes WHERE status IN ('published','scheduled') AND published_at <= ? ORDER BY published_at DESC"
   )
     .bind(new Date().toISOString())
-    .all<{ slug: string; data: string }>();
-  return results.map((r) => ({ slug: r.slug, plainText: JSON.parse(r.data).plainText || '' }));
+    .all<{ id: string; slug: string; data: string }>();
+  return results.map((r) => ({ ...JSON.parse(r.data), id: r.id, slug: r.slug }));
 }
 
 async function send(
@@ -147,6 +150,17 @@ function dailyPayload(q: QuoteLite, origin: string) {
 }
 
 export async function handlePush(req: Request, env: PushEnv, path: string): Promise<Response | null> {
+  if (req.method === 'POST') {
+    const origin = req.headers.get('origin');
+    if (origin && origin !== new URL(req.url).origin) return json({ error: 'طلب مرفوض.' }, 403);
+  }
+  if (path === '/api/push/status' && req.method === 'POST') {
+    await ensurePushSchema(env);
+    const body = await req.json().catch(() => null) as { endpoint?: string } | null;
+    const sub = typeof body?.endpoint === 'string' ? await env.DB.prepare('SELECT time, tz FROM push_subs WHERE endpoint = ?').bind(body.endpoint).first<{ time: string; tz: string }>() : null;
+    return json({ subscribed: Boolean(sub), time: sub?.time, tz: sub?.tz });
+  }
+
   if (path === '/api/push/key' && req.method === 'GET') {
     await ensurePushSchema(env);
     return json({ publicKey: (await vapid(env)).publicKey });
@@ -163,13 +177,13 @@ export async function handlePush(req: Request, env: PushEnv, path: string): Prom
     }
     // إن كان الموعد قد مضى اليوم فلا نرسل حتى الغد (حتى لا يصل إشعار فور التفعيل)
     const local = localNow(tz);
-    const lastSent = local.time >= time ? local.date : null;
+    const lastSent = local.time > time ? local.date : null;
     await env.DB.prepare(
       `INSERT INTO push_subs (endpoint, p256dh, auth, time, tz, last_sent, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, time = excluded.time,
-         tz = excluded.tz, last_sent = excluded.last_sent`
+         tz = excluded.tz, last_sent = CASE WHEN push_subs.last_sent = ? THEN push_subs.last_sent ELSE excluded.last_sent END`
     )
-      .bind(sub.endpoint, sub.p256dh, sub.auth, time, tz, lastSent, new Date().toISOString())
+      .bind(sub.endpoint, sub.p256dh, sub.auth, time, tz, lastSent, new Date().toISOString(), local.date)
       .run();
     return json({ ok: true });
   }
@@ -197,7 +211,8 @@ export async function handlePush(req: Request, env: PushEnv, path: string): Prom
     const q = quoteOfDay(await publishedQuotes(env), local.year, local.month, local.day);
     if (!q) return json({ error: 'لا توجد أقوال منشورة.' }, 404);
     const status = await send(env, await vapid(env), sub, dailyPayload(q, new URL(req.url).origin));
-    return json({ ok: status >= 200 && status < 300, status });
+    if (status < 200 || status >= 300) return json({ error: `رفضت خدمة الإشعارات الإرسال (${status}). أعد تفعيل الاشتراك ثم جرّب مجددًا.`, status }, 502);
+    return json({ ok: true, status });
   }
 
   return null;

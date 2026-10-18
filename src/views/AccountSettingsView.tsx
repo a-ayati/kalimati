@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { pushSupport, sendTestPush, subscribeDaily, unsubscribeDaily } from '../lib/push';
+import React, { useEffect, useState } from 'react';
+import { dailyPushStatus, pushSupport, sendTestPush, subscribeDaily, unsubscribeDaily } from '../lib/push';
 import { useKalimati } from '../context/KalimatiContext';
 import { 
   Bell, 
@@ -36,6 +36,17 @@ export const AccountSettingsView: React.FC = () => {
 
   const support = pushSupport();
   const [busy, setBusy] = useState(false);
+  const [checkingPush, setCheckingPush] = useState(true);
+  const [pushState, setPushState] = useState('جارٍ التحقق من الاشتراك…');
+  useEffect(() => {
+    let active = true;
+    dailyPushStatus().then(status => {
+      if (!active) return;
+      setNotificationSettings(prev => ({ ...prev, enabled: status.subscribed, granted: support === 'ok' && Notification.permission === 'granted', scheduledTime: status.time || prev.scheduledTime }));
+      setPushState(status.subscribed ? 'الاشتراك مسجل على الخادم' : support === 'ok' ? 'غير مفعّلة على هذا الجهاز' : 'الإشعارات غير متاحة في وضع التصفح الحالي');
+    }).catch(() => { if(active) setPushState('تعذّر التحقق من الاشتراك؛ تحقق من الاتصال.'); }).finally(() => {if(active) setCheckingPush(false);});
+    return () => { active = false; };
+  }, [support, setNotificationSettings]);
   const flashNote = (text: string) => {
     setNotificationMsg(text);
     window.setTimeout(() => setNotificationMsg(null), 5000);
@@ -43,7 +54,7 @@ export const AccountSettingsView: React.FC = () => {
 
   // تفعيل / إيقاف الإشعار اليومي
   const handleToggleNotification = async () => {
-    if (busy) return;
+    if (busy || checkingPush) return;
     if (support === 'install-first') {
       flashNote('على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»، وافتح كلماتي من أيقونتها ثم فعّل الإشعار.');
       return;
@@ -56,10 +67,12 @@ export const AccountSettingsView: React.FC = () => {
     try {
       if (!notificationSettings.enabled) {
         await requestNotificationPermission();
-        flashNote(`تم التفعيل: ستصلك كلمة اليوم كل يوم الساعة ${notificationSettings.scheduledTime}.`);
+        setPushState('الاشتراك مسجل على الخادم');
+        flashNote(`تم تفعيل الاشتراك الساعة ${notificationSettings.scheduledTime}. جرّب زر الإشعار التجريبي للتأكد من الوصول.`);
       } else {
         await unsubscribeDaily();
         setNotificationSettings((prev) => ({ ...prev, enabled: false }));
+        setPushState('غير مفعّلة على هذا الجهاز');
         flashNote('تم إيقاف الإشعار اليومي.');
       }
     } catch (e) {
@@ -71,20 +84,27 @@ export const AccountSettingsView: React.FC = () => {
 
   // تغيير الموعد: يُحدَّث على الخادم مباشرة إن كان الإشعار مفعّلاً
   const handleTimeChange = async (time: string) => {
-    setNotificationSettings((prev) => ({ ...prev, scheduledTime: time }));
-    if (!notificationSettings.enabled || !/^\d{2}:\d{2}$/.test(time)) return;
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return;
+    if (busy || checkingPush) return;
+    if (!notificationSettings.enabled) {
+      setNotificationSettings(prev => ({...prev, scheduledTime: time}));
+      flashNote('حُفظ الوقت على الجهاز. اضغط تفعيل الإشعار للاشتراك.');
+      return;
+    }
+    setBusy(true);
     try {
       await subscribeDaily(time);
-    } catch {
-      // يُعاد المحاولة عند التعديل التالي
-    }
+      setNotificationSettings(prev => ({...prev, scheduledTime: time}));
+      flashNote(`حُفظ الموعد على الخادم: ${time}. إذا مضى موعد اليوم يبدأ الإرسال غدًا.`);
+    } catch(e) { flashNote(e instanceof Error ? e.message : 'لم يُحفظ الموعد.'); }
+    finally { setBusy(false); }
   };
 
   const handleTest = async () => {
     setBusy(true);
     try {
       await sendTestPush();
-      flashNote('أُرسل إشعار تجريبي — يصلك خلال ثوانٍ.');
+      flashNote('قبلت خدمة الإشعارات الطلب التجريبي. إذا لم يظهر، راجع إعدادات إشعارات المتصفح والنظام ووضع التركيز.');
     } catch (e) {
       flashNote(e instanceof Error ? e.message : 'تعذّر الإرسال.');
     } finally {
@@ -159,16 +179,18 @@ export const AccountSettingsView: React.FC = () => {
 
           <button
             onClick={handleToggleNotification}
+            disabled={busy || checkingPush}
             className={`px-4 py-2 rounded-xl font-bold text-xs border transition-all cursor-pointer ${
               notificationSettings.enabled
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                 : 'bg-white/5 text-stone-400 border-white/10 hover:border-white/20'
             }`}
           >
-            {notificationSettings.enabled ? 'مفعلة ✓' : 'تفعيل الإشعار'}
+            {busy || checkingPush ? 'جارٍ التحقق…' : notificationSettings.enabled ? 'مفعلة ✓ — إيقاف' : 'تفعيل الإشعار'}
           </button>
         </div>
 
+        <p role="status" className="text-xs text-amber-200">{pushState}</p>
         {notificationMsg && (
           <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
             {notificationMsg}
@@ -181,6 +203,7 @@ export const AccountSettingsView: React.FC = () => {
             <div className="flex items-center gap-2">
               <input
                 type="time"
+                disabled={busy || checkingPush}
                 value={notificationSettings.scheduledTime}
                 onChange={(e) => handleTimeChange(e.target.value)}
                 className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 text-xs focus:outline-none focus:border-amber-500"
@@ -190,7 +213,7 @@ export const AccountSettingsView: React.FC = () => {
           </div>
 
           <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-[11px] text-stone-400 leading-relaxed space-y-2">
-            <p>تصلك الكلمة حتى والمنصة مغلقة، في الموعد بتوقيتك المحلي.</p>
+            <p>بعد التفعيل تُرسل الكلمة بتوقيتك المحلي حتى والمنصة مغلقة على الأجهزة المدعومة. قد يتأخر وصولها بحسب الاتصال والنظام. الموعد الذي مضى يبدأ من الغد.</p>
             {support === 'install-first' && (
               <p className="text-amber-300">على الآيفون: أضف كلماتي إلى الشاشة الرئيسية أولاً، ثم فعّل الإشعار من داخلها.</p>
             )}
@@ -266,7 +289,8 @@ export const AccountSettingsView: React.FC = () => {
               onChange={(e) => setZenSettings((prev) => ({ ...prev, quoteSource: e.target.value as any }))}
               className="w-full p-1.5 rounded-lg bg-black/50 border border-white/10 text-stone-200 text-xs"
             >
-              <option value="today">حكمة اليوم المقترحة</option>
+              <option value="all">جميع الحكم — دون تكرار حتى تنتهي المجموعة</option>
+              <option value="today">حكمة اليوم فقط</option>
               <option value="saved">من محفوظاتي الخاصة ({savedItems.length})</option>
               <option value="short">كلمات قصيرة مكثفة</option>
             </select>

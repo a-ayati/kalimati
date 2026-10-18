@@ -51,7 +51,10 @@ export type QuoteInput = Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions' 
   dialectTexts?: Partial<Record<DialectId, string>>;
 };
 
+export interface StudioRequest { mode: 'generate' | 'refine' | 'plan'; word: string; text: string; count: 5 | 10; language: string; tone: string; length: string }
 export const adminApi = {
+  studioStatus: () => request<{ available: boolean }>('/api/admin/studio'),
+  studio: (data: StudioRequest) => request<{ suggestions: string[] }>('/api/admin/studio', { method: 'POST', body: JSON.stringify(data) }),
   me: () => request<{ authenticated: boolean; configured: boolean }>('/api/admin/me'),
   login: (password: string) => request<{ ok: true }>('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) }),
   logout: () => request<{ ok: true }>('/api/admin/logout', { method: 'POST' }),

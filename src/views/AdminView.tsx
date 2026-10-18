@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AuthorStudio } from '../components/AuthorStudio';
 import { useKalimati } from '../context/KalimatiContext';
 import { Quote, Language, QuoteStatus, DialectId } from '../types';
 import { ALL_TOPICS, INITIAL_AUTHOR } from '../data/seedQuotes';
@@ -98,6 +99,10 @@ export const AdminView: React.FC = () => {
   // Form fields
   const [formText, setFormText] = useState('');
   const [formDialects, setFormDialects] = useState<Partial<Record<DialectId, string>>>({});
+  const [formSource, setFormSource] = useState('');
+  const [formSourceNote, setFormSourceNote] = useState('');
+  const [formFeaturedDate, setFormFeaturedDate] = useState('');
+  const [formAssisted, setFormAssisted] = useState(false);
   const [formAuthor, setFormAuthor] = useState(author.name);
   const [formLanguage, setFormLanguage] = useState<Language>('fusha');
   // القول باللهجة: لهجته، وهل هو مثل شعبي أم من كتابة شعيب
@@ -184,6 +189,7 @@ export const AdminView: React.FC = () => {
     setIsCreatingNew(true);
     setEditingQuoteId(null);
     setFormText('');
+    setFormSource(''); setFormSourceNote(''); setFormFeaturedDate(''); setFormAssisted(false);
     setFormDialects({});
     setFormAuthor(author.name);
     setFormLanguage('fusha');
@@ -202,6 +208,7 @@ export const AdminView: React.FC = () => {
     setEditingQuoteId(quote.id);
     setIsCreatingNew(false);
     setFormText(quote.text);
+    setFormSource(quote.sourceUrl || ''); setFormSourceNote(quote.sourceNote || ''); setFormFeaturedDate(quote.featuredDate || ''); setFormAssisted(quote.aiAssisted || false);
     setFormDialects({});
     setFormAuthor(quote.author);
     setFormLanguage(quote.language);
@@ -227,7 +234,8 @@ export const AdminView: React.FC = () => {
       slug: existing?.slug || plainText,
       text: formText,
       plainText,
-      author: formLanguage === 'darja' && formFolk ? FOLK_AUTHOR : INITIAL_AUTHOR.name,
+      author: formLanguage === 'en' || formLanguage === 'fr' ? formAuthor : formLanguage === 'darja' && formFolk ? FOLK_AUTHOR : INITIAL_AUTHOR.name,
+      sourceUrl: formSource || undefined, sourceNote: formSourceNote || undefined, featuredDate: formFeaturedDate || undefined, aiAssisted: formAssisted,
       language: formLanguage,
       dialect: formLanguage === 'darja' ? formDialect : undefined,
       topics: formTopics,
@@ -427,6 +435,11 @@ export const AdminView: React.FC = () => {
         </div>
       )}
 
+      <AuthorStudio quotes={quotes} onChanged={afterChange} onReference={reference => {
+        handleStartCreate(); setFormText(reference.text); setFormLanguage(reference.language); setFormAuthor(reference.author); setFormSource(reference.sourceUrl); setFormSourceNote(reference.sourceNote); setFormStatus('draft');
+      }} onEdit={(text, language, assisted) => {
+        handleStartCreate(); setFormText(text); setFormLanguage(language); setFormAssisted(assisted); setFormStatus('draft');
+      }} />
       {/* Aggregate Stats Cards (Section 10 & 13: strictly anonymous aggregate metrics) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-right">
         <div className="p-4 rounded-2xl bg-[#141518] border border-white/10 space-y-1">
@@ -641,7 +654,7 @@ export const AdminView: React.FC = () => {
               {/* Quote Text with Tashkeel */}
               <div>
                 <label className="block text-stone-300 font-semibold mb-1">
-                  القول بالفصحى (مع التشكيل):
+                  نص القول بلغته الأصلية:
                 </label>
                 <textarea
                   value={formText}
@@ -658,15 +671,17 @@ export const AdminView: React.FC = () => {
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">النوع:</label>
                   <select
-                    value={formLanguage === 'fusha' ? 'fusha' : formFolk ? 'folk' : 'own'}
+                    value={formLanguage !== 'darja' ? formLanguage : formFolk ? 'folk' : 'own'}
                     onChange={(e) => {
                       const v = e.target.value;
-                      setFormLanguage(v === 'fusha' ? 'fusha' : 'darja');
+                      setFormLanguage(v === 'fusha' || v === 'en' || v === 'fr' ? v : 'darja');
                       setFormFolk(v === 'folk');
                     }}
                     className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
                   >
                     <option value="fusha">خاطرة بالفصحى — بالختم</option>
+                    <option value="en">اقتباس معروف بالإنجليزية</option>
+                    <option value="fr">اقتباس معروف بالفرنسية</option>
                     <option value="folk">مثل شعبي باللهجة — من التراث</option>
                     <option value="own">قول باللهجة — بالختم</option>
                   </select>
@@ -690,6 +705,11 @@ export const AdminView: React.FC = () => {
                 )}
               </div>
 
+              {(formLanguage === 'en' || formLanguage === 'fr') && <label className="block">اسم قائل الاقتباس<input required className="w-full p-3 rounded-xl bg-black/40 border border-white/10" value={formAuthor} onChange={e=>setFormAuthor(e.target.value)} /></label>}
+              <label className="block">رابط المصدر<input type="url" dir="ltr" className="w-full p-3 rounded-xl bg-black/40 border border-white/10" value={formSource} onChange={e=>setFormSource(e.target.value)} placeholder="https://…" /></label>
+              <label className="block">مرجع النص أو المثل (اسم الكتاب، الصفحة، المجموعة…)<input className="w-full p-3 rounded-xl bg-black/40 border border-white/10" value={formSourceNote} onChange={e=>setFormSourceNote(e.target.value)} /></label>
+              <label className="block">تخصيص كحكمة اليوم في تاريخ (اختياري)<input type="date" className="w-full p-3 rounded-xl bg-black/40 border border-white/10" value={formFeaturedDate} onChange={e=>setFormFeaturedDate(e.target.value)} /></label>
+              <label className="flex gap-2"><input type="checkbox" checked={formAssisted} onChange={e=>setFormAssisted(e.target.checked)} />مسودة بمساعدة الذكاء الاصطناعي — راجعتها قبل الاعتماد</label>
               {/* Publication Status & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -845,6 +865,7 @@ export const AdminView: React.FC = () => {
                       <span>{new Date(rev.timestamp).toLocaleString('ar-DZ')}</span>
                     </div>
                     <div className="font-semibold text-stone-200">{rev.note}</div>
+                    {rev.text && <button className="text-amber-300 underline py-1" onClick={() => { handleStartEdit(historyQuote); setFormText(rev.text!); setFormRevisionNote('استعادة نص إصدار سابق للمراجعة'); setHistoryQuote(null); }}>استعادة النص في المحرّر للمراجعة</button>}
                     {rev.textSnippet && (
                       <div className="text-stone-400 font-mono text-[11px] pt-1 border-t border-white/5">
                         {rev.textSnippet}

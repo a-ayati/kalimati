@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { dailyQuote } from '../../shared/daily';
 import { trackEvent } from '../lib/api';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
@@ -38,7 +39,7 @@ export const TodayView: React.FC = () => {
   const dayOfYear = Math.floor(
     (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24
   );
-  const universalTodayQuote = publishedQuotes[dayOfYear % publishedQuotes.length] || publishedQuotes[0];
+  const universalTodayQuote = dailyQuote(publishedQuotes, today.getFullYear(), today.getMonth() + 1, today.getDate());
 
   // Tailored quote based on user's preferred topics
   const tailoredQuotes = publishedQuotes.filter((q) =>
@@ -132,7 +133,7 @@ export const TodayView: React.FC = () => {
             <button
               onClick={() => {
                 dismissPostSaveNotice();
-                openShareModal(currentDisplayQuote);
+                if (currentDisplayQuote) openShareModal(currentDisplayQuote);
               }}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-stone-950 hover:bg-amber-400 transition-colors cursor-pointer"
             >
@@ -217,7 +218,7 @@ export const TodayView: React.FC = () => {
 
       {/* The Flagship Featured Quote Card */}
       <div className="pt-2">
-        <QuoteCard quote={currentDisplayQuote} variant="featured" showActions={true} />
+        {currentDisplayQuote ? <QuoteCard quote={currentDisplayQuote} variant="featured" showActions={true} /> : <p>لا توجد أقوال منشورة بعد.</p>}
       </div>
 
       {/* Discover More in Library Banner */}
