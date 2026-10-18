@@ -146,7 +146,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
   return (
     <div 
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-[#0a0a0c] text-stone-200 flex flex-col justify-between items-center p-6 sm:p-12 cursor-pointer select-none overflow-hidden"
+      className="keep-tone fixed inset-0 z-50 bg-[#0a0a0c] text-stone-200 flex flex-col justify-between items-center p-6 sm:p-12 cursor-pointer select-none overflow-hidden"
     >
       {/* Background radial ambient glow */}
       <div className="absolute inset-0 bg-radial from-amber-600/5 via-transparent to-black pointer-events-none" />

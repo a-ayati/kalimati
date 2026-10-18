@@ -44,9 +44,9 @@ const AppContent: React.FC = () => {
   // Determine root theme styling
   const rootThemeClass = 
     customStyle.themeId === 'vintage' 
-      ? 'bg-grain-vintage text-[#2b231d]' 
+      ? 'theme-light theme-vintage bg-grain-vintage text-[#2b231d]' 
       : customStyle.themeId === 'white' 
-      ? 'bg-grain-white text-[#111827]' 
+      ? 'theme-light theme-white bg-grain-white text-[#111827]' 
       : 'bg-grain-dark text-[#f5f5f7]';
 
   return (

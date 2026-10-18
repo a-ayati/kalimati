@@ -438,7 +438,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
             {/* Theme selection */}
             <div>
               <label className="block text-xs font-semibold text-amber-400 mb-2">مظهر البطاقة:</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="keep-tone grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setSelectedTheme('dark')}
                   className={`p-2 rounded-xl border text-center transition-all flex items-center justify-center gap-2 cursor-pointer ${

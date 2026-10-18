@@ -139,7 +139,7 @@ export const ScreenSaverView: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 bg-[#0b0b0d] text-[#f3ead8] overflow-hidden select-none"
+      className="keep-tone fixed inset-0 bg-[#0b0b0d] text-[#f3ead8] overflow-hidden select-none"
       style={{ cursor: showExit ? 'default' : 'none' }}
       onClick={onTap}
       dir="rtl"

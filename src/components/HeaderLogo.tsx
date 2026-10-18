@@ -153,7 +153,7 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
 
       <div className="flex flex-col justify-center">
         <div className="font-cairo text-base font-bold text-white flex items-center gap-2 leading-tight">
-          <span data-mark className="logo-ink text-[22px] leading-none">
+          <span data-mark className="logo-word logo-ink text-[22px] leading-none">
             <InkText text="كَلِمَاتِي" />
           </span>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-cairo hidden sm:inline-block">

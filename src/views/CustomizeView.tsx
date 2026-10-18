@@ -153,7 +153,7 @@ export const CustomizeView: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-xs ${theme.bgClass} ${theme.borderClass}`}>
+                    <div className={`keep-tone w-8 h-8 rounded-xl border flex items-center justify-center font-bold text-xs ${theme.bgClass} ${theme.borderClass}`}>
                       ك
                     </div>
                     <div>

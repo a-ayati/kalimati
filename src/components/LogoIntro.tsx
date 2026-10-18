@@ -82,7 +82,7 @@ export const LogoIntro: React.FC = () => {
       {visible && (
         <motion.div
           key="intro"
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0d0d0f]"
+          className="keep-tone fixed inset-0 z-[100] flex items-center justify-center bg-[#0d0d0f]"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.5, ease: 'easeOut' } }}
           onClick={() => setVisible(false)}

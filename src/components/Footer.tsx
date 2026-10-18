@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
   const { setActiveTab, author } = useKalimati();
 
   return (
-    <footer className="w-full bg-[#0b0c0e] border-t border-white/10 mt-16 pb-32 md:pb-8 text-right text-xs text-stone-400">
+    <footer className="keep-tone w-full bg-[#0b0c0e] border-t border-white/10 mt-16 pb-32 md:pb-8 text-right text-xs text-stone-400">
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         
         {/* Top footer row */}

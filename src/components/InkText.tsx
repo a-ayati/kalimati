@@ -32,8 +32,8 @@ export const TwoLayerText: React.FC<{
 export const InkText: React.FC<{ text: string }> = ({ text }) => (
   <TwoLayerText
     text={text}
-    letters="#f3ead8"
-    marks="#e5483b"
+    letters="var(--kq-ink, #f3ead8)"
+    marks="var(--kq-ink-mark, #e5483b)"
     lettersFont="'KQL-ruqaaink', 'Aref Ruqaa', serif"
     marksFont="'KQM-ruqaaink', serif"
     inline
