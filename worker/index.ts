@@ -11,7 +11,7 @@
 
 import { SEED } from './seed';
 import { DIALECTS_FILL } from './dialects-fill';
-import { FOLK_AUTHOR, FOLK_PROVERBS } from './folk-proverbs';
+import { FOLK_AUTHOR, FOLK_ORIGINAL_TEXT, FOLK_PROVERBS } from './folk-proverbs';
 import { handlePush, runDailyPush } from './push';
 
 export interface Env {
@@ -715,6 +715,29 @@ async function splitStandalone(env: Env): Promise<void> {
   await env.DB.batch(stmts);
 }
 
+/** تشكيل الأمثال الشعبية (مرة واحدة)؛ لا يمس مثلاً عدّله الكاتب من لوحة الإدارة */
+async function vocalizeFolk(env: Env): Promise<void> {
+  const done = await env.DB.prepare("SELECT value FROM meta WHERE key = 'folk_tashkeel_v1'").first();
+  if (done) return;
+  const now = new Date().toISOString();
+  const stmts: D1PreparedStatement[] = [];
+  for (const p of FOLK_PROVERBS) {
+    const row = await env.DB.prepare('SELECT data FROM quotes WHERE id = ?').bind(p.id).first<{ data: string }>();
+    if (!row) continue;
+    const data = JSON.parse(row.data);
+    if (data.text !== FOLK_ORIGINAL_TEXT[p.id]) continue;
+    data.text = p.text;
+    data.plainText = stripMarks(p.text);
+    data.revisions = [
+      { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إضافة التشكيل', textSnippet: snippet(p.text) },
+      ...(Array.isArray(data.revisions) ? data.revisions : []),
+    ].slice(0, 200);
+    stmts.push(env.DB.prepare('UPDATE quotes SET data = ?, updated_at = ? WHERE id = ?').bind(JSON.stringify(data), now, p.id));
+  }
+  stmts.push(env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('folk_tashkeel_v1', ?)").bind(now));
+  await env.DB.batch(stmts);
+}
+
 function ensureSchema(env: Env): Promise<void> {
   if (!schemaReady) {
     schemaReady = (async () => {
@@ -744,6 +767,7 @@ function ensureSchema(env: Env): Promise<void> {
       }
       await fillDialects(env);
       await splitStandalone(env);
+      await vocalizeFolk(env);
       // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع (الاسم محفوظ داخل بيانات القول)
       await env.DB.prepare("UPDATE quotes SET data = json_set(data, '$.author', ?1) WHERE json_extract(data, '$.author') NOT IN (?1, 'تراث شعبي')").bind(SOLE_AUTHOR).run();
     })().catch((e) => {
