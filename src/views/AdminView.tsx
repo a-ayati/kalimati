@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { Quote, Language, QuoteStatus, DialectId } from '../types';
-import { ALL_TOPICS } from '../data/seedQuotes';
+import { ALL_TOPICS, INITIAL_AUTHOR } from '../data/seedQuotes';
 import { stripTashkeel } from '../utils/tashkeel';
 import { adminApi, ApiError, QuoteInput } from '../lib/api';
 import { DIALECTS, quoteDialects } from '../utils/dialects';
@@ -223,7 +223,7 @@ export const AdminView: React.FC = () => {
       text: formText,
       dialectTexts: formLanguage === 'fusha' ? formDialects : undefined,
       plainText,
-      author: formAuthor,
+      author: INITIAL_AUTHOR.name,
       language: formLanguage,
       topics: formTopics,
       status: formStatus,
@@ -674,14 +674,10 @@ export const AdminView: React.FC = () => {
               {/* Author & Dialect */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-stone-300 font-semibold mb-1">اسم الكاتب:</label>
-                  <input
-                    type="text"
-                    value={formAuthor}
-                    onChange={(e) => setFormAuthor(e.target.value)}
-                    required
-                    className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
-                  />
+                  <label className="block text-stone-300 font-semibold mb-1">الكاتب:</label>
+                  <div className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200">
+                    {INITIAL_AUTHOR.name} <span className="text-[10px] text-stone-500">— المنصة خاصة بكتاباته وحده</span>
+                  </div>
                 </div>
 
                 <div>

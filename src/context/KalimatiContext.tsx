@@ -269,10 +269,8 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const stored = localStorage.getItem(STORAGE_KEYS.AUTHOR);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.name === 'عبد الواحد عياتي') {
-          parsed.name = 'شعيب المطوع';
-        }
-        return parsed;
+        // كاتب واحد للمنصة: الاسم ثابت دائماً
+        return { ...INITIAL_AUTHOR, ...parsed, name: INITIAL_AUTHOR.name };
       }
     } catch (e) {
       console.error(e);

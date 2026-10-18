@@ -3,6 +3,7 @@ import { Quote, EmotionTag } from '../types';
 import { quoteUrl } from '../lib/links';
 import { useKalimati } from '../context/KalimatiContext';
 import { stripTashkeel } from '../utils/tashkeel';
+import { WaxSeal } from './WaxSeal';
 import { QuoteText } from './QuoteText';
 import { availableDialects, dialectInfo, pickDialect } from '../utils/dialects';
 import { 
@@ -217,10 +218,10 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
               </div>
             )}
 
-            {/* Bottom flourish */}
-            <div className="flex items-center justify-center gap-2 mt-5 text-amber-500/40 select-none">
+            {/* ختم الشمع باسم الكاتب يختم المقولة */}
+            <div className="flex items-center justify-center gap-3 mt-6 select-none">
               <span className="w-12 h-[1px] bg-amber-500/30" />
-              <span className="text-xs">✦ ✧ ✦</span>
+              <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
               <span className="w-12 h-[1px] bg-amber-500/30" />
             </div>
           </div>

@@ -231,12 +231,14 @@ function str(v: unknown, max: number): string | undefined {
   return t ? t.slice(0, max) : undefined;
 }
 
+/** المنصة لكاتب واحد: كل الكتابات باسم شعيب المطوع، ولا يُقبل اسم آخر */
+const SOLE_AUTHOR = 'شعيب المطوع';
+
 function validateQuote(body: any): QuoteInput | string {
   const text = str(body?.text, 4000);
   const plainText = str(body?.plainText, 4000);
-  const author = str(body?.author, 120);
+  const author = SOLE_AUTHOR;
   if (!text || !plainText) return 'نص القول مطلوب.';
-  if (!author) return 'اسم الكاتب مطلوب.';
   if (body.language !== 'fusha' && body.language !== 'darja') return 'اللغة غير صحيحة.';
   if (!STATUSES.includes(body.status)) return 'حالة النشر غير صحيحة.';
   const date = new Date(body.publishedAt);
@@ -656,6 +658,8 @@ function ensureSchema(env: Env): Promise<void> {
         );
       }
       await fillDialects(env);
+      // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع
+      await env.DB.prepare('UPDATE quotes SET author = ?1 WHERE author <> ?1').bind(SOLE_AUTHOR).run();
     })().catch((e) => {
       schemaReady = null; // نعيد المحاولة في الطلب التالي
       throw e;

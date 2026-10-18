@@ -5,6 +5,7 @@ import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
 import { pickDialect } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
+import { drawWaxSeal, loadSealFont } from '../lib/waxSeal';
 import { dialectFontOf, dialectRatio, ensureCardFonts, quoteFont } from '../lib/quoteFonts';
 import { 
   X, 
@@ -247,19 +248,22 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // نفس ألوان المقولة في الصفحة: تتبع المظهر وحده، أياً كان الخط
     const palette = quoteColors({ themeId: selectedTheme, tashkeelColor: customStyle.tashkeelColor });
-    const drawTwoTone = (line: string, letters: string, marks: string, atY: number, marksFam = marksFamily) => {
-      const lettersFont = ctx.font;
+    // الحروف بخط L ثم التشكيل بخط M فوقها — نمرّر الخطين صراحةً (المتصفح يعيد كتابة ctx.font بصيغته)
+    const drawTwoTone = (line: string, letters: string, marks: string, atY: number, lettersFont: string, marksFont: string) => {
+      ctx.font = lettersFont;
       ctx.fillStyle = letters;
       ctx.fillText(line, config.width / 2, atY);
-      ctx.font = lettersFont.replace(/"KQL-[^"]+", [a-z-]+/, marksFam);
+      ctx.font = marksFont;
       ctx.fillStyle = marks;
       ctx.fillText(line, config.width / 2, atY);
       ctx.font = lettersFont;
     };
+    const fushaMarksFont = `${qf.fusha} ${fushaSize}px ${marksFamily}`;
+    const darjaMarksFont = `${qd.dialect} ${darjaSize}px ${darjaMarksFamily}`;
 
     fushaLines.forEach((line) => {
       ctx.font = fushaFont;
-      drawTwoTone(line, palette.fushaLetters, palette.fushaMarks, y);
+      drawTwoTone(line, palette.fushaLetters, palette.fushaMarks, y, fushaFont, fushaMarksFont);
       y += fushaLH;
     });
 
@@ -278,7 +282,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     darjaLines.forEach((line) => {
       ctx.font = darjaFont;
-      drawTwoTone(line, palette.dialectLetters, palette.dialectMarks, y, darjaMarksFamily);
+      drawTwoTone(line, palette.dialectLetters, palette.dialectMarks, y, darjaFont, darjaMarksFont);
       y += darjaLH;
     });
     const textBottom = y;
@@ -307,6 +311,9 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.fillStyle = subtleColor;
     ctx.font = '18px "Cairo", sans-serif';
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
+
+    // ختم الشمع باسم الكاتب في الزاوية السفلية كرسالة مختومة
+    drawWaxSeal(ctx, margin + 150, footerY - 14, 62, { light: selectedTheme !== 'dark' });
   }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize]);
 
   useEffect(() => {
@@ -314,7 +321,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     // الرسم على اللوحة لا ينتظر الخطوط؛ نحمّلها ثم نعيد الرسم حتى لا تظهر البطاقة بخط بديل
     let cancelled = false;
     const sample = 'مَا لِي أُبَالِي';
-    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
+    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), loadSealFont(), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
       if (!cancelled) renderCanvas();
     });
     return () => {

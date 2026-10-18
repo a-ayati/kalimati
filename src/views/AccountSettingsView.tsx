@@ -137,7 +137,7 @@ export const AccountSettingsView: React.FC = () => {
       {/* Header */}
       <div className="border-b border-white/10 pb-6 space-y-3">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-amiri text-white pt-2 pb-1 leading-normal tracking-wide">
-          حِسَابِي وَإِعْدَادَاتِي
+          إِعْدَادَاتِي
         </h1>
         <p className="text-xs sm:text-sm text-stone-400">
           إدارة تجربة القراءة، الإشعارات اليومية، وضع لحظة سكون، والتحكم في بياناتك المحلية.

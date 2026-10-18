@@ -8,7 +8,7 @@ import {
   BookOpen, 
   Heart, 
   Palette, 
-  User, 
+  Settings, 
   Moon, 
   Lock,
   Feather,
@@ -24,7 +24,7 @@ export const Navbar: React.FC = () => {
     { id: 'library', label: 'مكتبة الكلمات', short: 'المكتبة', icon: BookOpen },
     { id: 'saved', label: 'وصلتني في وقتها', short: 'وصلتني', icon: Heart },
     { id: 'customize', label: 'على ذوقك', short: 'ذوقي', icon: Palette },
-    { id: 'account', label: 'حسابي', short: 'حسابي', icon: User },
+    { id: 'account', label: 'إعداداتي', short: 'إعداداتي', icon: Settings },
   ];
 
   return (
