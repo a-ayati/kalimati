@@ -447,7 +447,7 @@ export const AdminView: React.FC = () => {
           <span key={t} className="text-stone-500">#{t}</span>
         ))}
       </div>
-      <p className="text-sm text-stone-200 leading-relaxed line-clamp-2">{stripTashkeel(q.text)}</p>
+      <p dir="auto" className="text-sm text-stone-200 leading-relaxed line-clamp-2 text-start">{stripTashkeel(q.text)}</p>
       <div className="flex items-center justify-between gap-2">
         <div className="text-[11px] text-stone-500 min-w-0 truncate">{meta ?? fmtDate(q.publishedAt)}</div>
         <div className="flex items-center gap-0.5 shrink-0">
@@ -650,7 +650,7 @@ export const AdminView: React.FC = () => {
                   list.map((q, i) => (
                     <div key={q.id} className="flex items-center gap-3 text-sm">
                       <span className="w-6 h-6 rounded-full bg-white/5 text-[11px] text-stone-400 flex items-center justify-center shrink-0">{i + 1}</span>
-                      <span className="flex-1 min-w-0 truncate text-stone-200">{snippetOf(q, 70)}</span>
+                      <span dir="auto" className="flex-1 min-w-0 truncate text-stone-200 text-start">{snippetOf(q, 70)}</span>
                       <span className="font-bold tabular-nums text-white">
                         <CountUp value={q.stats?.[key] || 0} />
                       </span>
@@ -680,7 +680,7 @@ export const AdminView: React.FC = () => {
                     <span className="font-semibold clinic-accent">{r.note}</span>
                     <span className="text-stone-500 shrink-0">{fmtDate(r.timestamp)}</span>
                   </div>
-                  <div className="text-xs text-stone-300 truncate">{snippetOf(q, 80)}</div>
+                  <div dir="auto" className="text-xs text-stone-300 truncate text-start">{snippetOf(q, 80)}</div>
                 </button>
               ))
             ) : (

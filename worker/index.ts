@@ -13,6 +13,7 @@ import { handleStudio } from './studio';
 import { SEED } from './seed';
 import { DIALECTS_FILL } from './dialects-fill';
 import { FOLK_AUTHOR, FOLK_ORIGINAL_TEXT, FOLK_PROVERBS } from './folk-proverbs';
+import { MONTH_PLAN } from './month-plan';
 import { handlePush, runDailyPush } from './push';
 
 export interface Env {
@@ -764,6 +765,38 @@ async function vocalizeFolk(env: Env): Promise<void> {
   await env.DB.batch(stmts);
 }
 
+/** خطة الشهر (مرة واحدة): 20 منشوراً مجدولاً لأيام الاقتباسات العالمية والأمثال؛ يُتخطّى أي يوم مخصّص مسبقاً */
+async function seedMonthPlan(env: Env): Promise<void> {
+  const done = await env.DB.prepare("SELECT value FROM meta WHERE key = 'month_plan_v1'").first();
+  if (done) return;
+  const now = new Date().toISOString();
+  const stmts: D1PreparedStatement[] = [];
+  for (const p of MONTH_PLAN) {
+    const taken = await env.DB.prepare("SELECT id FROM quotes WHERE json_extract(data, '$.featuredDate') = ?").bind(p.date).first();
+    if (taken) continue;
+    const at = `${p.date}T10:00:00.000Z`; // 13:00 بتوقيت الدوحة
+    const data = {
+      text: p.text,
+      plainText: stripMarks(p.text),
+      language: p.language,
+      dialect: p.dialect,
+      author: p.author,
+      sourceNote: p.sourceNote,
+      sourceUrl: p.sourceUrl,
+      featuredDate: p.date,
+      topics: p.topics,
+      revisions: [{ id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'خطة الشهر: جدولة تلقائية', textSnippet: snippet(p.text) }],
+    };
+    stmts.push(
+      env.DB.prepare(
+        'INSERT OR IGNORE INTO quotes (id, slug, status, published_at, created_at, updated_at, data) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(p.id, p.slug, 'scheduled', at, now, now, JSON.stringify(data))
+    );
+  }
+  stmts.push(env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('month_plan_v1', ?)").bind(now));
+  await env.DB.batch(stmts);
+}
+
 function ensureSchema(env: Env): Promise<void> {
   if (!schemaReady) {
     schemaReady = (async () => {
@@ -794,6 +827,7 @@ function ensureSchema(env: Env): Promise<void> {
       await fillDialects(env);
       await splitStandalone(env);
       await vocalizeFolk(env);
+      await seedMonthPlan(env);
       // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع (الاسم محفوظ داخل بيانات القول)
       await env.DB.prepare("UPDATE quotes SET data = json_set(data, '$.author', ?1) WHERE json_extract(data, '$.author') NOT IN (?1, 'تراث شعبي') AND json_extract(data, '$.language') NOT IN ('en', 'fr')").bind(SOLE_AUTHOR).run();
     })().catch((e) => {
