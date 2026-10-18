@@ -74,6 +74,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [selectedFormat, setSelectedFormat] = useState<CardFormat>('story');
+  // حجم الكتابة في التصميم (نسبة من الحجم التلقائي)
+  const [textScale, setTextScale] = useState(1);
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>(customStyle.themeId);
   const [selectedFont, setSelectedFont] = useState<FontId>(customStyle.fontId);
   const [selectedDialectFont, setSelectedDialectFont] = useState<FontId>(dialectFontOf(customStyle));
@@ -155,21 +157,27 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     });
 
     // Top Header: Brand Name «كلماتي»
-    ctx.fillStyle = borderColor;
-    ctx.font = 'bold 36px "Cairo", sans-serif';
+    // «كلماتي» بمخطوطة الشعار: حروف حبر الرقعة وتشكيل أحمر فوقها
     ctx.textAlign = 'center';
-    ctx.fillText('كَلِمَاتِي', config.width / 2, margin + 95);
+    ctx.direction = 'rtl';
+    const logoLight = selectedTheme !== 'dark';
+    ctx.font = `700 72px "KQL-ruqaaink", serif`;
+    ctx.fillStyle = logoLight ? '#1a1410' : '#f3ead8';
+    ctx.fillText('كَلِمَاتِي', config.width / 2, margin + 102);
+    ctx.font = `700 72px "KQM-ruqaaink", serif`;
+    ctx.fillStyle = logoLight ? '#c62828' : '#e5483b';
+    ctx.fillText('كَلِمَاتِي', config.width / 2, margin + 102);
 
     ctx.font = '500 20px "Cairo", sans-serif';
     ctx.fillStyle = subtleColor;
-    ctx.fillText('«كَلِمَةٌ تَصِلُ فِي وَقْتِهَا»', config.width / 2, margin + 130);
+    ctx.fillText('«كَلِمَةٌ تَصِلُ فِي وَقْتِهَا»', config.width / 2, margin + 140);
 
     // Divider
     ctx.strokeStyle = borderColor;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(config.width / 2 - 80, margin + 165);
-    ctx.lineTo(config.width / 2 + 80, margin + 165);
+    ctx.moveTo(config.width / 2 - 80, margin + 172);
+    ctx.lineTo(config.width / 2 + 80, margin + 172);
     ctx.stroke();
 
     // Gift mode header if enabled
@@ -227,19 +235,27 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // حجم تلقائي حسب طول النص
     const baseLen = (fushaText || darjaText || '').length;
-    let fushaSize = config.height > 1500 ? 64 : 56;
-    if (baseLen > 80) fushaSize -= 8;
-    if (baseLen > 140) fushaSize -= 10;
-    const darjaSize = fushaText ? Math.round(fushaSize * dialectRatio(customStyle)) : fushaSize;
-
-    const fushaFont = world ? `italic ${fushaSize}px Georgia, serif` : `${qf.fusha} ${fushaSize}px ${fushaFamily}`;
-    const darjaFont = `${qd.dialect} ${darjaSize}px ${darjaFamily}`;
-    const fushaLines = fushaText ? wrap(fushaText, fushaFont) : [];
-    const darjaLines = darjaText ? wrap(darjaText, darjaFont) : [];
-    const fushaLH = fushaSize * 1.9;
-    const darjaLH = darjaSize * 1.9;
-    const gap = fushaLines.length && darjaLines.length ? 90 : 0;
-    const totalTextHeight = fushaLines.length * fushaLH + gap + darjaLines.length * darjaLH;
+    let autoSize = config.height > 1500 ? 64 : 56;
+    if (baseLen > 80) autoSize -= 8;
+    if (baseLen > 140) autoSize -= 10;
+    // حجم الكتابة الذي اختاره المستخدم، مع تصغير تلقائي إن لم يتّسع المكان
+    const available = config.height - 2 * margin - 470;
+    let fushaSize = 0, darjaSize = 0, fushaFont = '', darjaFont = '';
+    let fushaLines: string[] = [], darjaLines: string[] = [];
+    let fushaLH = 0, darjaLH = 0, gap = 0, totalTextHeight = 0;
+    for (let size = Math.round(autoSize * textScale); ; size -= 2) {
+      fushaSize = size;
+      darjaSize = fushaText ? Math.round(size * dialectRatio(customStyle)) : size;
+      fushaFont = world ? `italic ${fushaSize}px Georgia, serif` : `${qf.fusha} ${fushaSize}px ${fushaFamily}`;
+      darjaFont = `${qd.dialect} ${darjaSize}px ${darjaFamily}`;
+      fushaLines = fushaText ? wrap(fushaText, fushaFont) : [];
+      darjaLines = darjaText ? wrap(darjaText, darjaFont) : [];
+      fushaLH = fushaSize * 1.9;
+      darjaLH = darjaSize * 1.9;
+      gap = fushaLines.length && darjaLines.length ? 90 : 0;
+      totalTextHeight = fushaLines.length * fushaLH + gap + darjaLines.length * darjaLH;
+      if (totalTextHeight <= available || size <= 24) break;
+    }
     let startY = (config.height - totalTextHeight) / 2 + fushaSize * 0.6;
     if (isGiftMode) startY = Math.max(startY, contentTop + 60);
 
@@ -320,14 +336,14 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // ختم الشمع باسم الكاتب في الزاوية السفلية كرسالة مختومة
     if (isWriterQuote(quote)) drawWaxSeal(ctx, config.width / 2, footerY - 52, 64, { light: selectedTheme !== 'dark' });
-  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize]);
+  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize, textScale]);
 
   useEffect(() => {
     renderCanvas();
     // الرسم على اللوحة لا ينتظر الخطوط؛ نحمّلها ثم نعيد الرسم حتى لا تظهر البطاقة بخط بديل
     let cancelled = false;
     const sample = 'مَا لِي أُبَالِي';
-    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), loadSealImage(), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
+    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), ensureCardFonts('ruqaa-ink'), loadSealImage(), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
       if (!cancelled) renderCanvas();
     });
     return () => {
@@ -519,6 +535,29 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
                 </div>
               </div>
             ))}
+
+            {/* حجم الكتابة في التصميم */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="card-text-scale" className="text-xs font-semibold text-amber-400">حجم الكتابة:</label>
+                <span className="text-xs font-bold text-stone-200 tabular-nums">{Math.round(textScale * 100)}%</span>
+              </div>
+              <input
+                id="card-text-scale"
+                type="range"
+                min={0.6}
+                max={1.6}
+                step={0.05}
+                value={textScale}
+                onChange={(e) => setTextScale(Number(e.target.value))}
+                className="w-full accent-amber-500 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-stone-500 mt-1">
+                <span>أصغر</span>
+                <button type="button" onClick={() => setTextScale(1)} className="underline cursor-pointer">الحجم التلقائي</button>
+                <span>أكبر</span>
+              </div>
+            </div>
 
             {/* Stamp toggle */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">

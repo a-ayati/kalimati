@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthorStudio } from '../components/AuthorStudio';
+import { QuoteCard } from '../components/QuoteCard';
 import { useKalimati } from '../context/KalimatiContext';
 import { Quote, Language, QuoteStatus, DialectId } from '../types';
 import { ALL_TOPICS, INITIAL_AUTHOR } from '../data/seedQuotes';
@@ -122,6 +123,9 @@ export const AdminView: React.FC = () => {
 
   // Selected quote for viewing revision history
   const [historyQuote, setHistoryQuote] = useState<Quote | null>(null);
+  // معاينة المنشور كما سيراه القرّاء
+  const [previewQuote, setPreviewQuote] = useState<Quote | null>(null);
+  const [showFormPreview, setShowFormPreview] = useState(true);
 
   // Search in admin table
   const [adminSearch, setAdminSearch] = useState('');
@@ -227,6 +231,29 @@ export const AdminView: React.FC = () => {
     setFormBehindTheWords(quote.behindTheWords || '');
     setFormPairedQuoteId(quote.pairedQuoteId || '');
     setFormRevisionNote('');
+  };
+
+  /** المنشور كما سيظهر، من حقول المحرّر مباشرة */
+  const draftPreview = (): Quote => {
+    const existing = editingQuoteId ? quotes.find((q) => q.id === editingQuoteId) : undefined;
+    const world = formLanguage === 'en' || formLanguage === 'fr';
+    return {
+      id: existing?.id || 'draft-preview',
+      slug: existing?.slug || 'draft-preview',
+      text: formText || '…',
+      plainText: stripTashkeel(formText),
+      language: formLanguage,
+      dialect: formLanguage === 'darja' ? formDialect : undefined,
+      author: world ? formAuthor : formLanguage === 'darja' && formFolk ? FOLK_AUTHOR : INITIAL_AUTHOR.name,
+      sourceUrl: formSource || undefined,
+      sourceNote: formSourceNote || undefined,
+      topics: formTopics,
+      status: formStatus,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+      publishedAt: new Date(formPublishedAt || Date.now()).toISOString(),
+      revisions: [],
+      stats: { readsCount: 0, savesCount: 0, sharesCount: 0 },
+    };
   };
 
   // حفظ القول على الخادم
@@ -424,6 +451,14 @@ export const AdminView: React.FC = () => {
       <div className="flex items-center justify-between gap-2">
         <div className="text-[11px] text-stone-500 min-w-0 truncate">{meta ?? fmtDate(q.publishedAt)}</div>
         <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            onClick={() => setPreviewQuote(q)}
+            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-200 bg-white/5 border border-white/10 hover:border-[#e5483b]/40 flex items-center gap-1"
+            title="معاينة المنشور"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>معاينة</span>
+          </button>
           <button onClick={() => openShareModal(q)} className="p-2 rounded-lg text-stone-400 hover:text-amber-400 hover:bg-white/5" title="معاينة بطاقة المشاركة">
             <Share2 className="w-4 h-4" />
           </button>
@@ -770,6 +805,39 @@ export const AdminView: React.FC = () => {
               <label className="block">مرجع النص أو المثل (اسم الكتاب، الصفحة، المجموعة…)<input className="w-full p-3 rounded-xl bg-black/40 border border-white/10" value={formSourceNote} onChange={e=>setFormSourceNote(e.target.value)} /></label>
               <label className="block">تخصيص كحكمة اليوم في تاريخ (اختياري)<input type="date" className="w-full p-3 rounded-xl bg-black/40 border border-white/10" value={formFeaturedDate} onChange={e=>setFormFeaturedDate(e.target.value)} /></label>
               <label className="flex gap-2"><input type="checkbox" checked={formAssisted} onChange={e=>setFormAssisted(e.target.checked)} />مسودة بمساعدة الذكاء الاصطناعي — راجعتها قبل الاعتماد</label>
+              {/* معاينة المنشور: تتحدّث مع كل حرف */}
+              <div className="rounded-2xl border border-white/10 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowFormPreview((v) => !v)}
+                  className="w-full px-4 py-2.5 flex items-center justify-between text-xs font-bold bg-white/5 cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5 clinic-accent">
+                    <Eye className="w-4 h-4" />
+                    معاينة المنشور
+                  </span>
+                  <span className="text-stone-400 font-normal">{showFormPreview ? 'إخفاء' : 'إظهار'}</span>
+                </button>
+                {showFormPreview && (
+                  <div className="p-2 sm:p-3">
+                    {formText.trim() ? (
+                      <QuoteCard quote={draftPreview()} showActions={false} />
+                    ) : (
+                      <p className="text-center text-stone-500 py-6">اكتب النص لترى المنشور كما سيظهر للقرّاء.</p>
+                    )}
+                    <button
+                      type="button"
+                      disabled={!formText.trim()}
+                      onClick={() => openShareModal(draftPreview())}
+                      className="mt-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-stone-200 font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      معاينة بطاقة المشاركة (ستوري ومنشور)
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Publication Status & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -891,6 +959,50 @@ export const AdminView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* معاينة المنشور كما يراه القرّاء */}
+      {previewQuote && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs overflow-y-auto p-4" onClick={() => setPreviewQuote(null)}>
+          <div className="max-w-2xl mx-auto my-6 space-y-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between text-white">
+              <div>
+                <div className="text-lg font-bold">معاينة المنشور</div>
+                <div className="text-xs text-stone-400">
+                  {statusLabel(previewQuote)} · {previewQuote.status === 'scheduled' ? `يُنشر ${fmtDate(previewQuote.publishedAt)}` : fmtDate(previewQuote.publishedAt)}
+                </div>
+              </div>
+              <button onClick={() => setPreviewQuote(null)} className="px-3 py-1.5 rounded-xl bg-white/10 text-sm cursor-pointer">
+                إغلاق ✕
+              </button>
+            </div>
+            <QuoteCard quote={previewQuote} showActions={false} />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  const q = previewQuote;
+                  setPreviewQuote(null);
+                  openShareModal(q);
+                }}
+                className="py-3 rounded-2xl bg-white/10 text-white text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Share2 className="w-4 h-4" />
+                بطاقة المشاركة
+              </button>
+              <button
+                onClick={() => {
+                  const q = previewQuote;
+                  setPreviewQuote(null);
+                  handleStartEdit(q);
+                }}
+                className="py-3 rounded-2xl clinic-gradient text-white text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Edit3 className="w-4 h-4" />
+                تعديل
+              </button>
+            </div>
           </div>
         </div>
       )}
