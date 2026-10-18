@@ -3,7 +3,7 @@ import { Quote, ThemeId, FontId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
 import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
-import { bylineSuffix, isFolk, pickDialect, quoteByline } from '../utils/dialects';
+import { bylineSuffix, isFolk, isWriterQuote, pickDialect, quoteByline } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
 import { drawWaxSeal, loadSealImage } from '../lib/waxSeal';
 import { dialectFontOf, dialectRatio, ensureCardFonts, quoteFont } from '../lib/quoteFonts';
@@ -319,7 +319,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
 
     // ختم الشمع باسم الكاتب في الزاوية السفلية كرسالة مختومة
-    drawWaxSeal(ctx, config.width / 2, footerY - 52, 64, { light: selectedTheme !== 'dark' });
+    if (isWriterQuote(quote)) drawWaxSeal(ctx, config.width / 2, footerY - 52, 64, { light: selectedTheme !== 'dark' });
   }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize]);
 
   useEffect(() => {

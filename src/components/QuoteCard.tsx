@@ -5,7 +5,7 @@ import { useKalimati } from '../context/KalimatiContext';
 import { stripTashkeel } from '../utils/tashkeel';
 import { WaxSeal } from './WaxSeal';
 import { QuoteText } from './QuoteText';
-import { availableDialects, bylineSuffix, dialectInfo, isFolk, pickDialect, quoteByline, quoteLabel } from '../utils/dialects';
+import { availableDialects, bylineSuffix, dialectInfo, isFolk, isWriterQuote, pickDialect, quoteByline, quoteLabel } from '../utils/dialects';
 import { 
   Heart, 
   Share2, 
@@ -222,7 +222,11 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             {/* ختم الشمع باسم الكاتب يختم المقولة */}
             <div className="flex items-center justify-center gap-3 mt-6 select-none">
               <span className="w-12 h-[1px] bg-amber-500/30" />
-              <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
+              {isWriterQuote(currentQuote) ? (
+                <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
+              ) : (
+                <span className="text-xs">✦ ✧ ✦</span>
+              )}
               <span className="w-12 h-[1px] bg-amber-500/30" />
             </div>
           </div>

@@ -69,11 +69,19 @@ export function quoteLabel(q: Pick<Quote, 'language' | 'dialect' | 'author'>): s
 
 /** نسبة القول: «من التراث الشعبي …» للأمثال فقط؛ خواطر الكاتب بلا اسم (يكفيها الختم) */
 export function quoteByline(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
-  return isFolk(q) ? `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}` : q.author ? `— ${q.author}` : '';
+  if (isFolk(q)) return `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}`;
+  // الاقتباسات العالمية تُنسب إلى قائلها؛ خواطر كاتب المنصة بلا اسم (يكفيها الختم)
+  if ((q.language === 'en' || q.language === 'fr') && q.author) return `— ${q.author}`;
+  return '';
 }
 
 /** سطر النسبة في النص المنسوخ أو المشارَك (فارغ لخواطر الكاتب) */
 export function bylineSuffix(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
   const b = quoteByline(q);
   return b ? `\n\n— ${b}` : '';
+}
+
+/** خاطرة من كتابة صاحب المنصة (لا مثل شعبي ولا اقتباس عالمي): عليها الختم وحده */
+export function isWriterQuote(q: Pick<Quote, 'language' | 'author'>): boolean {
+  return !isFolk(q) && (q.language === 'fusha' || q.language === 'darja');
 }

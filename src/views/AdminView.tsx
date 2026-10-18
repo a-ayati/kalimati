@@ -29,8 +29,13 @@ import {
   Mic,
   Image as ImageIcon,
   Loader2,
-  LogOut
+  LogOut,
+  PenLine,
+  BookOpen,
+  Settings,
+  Stethoscope
 } from 'lucide-react';
+import { CountUp, DoctorBubble, SectionHeader, SpecialistTile, StatTile, greeting } from '../components/ClinicParts';
 
 /** تحويل تاريخ ISO إلى قيمة حقل datetime-local بالتوقيت المحلي */
 function toLocalInput(iso: string): string {
@@ -120,6 +125,8 @@ export const AdminView: React.FC = () => {
 
   // Search in admin table
   const [adminSearch, setAdminSearch] = useState('');
+  // قسم العيادة المفتوح
+  const [section, setSection] = useState<'home' | 'studio' | 'schedule' | 'library' | 'stats' | 'log' | 'settings'>('home');
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -285,15 +292,17 @@ export const AdminView: React.FC = () => {
   if (authState !== 'in') {
     return (
       <div className="w-full max-w-md mx-auto px-4 py-16 text-center">
-        <div className="p-8 rounded-3xl bg-[#141518] border border-amber-500/30 shadow-2xl space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/30">
-            <Lock className="w-7 h-7" />
+        <div className="p-8 rounded-3xl bg-[#141518] border border-white/10 shadow-2xl space-y-5">
+          <div className="w-16 h-16 rounded-full clinic-gradient text-white flex items-center justify-center mx-auto shadow-lg">
+            <Stethoscope className="w-8 h-8" />
           </div>
 
           <div>
-            <h1 className="text-xl font-bold font-amiri text-white">لوحة الكاتب</h1>
+            <h1 className="text-3xl font-bold text-white">
+              عيادة <span className="clinic-accent">كلماتي</span>
+            </h1>
             <p className="text-xs text-stone-400 mt-2 leading-relaxed">
-              لإدارة الأقوال والخواطر وجدولتها ومتابعة أثرها.
+              أهلاً بك. أدخل كلمة المرور لأعرض عليك حالة خواطرك.
             </p>
           </div>
 
@@ -338,7 +347,7 @@ export const AdminView: React.FC = () => {
               <button
                 type="submit"
                 disabled={isBusy || !pin}
-                className="w-full py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-stone-950 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl font-bold text-sm clinic-gradient disabled:opacity-60 text-white transition-opacity cursor-pointer flex items-center justify-center gap-2"
               >
                 {isBusy && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>دخول</span>
@@ -361,285 +370,336 @@ export const AdminView: React.FC = () => {
     );
   });
 
-  return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-8">
-      
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Unlock className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs font-semibold text-emerald-400">صلاحيات الكاتب مفعلة</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-amiri text-white pt-2 pb-1 leading-normal tracking-wide">
-            لوحة إدارة «كلماتي»
-          </h1>
-          <p className="text-xs text-stone-400">
-            إدارة النصوص الأصلية، ربط الصيغ التوأم، جدولة المنشورات، وسجل التوثيق ومسار الكتابة.
-          </p>
-        </div>
+  // ——— تشخيص الدكتور: ملخص الحالة من البيانات الفعلية ———
+  const now = Date.now();
+  const writerQuotes = quotes.filter((q) => !isFolk(q));
+  const upcoming = quotes
+    .filter((q) => q.status === 'scheduled' && new Date(q.publishedAt).getTime() > now)
+    .sort((a, b) => +new Date(a.publishedAt) - +new Date(b.publishedAt));
+  const drafts = quotes.filter((q) => q.status === 'draft' || q.status === 'review');
+  const live = quotes.filter((q) => q.status === 'published' || (q.status === 'scheduled' && new Date(q.publishedAt).getTime() <= now));
+  const totalReads = quotes.reduce((acc, q) => acc + (q.stats?.readsCount || 0), 0);
+  const topRead = [...live].sort((a, b) => (b.stats?.readsCount || 0) - (a.stats?.readsCount || 0))[0];
+  const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleString('ar', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', numberingSystem: 'latn' } as Intl.DateTimeFormatOptions);
+  const snippetOf = (q: Quote, n = 60) => {
+    const t = stripTashkeel(q.text);
+    return t.length > n ? t.slice(0, n) + '…' : t;
+  };
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleStartCreate}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-stone-950 transition-all cursor-pointer shadow-md active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            <span>إضافة خاطرة جديدة</span>
+  const diagnosis: string[] = [];
+  if (upcoming.length) diagnosis.push(`عندك ${upcoming.length} ${upcoming.length === 1 ? 'خاطرة مجدولة' : 'خواطر مجدولة'}، أقربها ${fmtDate(upcoming[0].publishedAt)}.`);
+  else diagnosis.push('لا خاطرة مجدولة الآن؛ جدول الأيام القادمة فارغ.');
+  if (drafts.length) diagnosis.push(`و${drafts.length} ${drafts.length === 1 ? 'مسودة تنتظر' : 'مسودات تنتظر'} لمستك الأخيرة.`);
+  if (topRead && (topRead.stats?.readsCount || 0) > 0) diagnosis.push(`الأكثر قراءة: «${snippetOf(topRead, 40)}».`);
+
+  // آخر ما حدث: كل التعديلات مرتبة من الأحدث
+  const activity = quotes
+    .flatMap((q) => (q.revisions || []).map((r) => ({ q, r })))
+    .sort((a, b) => +new Date(b.r.timestamp) - +new Date(a.r.timestamp))
+    .slice(0, 40);
+
+  const statusLabel = (q: Quote) =>
+    q.status === 'published' ? 'منشور' : q.status === 'scheduled' ? 'مجدول' : q.status === 'review' ? 'قيد المراجعة' : 'مسودة';
+  const statusBadge = (q: Quote) =>
+    q.status === 'published'
+      ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+      : q.status === 'scheduled'
+      ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+      : q.status === 'review'
+      ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+      : 'bg-stone-500/15 text-stone-400 border-stone-500/30';
+
+  /** بطاقة قول في قوائم العيادة، مع أزرار المعاينة والسجل والتعديل والحذف */
+  const QuoteRow = ({ q, meta }: { q: Quote; meta?: React.ReactNode }) => (
+    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2.5">
+      <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+        <span className={`px-2 py-0.5 rounded-full border ${statusBadge(q)}`}>{statusLabel(q)}</span>
+        <span className="px-2 py-0.5 rounded-full border border-white/10 text-stone-400">{quoteLabel(q)}</span>
+        {q.topics.slice(0, 2).map((t) => (
+          <span key={t} className="text-stone-500">#{t}</span>
+        ))}
+      </div>
+      <p className="text-sm text-stone-200 leading-relaxed line-clamp-2">{stripTashkeel(q.text)}</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[11px] text-stone-500 min-w-0 truncate">{meta ?? fmtDate(q.publishedAt)}</div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button onClick={() => openShareModal(q)} className="p-2 rounded-lg text-stone-400 hover:text-amber-400 hover:bg-white/5" title="معاينة بطاقة المشاركة">
+            <Share2 className="w-4 h-4" />
           </button>
-
-          <button
-            onClick={handleExport}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white border border-white/10 text-xs"
-            title="تنزيل نسخة احتياطية من كل الأقوال"
-          >
-            <Download className="w-4 h-4" />
+          <button onClick={() => setHistoryQuote(q)} className="p-2 rounded-lg text-stone-400 hover:text-sky-400 hover:bg-white/5" title="سجل التعديلات">
+            <History className="w-4 h-4" />
           </button>
-
-          <button
-            onClick={() => importInputRef.current?.click()}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white border border-white/10 text-xs"
-            title="استيراد نسخة احتياطية"
-          >
-            <Upload className="w-4 h-4" />
+          <button onClick={() => handleStartEdit(q)} className="p-2 rounded-lg text-stone-400 hover:text-amber-300 hover:bg-white/5" title="تعديل">
+            <Edit3 className="w-4 h-4" />
           </button>
-          <input
-            ref={importInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleImport(file);
-              e.target.value = '';
-            }}
-          />
-
-          <button
-            onClick={handleLogout}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white border border-white/10 text-xs"
-            title="تسجيل الخروج"
-          >
-            <LogOut className="w-4 h-4" />
+          <button onClick={() => handleDelete(q)} className="p-2 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-white/5" title="حذف">
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
+    </div>
+  );
 
+  const back = () => {
+    setSection('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const open = (s: typeof section) => {
+    setSection(s);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const topBy = (key: 'readsCount' | 'savesCount' | 'sharesCount') =>
+    [...live].sort((a, b) => (b.stats?.[key] || 0) - (a.stats?.[key] || 0)).filter((q) => (q.stats?.[key] || 0) > 0).slice(0, 5);
+
+  return (
+    <div className="w-full max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-6">
       {notice && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-bold shadow-xl ${
-            notice.kind === 'ok' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+          className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-bold shadow-xl text-white ${
+            notice.kind === 'ok' ? 'bg-emerald-600' : 'bg-rose-600'
           }`}
         >
           {notice.text}
         </div>
       )}
 
-      <AuthorStudio quotes={quotes} onChanged={afterChange} onReference={reference => {
-        handleStartCreate(); setFormText(reference.text); setFormLanguage(reference.language); setFormAuthor(reference.author); setFormSource(reference.sourceUrl); setFormSourceNote(reference.sourceNote); setFormStatus('draft');
-      }} onEdit={(text, language, assisted) => {
-        handleStartCreate(); setFormText(text); setFormLanguage(language); setFormAssisted(assisted); setFormStatus('draft');
-      }} />
-      {/* Aggregate Stats Cards (Section 10 & 13: strictly anonymous aggregate metrics) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-right">
-        <div className="p-4 rounded-2xl bg-[#141518] border border-white/10 space-y-1">
-          <div className="text-[11px] text-stone-400">إجمالي الأقوال المنشورة</div>
-          <div className="text-2xl font-bold text-white font-amiri">{totalPublished}</div>
-          <div className="text-[10px] text-emerald-400">متاحة للقراء وللفهرسة</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#141518] border border-white/10 space-y-1">
-          <div className="text-[11px] text-stone-400">المسودات والمجدولة</div>
-          <div className="text-2xl font-bold text-amber-400 font-amiri">{totalDrafts}</div>
-          <div className="text-[10px] text-stone-500">مستبعدة من محركات البحث</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#141518] border border-white/10 space-y-1">
-          <div className="text-[11px] text-stone-400">مرات الحفظ («وصلتني في وقتها»)</div>
-          <div className="text-2xl font-bold text-rose-400 font-amiri">{totalSaves}</div>
-          <div className="text-[10px] text-stone-500">إحصاء إجمالي دون كشف الخواطر</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#141518] border border-white/10 space-y-1">
-          <div className="text-[11px] text-stone-400">مرات المشاركة والبطاقات</div>
-          <div className="text-2xl font-bold text-amber-300 font-amiri">{totalShares}</div>
-          <div className="text-[10px] text-stone-500">ستوري ومنشورات اجتماعية</div>
-        </div>
-      </div>
-
-      {/* Section 12 Google Indexing & Search Console Readiness Guide */}
-      <div className="p-5 rounded-3xl bg-amber-950/20 border border-amber-500/30 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
-            <Globe className="w-4 h-4" />
-            <span>جاهزية الفهرسة في Google Search Console</span>
-          </h3>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-            جاهز ومضبوط ✓
-          </span>
-        </div>
-        <p className="text-xs text-stone-300 leading-relaxed">
-          جميع الصفحات العامة معدّة للزحف الفوري: العناوين الفريدة، الروابط الثابتة، ملف <code>robots.txt</code>، خريطة الموقع <code>sitemap.xml</code>، وبيانات Schema.org المنظمة.
-          عند نشر الموقع على نطاقك الخاص (Custom Domain)، اتبع الخطوات الأربع التالية:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-[11px] text-stone-400">
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <strong className="text-stone-200 block mb-0.5">1. التحقق:</strong>
-            أثبت ملكية الموقع عبر Google Search Console بإضافة وسم أو سجل DNS.
+      {section === 'home' && (
+        <>
+          {/* الرأس */}
+          <div className="space-y-2 pt-2">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
+              عيادة <span className="clinic-accent">كلماتي</span>
+            </h1>
+            <p className="text-sm text-stone-400 leading-relaxed">
+              نسخة مصغّرة من «دكتور المحتوى» لمنصتك: دكتور يتابع حالة الخواطر، وفريق صغير معه للكتابة والمواعيد والأرقام.
+            </p>
           </div>
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <strong className="text-stone-200 block mb-0.5">2. إرسال الخريطة:</strong>
-            أرسل رابط الخريطة: <code>/sitemap.xml</code> لجدولة الزحف الدوري.
+
+          {/* الدكتور */}
+          <DoctorBubble>{diagnosis.join(' ')}</DoctorBubble>
+
+          {/* الترحيب والأرقام */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#141518] border border-white/10 space-y-5">
+            <div className="space-y-2">
+              <div className="text-sm font-semibold clinic-accent">{greeting()}</div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">أهلاً بك في عيادة كلماتي</h2>
+              <p className="text-sm text-stone-400 leading-relaxed">أتابع خواطرك وأمثالك، وما تحتاجه أحوّله إلى الاختصاصي المناسب.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <StatTile value={live.length} label="منشورة" tone="text-emerald-400" />
+              <StatTile value={upcoming.length} label="قادمة" tone="text-sky-400" />
+              <StatTile value={drafts.length} label="بانتظار مراجعتك" tone="text-amber-400" />
+              <StatTile value={totalReads} label="قراءة" />
+            </div>
           </div>
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <strong className="text-stone-200 block mb-0.5">3. طلب الفهرسة:</strong>
-            افحص رابط الصفحة الرئيسية وأهم الاقتباسات واطلب فهرستها الأولوية.
+
+          {/* الاختصاصيون */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-[#141518] border border-white/10 space-y-2.5">
+            <SpecialistTile icon={PenLine} title="الكاتب" desc="اكتب خاطرة جديدة أو أضف مثلاً شعبياً" onClick={handleStartCreate} />
+            <SpecialistTile icon={Sparkles} title="الاستوديو" desc="من كلمة إلى حكمة، ومخطّط النشر لأسبوع كامل" onClick={() => open('studio')} />
+            <SpecialistTile icon={Calendar} title="المواعيد" desc="الخواطر المجدولة والمسودات وموعد كل منها" badge={upcoming.length + drafts.length} onClick={() => open('schedule')} />
+            <SpecialistTile icon={BookOpen} title="المكتبة" desc={`كل ما نُشر: ${writerQuotes.length} خاطرة و${quotes.length - writerQuotes.length} مثلاً`} onClick={() => open('library')} />
+            <SpecialistTile icon={BarChart2} title="الإحصائي" desc="أكثر الخواطر قراءة وحفظاً ومشاركة" onClick={() => open('stats')} />
+            <SpecialistTile icon={FileText} title="الملف" desc="سجل كل ما حدث في المنصة" onClick={() => open('log')} />
+            <SpecialistTile icon={Settings} title="الإعدادات" desc="نسخة احتياطية، الفهرسة في جوجل، الخروج" onClick={() => open('settings')} />
           </div>
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
-            <strong className="text-stone-200 block mb-0.5">4. متابعة التقارير:</strong>
-            راقب أداء الكلمات المفتاحية واكتشاف المقالات وصحة الروابط Canonical.
+        </>
+      )}
+
+      {section === 'studio' && (
+        <div className="space-y-5">
+          <SectionHeader title="الاستوديو" desc="مسودات ومراجعة ومخطّط نشر أسبوعي. لا يُنشر شيء دون اعتمادك." onBack={back} />
+          <AuthorStudio
+            quotes={quotes}
+            onChanged={afterChange}
+            onReference={(reference) => {
+              handleStartCreate();
+              setFormText(reference.text);
+              setFormLanguage(reference.language);
+              setFormAuthor(reference.author);
+              setFormSource(reference.sourceUrl);
+              setFormSourceNote(reference.sourceNote);
+              setFormStatus('draft');
+            }}
+            onEdit={(text, language, assisted) => {
+              handleStartCreate();
+              setFormText(text);
+              setFormLanguage(language);
+              setFormAssisted(assisted);
+              setFormStatus('draft');
+            }}
+          />
+        </div>
+      )}
+
+      {section === 'schedule' && (
+        <div className="space-y-5">
+          <SectionHeader
+            title="المواعيد"
+            desc="ما سيُنشر قريباً، وما ينتظر مراجعتك."
+            onBack={back}
+            action={
+              <button onClick={handleStartCreate} className="clinic-gradient text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer active:scale-95">
+                <Plus className="w-4 h-4" />
+                <span>جدولة خاطرة</span>
+              </button>
+            }
+          />
+          <div className="space-y-2.5">
+            <h3 className="text-sm font-bold text-stone-300">القادمة ({upcoming.length})</h3>
+            {upcoming.length ? upcoming.map((q) => <QuoteRow key={q.id} q={q} meta={`تُنشر ${fmtDate(q.publishedAt)}`} />) : (
+              <div className="p-6 rounded-2xl border border-dashed border-white/10 text-center text-xs text-stone-500">لا شيء مجدول. اختر «جدولة خاطرة» وحدّد موعدها.</div>
+            )}
+          </div>
+          <div className="space-y-2.5">
+            <h3 className="text-sm font-bold text-stone-300">بانتظار مراجعتك ({drafts.length})</h3>
+            {drafts.length ? drafts.map((q) => <QuoteRow key={q.id} q={q} meta={`آخر تعديل ${fmtDate(q.revisions?.[0]?.timestamp || q.createdAt)}`} />) : (
+              <div className="p-6 rounded-2xl border border-dashed border-white/10 text-center text-xs text-stone-500">لا مسودات.</div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Quotes Management Table Toolbar */}
-      <div className="bg-[#141518] p-4 rounded-3xl border border-white/10 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="relative flex-1">
+      {section === 'library' && (
+        <div className="space-y-5">
+          <SectionHeader
+            title="المكتبة"
+            desc="ابحث وعدّل واحذف، أو عاين بطاقة المشاركة."
+            onBack={back}
+            action={
+              <button onClick={handleStartCreate} className="clinic-gradient text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer active:scale-95">
+                <Plus className="w-4 h-4" />
+                <span>جديد</span>
+              </button>
+            }
+          />
+          <div className="relative">
             <Search className="w-4 h-4 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={adminSearch}
               onChange={(e) => setAdminSearch(e.target.value)}
-              placeholder="ابحث في نصوص الأقوال أو الموضوعات للتحرير..."
-              className="w-full pr-10 pl-4 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-stone-200 placeholder:text-stone-500 focus:outline-none focus:border-amber-500"
+              placeholder="ابحث في النصوص أو الموضوعات…"
+              className="w-full pr-10 pl-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:border-[#e5483b]/60"
+            />
+          </div>
+          <div className="text-xs text-stone-500">{filteredAdminQuotes.length} نتيجة</div>
+          <div className="space-y-2.5">
+            {filteredAdminQuotes.map((q) => (
+              <QuoteRow key={q.id} q={q} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {section === 'stats' && (
+        <div className="space-y-5">
+          <SectionHeader title="الإحصائي" desc="أرقام إجمالية دون تتبّع لأي قارئ بعينه." onBack={back} />
+          <div className="grid grid-cols-3 gap-3">
+            <StatTile value={totalReads} label="قراءة" />
+            <StatTile value={totalSaves} label="حفظ" tone="text-rose-400" />
+            <StatTile value={totalShares} label="مشاركة" tone="text-amber-400" />
+          </div>
+          {([
+            { key: 'readsCount', title: 'الأكثر قراءة' },
+            { key: 'savesCount', title: 'الأكثر حفظاً («وصلتني في وقتها»)' },
+            { key: 'sharesCount', title: 'الأكثر مشاركة' },
+          ] as const).map(({ key, title }) => {
+            const list = topBy(key);
+            return (
+              <div key={key} className="p-4 rounded-3xl bg-[#141518] border border-white/10 space-y-2.5">
+                <h3 className="text-sm font-bold clinic-accent">{title}</h3>
+                {list.length ? (
+                  list.map((q, i) => (
+                    <div key={q.id} className="flex items-center gap-3 text-sm">
+                      <span className="w-6 h-6 rounded-full bg-white/5 text-[11px] text-stone-400 flex items-center justify-center shrink-0">{i + 1}</span>
+                      <span className="flex-1 min-w-0 truncate text-stone-200">{snippetOf(q, 70)}</span>
+                      <span className="font-bold tabular-nums text-white">
+                        <CountUp value={q.stats?.[key] || 0} />
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-stone-500">لا أرقام بعد.</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {section === 'log' && (
+        <div className="space-y-5">
+          <SectionHeader title="الملف" desc="آخر ما حدث: إضافة، تعديل، جدولة." onBack={back} />
+          <div className="space-y-2">
+            {activity.length ? (
+              activity.map(({ q, r }) => (
+                <button
+                  key={r.id + q.id}
+                  onClick={() => setHistoryQuote(q)}
+                  className="w-full p-3.5 rounded-2xl bg-white/5 border border-white/10 text-right space-y-1 cursor-pointer hover:border-white/20"
+                >
+                  <div className="flex items-center justify-between gap-2 text-[11px]">
+                    <span className="font-semibold clinic-accent">{r.note}</span>
+                    <span className="text-stone-500 shrink-0">{fmtDate(r.timestamp)}</span>
+                  </div>
+                  <div className="text-xs text-stone-300 truncate">{snippetOf(q, 80)}</div>
+                </button>
+              ))
+            ) : (
+              <div className="p-6 rounded-2xl border border-dashed border-white/10 text-center text-xs text-stone-500">لا شيء بعد.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {section === 'settings' && (
+        <div className="space-y-5">
+          <SectionHeader title="الإعدادات" onBack={back} />
+          <div className="p-4 rounded-3xl bg-[#141518] border border-white/10 space-y-2.5">
+            <h3 className="text-sm font-bold clinic-accent">النسخة الاحتياطية</h3>
+            <p className="text-xs text-stone-400">ملف بكل الخواطر والأمثال مع المسودات وسجل التعديلات.</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={handleExport} className="py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-stone-200 flex items-center justify-center gap-1.5 cursor-pointer hover:bg-white/10">
+                <Download className="w-4 h-4" />
+                <span>تنزيل</span>
+              </button>
+              <button onClick={() => importInputRef.current?.click()} className="py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-stone-200 flex items-center justify-center gap-1.5 cursor-pointer hover:bg-white/10">
+                <Upload className="w-4 h-4" />
+                <span>استيراد</span>
+              </button>
+            </div>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImport(file);
+                e.target.value = '';
+              }}
             />
           </div>
 
-          <div className="text-xs text-stone-400">
-            إجمالي السجلات: <strong className="text-white">{filteredAdminQuotes.length}</strong>
+          <div className="p-4 rounded-3xl bg-[#141518] border border-white/10 space-y-2.5">
+            <h3 className="text-sm font-bold clinic-accent flex items-center gap-1.5">
+              <Globe className="w-4 h-4" />
+              <span>الظهور في جوجل</span>
+            </h3>
+            <p className="text-xs text-stone-400 leading-relaxed">
+              الصفحات جاهزة للفهرسة: عناوين فريدة وروابط ثابتة و<code>robots.txt</code> و<code>sitemap.xml</code>. عند ربط نطاقك الخاص: أثبت ملكيته في Google Search Console، ثم أرسل <code>/sitemap.xml</code>، واطلب فهرسة الصفحة الرئيسية وأهم الخواطر.
+            </p>
           </div>
+
+          <button onClick={handleLogout} className="w-full py-3 rounded-2xl border border-rose-500/30 text-rose-400 text-sm font-bold flex items-center justify-center gap-2 cursor-pointer hover:bg-rose-500/10">
+            <LogOut className="w-4 h-4" />
+            <span>تسجيل الخروج</span>
+          </button>
         </div>
-
-        {/* Quotes List Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-right text-xs">
-            <thead>
-              <tr className="border-b border-white/10 text-stone-400">
-                <th className="py-2.5 px-3">الخاطرة / القول</th>
-                <th className="py-2.5 px-2">اللغة</th>
-                <th className="py-2.5 px-2">الحالة</th>
-                <th className="py-2.5 px-2">تاريخ النشر</th>
-                <th className="py-2.5 px-2">الصيغة التوأم</th>
-                <th className="py-2.5 px-3 text-left">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredAdminQuotes.map((q) => {
-                const isDarja = q.language === 'darja';
-                const hasSister = !!q.pairedQuoteId;
-                const statusBadge = 
-                  q.status === 'published' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' :
-                  q.status === 'scheduled' ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' :
-                  q.status === 'review' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' :
-                  'bg-stone-500/20 text-stone-400 border-stone-500/40';
-
-                const statusLabel = 
-                  q.status === 'published' ? 'منشور' :
-                  q.status === 'scheduled' ? 'مجدول' :
-                  q.status === 'review' ? 'قيد المراجعة' : 'مسودة';
-
-                return (
-                  <tr key={q.id} className="hover:bg-white/5 transition-colors">
-                    <td className="py-3 px-3 max-w-xs sm:max-w-md">
-                      <div className="font-serif text-stone-200 line-clamp-2 leading-relaxed">
-                        {q.text}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-1 text-[10px] text-stone-400">
-                        {q.topics.map((t) => (
-                          <span key={t} className="px-1.5 py-0.5 rounded bg-white/5">#{t}</span>
-                        ))}
-                        {q.behindTheWords && (
-                          <span className="text-amber-400 flex items-center gap-0.5">
-                            • به شرح
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="py-3 px-2 whitespace-nowrap">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] border ${
-                        isDarja ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                      }`}>
-                        {quoteLabel(q)}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-2 whitespace-nowrap">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] border ${statusBadge}`}>
-                        {statusLabel}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-2 whitespace-nowrap text-stone-400 text-[11px]">
-                      {new Date(q.publishedAt).toLocaleDateString('ar-DZ')}
-                    </td>
-
-                    <td className="py-3 px-2 whitespace-nowrap">
-                      {hasSister ? (
-                        <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                          <Link2 className="w-3.5 h-3.5" />
-                          مرتبطة
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-stone-500">—</span>
-                      )}
-                    </td>
-
-                    <td className="py-3 px-3 whitespace-nowrap text-left">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => openShareModal(q)}
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-amber-400 hover:bg-white/5"
-                          title="معاينة بطاقة المشاركة"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => setHistoryQuote(q)}
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-blue-400 hover:bg-white/5"
-                          title="سجل التعديلات والتوثيق"
-                        >
-                          <History className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => handleStartEdit(q)}
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-amber-300 hover:bg-white/5"
-                          title="تعديل"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            handleDelete(q);
-                          }}
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-white/5"
-                          title="حذف"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
 
       {/* Create / Edit Quote Modal */}
       {(isCreatingNew || editingQuoteId) && (

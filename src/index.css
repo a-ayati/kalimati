@@ -214,3 +214,8 @@
 
 /* الشعار اللفظي بجانب المربع: حبر داكن وتشكيل أحمر على الخلفيات الفاتحة (المربع نفسه يبقى داكناً) */
 .theme-light .logo-word { --kq-ink: #1a1410; --kq-ink-mark: #c62828; }
+
+/* عيادة كلماتي (لوحة الإدارة): ألوان هوية المنصة — أحمر التشكيل والذهبي */
+.clinic-gradient { background: linear-gradient(135deg, #e5483b 0%, #b8322a 55%, #c9a227 100%); }
+.clinic-accent { color: #e5483b; }
+.theme-light .clinic-accent { color: #b3261e; }
