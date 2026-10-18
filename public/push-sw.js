@@ -6,7 +6,7 @@ self.addEventListener('push', (event) => {
   } catch (e) {
     data = { body: event.data ? event.data.text() : '' };
   }
-  const title = data.title || 'كلمة اليوم — كلماتي';
+  const title = data.title || 'كلمة اليوم';
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || '',

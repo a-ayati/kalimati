@@ -112,7 +112,7 @@ async function send(
 
 function dailyPayload(q: QuoteLite, origin: string) {
   const text = q.plainText.length > 160 ? q.plainText.slice(0, 160) + '…' : q.plainText;
-  return { title: 'كلمة اليوم — كلماتي', body: text, url: `${origin}/q/${encodeURIComponent(q.slug)}`, tag: 'kalimati-daily' };
+  return { title: 'كلمة اليوم', body: text, url: `${origin}/q/${encodeURIComponent(q.slug)}`, tag: 'kalimati-daily' };
 }
 
 export async function handlePush(req: Request, env: PushEnv, path: string): Promise<Response | null> {
