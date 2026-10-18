@@ -170,7 +170,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     ctx.font = '500 20px "Cairo", sans-serif';
     ctx.fillStyle = subtleColor;
-    ctx.fillText('«كَلِمَةٌ تَصِلُ فِي وَقْتِهَا»', config.width / 2, margin + 140);
+    ctx.fillText('«كَلِمَاتٌ تَبْقَى»', config.width / 2, margin + 140);
 
     // Divider
     ctx.strokeStyle = borderColor;
@@ -375,13 +375,13 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
           try {
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
-                title: 'كلماتي — كلمة تصل في وقتها',
+                title: 'كلماتي — كلماتٌ تبقى',
                 text: `${stripTashkeel(quote.text)}${pickDialect(quote, preferredDialect) ? '\n' + stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text) : ''}${bylineSuffix(quote)}\n\nمنصة كلماتي: ${quoteUrl(quote)}`,
                 files: [file],
               });
             } else {
               await navigator.share({
-                title: 'كلماتي — كلمة تصل في وقتها',
+                title: 'كلماتي — كلماتٌ تبقى',
                 text: `${stripTashkeel(quote.text)}${bylineSuffix(quote)}`,
                 url: quoteUrl(quote),
               });

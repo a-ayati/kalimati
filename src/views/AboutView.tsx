@@ -23,7 +23,7 @@ export const AboutView: React.FC = () => {
           عَنْ مَنَصَّةِ «كَلِمَاتِي»
         </h1>
         <p className="text-base text-amber-400 font-cairo">
-          «كَلِمَةٌ تَصِلُ فِي وَقْتِهَا»
+          «كَلِمَاتٌ تَبْقَى»
         </p>
         <p className="text-xs sm:text-sm text-stone-400 max-w-xl mx-auto leading-relaxed">
           فضاء أدبي أصيل مكرّس لجمال الكلمة المكتوبة باللغة العربية الفصحى والدارجة الجزائرية، في ثوب بصري يحتفي بالخط والزخرفة والسكينة.

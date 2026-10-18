@@ -81,7 +81,7 @@ export const TodayView: React.FC = () => {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-cairo text-white tracking-wide pt-2 pb-1 leading-snug">
-            كَلِمَةٌ تَصِلُ فِي وَقْتِهَا
+            كَلِمَاتٌ تَبْقَى
           </h1>
           <p className="text-xs sm:text-sm text-stone-400 font-cairo">
             خاطرة يومية من صميم الوجدان، تجمع بين بلاغة الفصحى ودفء الدارجة الجزائرية.

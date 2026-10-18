@@ -160,7 +160,7 @@ export const LogoIntro: React.FC = () => {
                 transition={{ duration: T_SHRINK + 0.2, times: [0, 0.45, 0.85, 1], delay: 0.3 }}
               >
                 <span className="w-10 h-px bg-[#c9a227]/70" />
-                <span className="text-sm font-cairo font-medium">كلمة تصل في وقتها</span>
+                <span className="text-sm font-cairo font-medium">كلماتٌ تبقى</span>
                 <span className="w-10 h-px bg-[#c9a227]/70" />
               </motion.div>
             </div>

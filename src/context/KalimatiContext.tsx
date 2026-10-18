@@ -35,7 +35,7 @@ const TAB_PATHS: Record<Exclude<ActiveTab, 'quote-detail'>, string> = {
 };
 
 const TAB_TITLES: Record<ActiveTab, string> = {
-  today: 'كلماتي — كلمة تصل في وقتها',
+  today: 'كلماتي — كلماتٌ تبقى',
   library: 'المكتبة — كلماتي',
   saved: 'محفوظاتي — كلماتي',
   customize: 'التخصيص — كلماتي',

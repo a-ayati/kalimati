@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
             </div>
             <div>
               <div className="logo-ink text-[19px] leading-none mb-1"><InkText text="كَلِمَاتِي" /></div>
-              <div className="text-[10px] text-amber-500/80 font-cairo">كَلِمَةٌ تَصِلُ فِي وَقْتِهَا</div>
+              <div className="text-[10px] text-amber-500/80 font-cairo">كَلِمَاتٌ تَبْقَى</div>
             </div>
           </div>
 

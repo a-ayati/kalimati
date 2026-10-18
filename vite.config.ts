@@ -16,7 +16,7 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'favicon-64.png', 'apple-touch-icon.png', 'og.png'],
         manifest: {
           id: '/',
-          name: 'كلماتي — كلمة تصل في وقتها',
+          name: 'كلماتي — كلماتٌ تبقى',
           short_name: 'كلماتي',
           description: 'منصة لنشر أقوال وخواطر أصلية بالفصحى والدارجة الجزائرية مع تخصيص فني وبطاقات مشاركة.',
           theme_color: '#0d0d0f',

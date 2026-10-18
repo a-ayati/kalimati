@@ -162,7 +162,7 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
         </div>
         {showTagline && (
           <div className="text-[11px] text-amber-500/90 font-medium tracking-normal mt-1 hidden sm:block">
-            كَلِمَةٌ تَصِلُ فِي وَقْتِهَا
+            كَلِمَاتٌ تَبْقَى
           </div>
         )}
       </div>
