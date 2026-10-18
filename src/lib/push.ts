@@ -61,7 +61,18 @@ export async function subscribeDaily(time: string): Promise<void> {
     sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(publicKey) });
   }
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  await post('/api/push/subscribe', { subscription: sub.toJSON(), time, tz });
+  // Some browser shells omit keys in toJSON(); getKey supplies the standard raw values.
+  const raw = sub.toJSON();
+  const encodeKey = (name: PushEncryptionKeyName) => {
+    const value = sub!.getKey(name);
+    if (!value) return undefined;
+    let bytes = ''; for (const b of new Uint8Array(value)) bytes += String.fromCharCode(b);
+    return btoa(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+  const subscription = { endpoint: sub.endpoint, keys: {
+    p256dh: raw.keys?.p256dh || encodeKey('p256dh'), auth: raw.keys?.auth || encodeKey('auth'),
+  } };
+  await post('/api/push/subscribe', { subscription, time, tz });
 }
 
 export async function unsubscribeDaily(): Promise<void> {

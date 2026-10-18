@@ -4,6 +4,7 @@
  * - كل جهاز مشترك يختار ساعة الإشعار، ويُرسَل له مرة واحدة يومياً حسب توقيته المحلي.
  * - المهمة المجدولة تعمل كل 15 دقيقة.
  */
+import { validatePushSubscription } from './pushValidation';
 import { dailyQuote } from '../shared/daily';
 import { buildPushHTTPRequest } from '@pushforge/builder';
 
@@ -19,13 +20,6 @@ interface QuoteLite {
   featuredDate?: string;
   id?: string;
 }
-
-const ALLOWED_PUSH_HOSTS = [
-  /(^|\.)fcm\.googleapis\.com$/,
-  /(^|\.)push\.services\.mozilla\.com$/,
-  /(^|\.)push\.apple\.com$/,
-  /(^|\.)notify\.windows\.com$/,
-];
 
 export async function ensurePushSchema(env: PushEnv): Promise<void> {
   await env.DB.prepare(
@@ -60,33 +54,6 @@ function json(body: unknown, status = 200): Response {
     status,
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
   });
-}
-
-function validTz(tz: unknown): tz is string {
-  if (typeof tz !== 'string' || tz.length > 64) return false;
-  try {
-    new Intl.DateTimeFormat('en-US', { timeZone: tz });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function parseSub(body: any): { endpoint: string; p256dh: string; auth: string } | null {
-  const s = body?.subscription;
-  if (!s || typeof s.endpoint !== 'string' || s.endpoint.length > 1000) return null;
-  let url: URL;
-  try {
-    url = new URL(s.endpoint);
-  } catch {
-    return null;
-  }
-  // نرسل فقط إلى خدمات الإشعارات المعروفة
-  if (url.protocol !== 'https:' || !ALLOWED_PUSH_HOSTS.some((r) => r.test(url.hostname))) return null;
-  const p256dh = s.keys?.p256dh;
-  const auth = s.keys?.auth;
-  if (typeof p256dh !== 'string' || typeof auth !== 'string' || p256dh.length > 200 || auth.length > 100) return null;
-  return { endpoint: s.endpoint, p256dh, auth };
 }
 
 /** التاريخ والساعة المحليان لمنطقة زمنية */
@@ -169,12 +136,9 @@ export async function handlePush(req: Request, env: PushEnv, path: string): Prom
   if (path === '/api/push/subscribe' && req.method === 'POST') {
     await ensurePushSchema(env);
     const body = await req.json().catch(() => null);
-    const sub = parseSub(body);
-    const time = (body as any)?.time;
-    const tz = (body as any)?.tz;
-    if (!sub || typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time) || !validTz(tz)) {
-      return json({ error: 'بيانات الاشتراك غير صالحة.' }, 400);
-    }
+    const parsed = validatePushSubscription(body);
+    if (!parsed.ok) return json({ error: parsed.error, code: parsed.code }, 400);
+    const { subscription: sub, time, tz } = parsed;
     // إن كان الموعد قد مضى اليوم فلا نرسل حتى الغد (حتى لا يصل إشعار فور التفعيل)
     const local = localNow(tz);
     const lastSent = local.time > time ? local.date : null;
