@@ -10,7 +10,7 @@ const PAD = 12;
 const EASE: [number, number, number, number] = [0.65, 0, 0.35, 1];
 
 // قصّ الحبر من اليمين إلى اليسار (مخفي ← ظاهر)
-const CLIP_HIDDEN = 'inset(-60% -10% -60% 100%)';
+const CLIP_HIDDEN = 'inset(-60% -10% -60% 110%)'; // 110%: حتى أطراف الحروف البارزة يميناً تبقى مخفية
 const CLIP_SHOWN = 'inset(-60% -10% -60% -10%)';
 
 function reducedMotion(): boolean {

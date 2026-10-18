@@ -28,7 +28,7 @@ FAMILIES = {
 }
 
 
-def raise_marks(f, harakat, top=900, down=30):
+def raise_marks(f, harakat, top=900, down=130):
     """خط الرقعة: رفع الحركات العلوية فوق قمم الحروف وإنزال السفلية قليلاً.
     فقط مجموعات الحركات — نقاط الحروف لها مجموعاتها الخاصة وتبقى في مكانها الأصلي."""
     st = f['GPOS'].table.LookupList.Lookup[2].SubTable[0]

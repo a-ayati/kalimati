@@ -124,7 +124,7 @@ export const LogoIntro: React.FC = () => {
                   className="logo-ink absolute whitespace-nowrap"
                   dir="rtl"
                   style={{ fontSize: WORD_SIZE, lineHeight: 1 }}
-                  initial={{ clipPath: 'inset(-40% -10% -40% 100%)', opacity: 1, filter: 'blur(0px)' }}
+                  initial={{ clipPath: 'inset(-40% -10% -40% 110%)', opacity: 1, filter: 'blur(0px)' }}
                   animate={{ clipPath: 'inset(-40% -10% -40% -10%)', opacity: 0, filter: 'blur(4px)' }}
                   transition={{
                     clipPath: { delay: T_REVEAL, duration: 0.9, ease: [0.33, 0, 0.2, 1] },
