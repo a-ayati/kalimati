@@ -197,7 +197,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
             <QuoteText quote={currentQuote} style={customStyle} className="py-3 sm:py-4 transition-all duration-300" />
 
-            {(currentQuote.sourceNote || currentQuote.sourceUrl) && <div className="text-xs text-stone-400 mt-3 space-y-1"><p dir="auto">{currentQuote.sourceNote}</p>{currentQuote.sourceUrl && <a href={currentQuote.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-amber-300 underline">مصدر الاقتباس</a>}</div>}
+            {/* المصدر يبقى محفوظاً في العيادة للمراجعة، ولا يُعرض في المنشور */}
             {/* اختيار اللهجة: يظهر عند توفّر أكثر من صيغة، والاختيار يُحفظ لكل المقولات */}
             {dialects.length > 0 && (
               <div className="flex items-center justify-center gap-1.5 flex-wrap mt-4" role="group" aria-label="لهجة الصيغة المرافقة">
