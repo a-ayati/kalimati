@@ -12,6 +12,8 @@ function isStandalone(): boolean {
 
 /** على الآيفون تعمل الإشعارات فقط بعد إضافة المنصة إلى الشاشة الرئيسية */
 export function pushSupport(): PushSupport {
+  if (!window.isSecureContext) return 'unsupported';
+  if (isIOS() && !isStandalone()) return 'install-first';
   if (!('serviceWorker' in navigator)) return 'unsupported';
   if (!('PushManager' in window) || !('Notification' in window)) {
     return isIOS() && !isStandalone() ? 'install-first' : 'unsupported';
@@ -36,7 +38,14 @@ async function post(path: string, body: unknown) {
 
 async function registration() {
   const reg = await navigator.serviceWorker.getRegistration();
-  return reg || navigator.serviceWorker.ready;
+  if (reg?.active) return reg;
+  let timer: ReturnType<typeof setTimeout>;
+  try {
+    return await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('خدمة الإشعارات لم تصبح جاهزة. أعد تحميل المنصة أو افتحها في متصفح يدعمها.')), 12000); }),
+    ]);
+  } finally { clearTimeout(timer!); }
 }
 
 /** طلب الإذن والاشتراك (أو تحديث الموعد) */
@@ -46,7 +55,9 @@ export async function subscribeDaily(time: string): Promise<void> {
   const reg = await registration();
   let sub = await reg.pushManager.getSubscription();
   if (!sub) {
-    const { publicKey } = await fetch('/api/push/key').then((r) => r.json());
+    const response = await fetch('/api/push/key');
+    if (!response.ok) throw new Error('تعذّر تجهيز مفتاح الإشعارات من الخادم.');
+    const { publicKey } = await response.json();
     sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(publicKey) });
   }
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -57,8 +68,8 @@ export async function unsubscribeDaily(): Promise<void> {
   const reg = await registration();
   const sub = await reg.pushManager.getSubscription();
   if (!sub) return;
-  await post('/api/push/unsubscribe', { endpoint: sub.endpoint }).catch(() => undefined);
-  await sub.unsubscribe().catch(() => undefined);
+  await post('/api/push/unsubscribe', { endpoint: sub.endpoint });
+  await sub.unsubscribe();
 }
 
 export async function sendTestPush(): Promise<void> {
@@ -66,4 +77,13 @@ export async function sendTestPush(): Promise<void> {
   const sub = await reg.pushManager.getSubscription();
   if (!sub) throw new Error('هذا الجهاز غير مشترك بعد.');
   await post('/api/push/test', { endpoint: sub.endpoint });
+}
+
+/** Check browser permission and the server record instead of trusting local settings. */
+export async function dailyPushStatus(): Promise<{ subscribed: boolean; time?: string; tz?: string }> {
+  if (pushSupport() !== 'ok' || Notification.permission !== 'granted') return { subscribed: false };
+  const reg = await navigator.serviceWorker.getRegistration();
+  const sub = await reg?.pushManager.getSubscription();
+  if (!sub) return { subscribed: false };
+  return post('/api/push/status', { endpoint: sub.endpoint });
 }

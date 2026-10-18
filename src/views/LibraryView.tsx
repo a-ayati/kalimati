@@ -133,6 +133,7 @@ export const LibraryView: React.FC = () => {
             >
               أمثال باللهجات
             </button>
+            {(['en', 'fr'] as const).map(lang => <button key={lang} onClick={() => setSelectedLanguage(lang)} className={`px-3 py-1.5 rounded-lg ${selectedLanguage === lang ? 'bg-amber-500/20 text-amber-300' : 'text-stone-400'}`}>{lang === 'en' ? 'الإنجليزية' : 'الفرنسية'}</button>)}
           </div>
 
           {/* Result Count */}

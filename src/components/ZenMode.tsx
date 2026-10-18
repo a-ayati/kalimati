@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { quoteByline } from '../utils/dialects';
 import { QuoteText } from './QuoteText';
+import { useZenQuote } from '../hooks/useZenQuote';
+import { dailyQuote } from '../../shared/daily';
 import { Quote } from '../types';
 import { Moon, Sparkles, X, Clock, Eye } from 'lucide-react';
 
@@ -17,28 +19,33 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
 
   const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDateStr, setCurrentDateStr] = useState<string>('');
-  const [quoteIndex, setQuoteIndex] = useState(0);
+
   const wakeLockRef = useRef<any>(null);
 
   // Pool of candidate quotes for Zen Mode
   const candidateQuotes: Quote[] = React.useMemo(() => {
     if (previewQuote) return [previewQuote];
 
-    if (zenSettings.quoteSource === 'saved' && savedItems.length > 0) {
+    if (zenSettings.quoteSource === 'today') {
+      const now = new Date();
+      const q = dailyQuote(quotes.filter(q => q.status === 'published'), now.getFullYear(), now.getMonth() + 1, now.getDate());
+      return q ? [q] : [];
+    }
+    if (zenSettings.quoteSource === 'saved') {
       const savedQuotes = quotes.filter((q) => savedItems.some((s) => s.quoteId === q.id));
-      if (savedQuotes.length > 0) return savedQuotes;
+      return savedQuotes;
     }
 
     if (zenSettings.quoteSource === 'short') {
       const shortList = quotes.filter((q) => q.text.length < 90);
-      if (shortList.length > 0) return shortList;
+      return shortList;
     }
 
     // Default to published quotes or today's
     return quotes.filter((q) => q.status === 'published');
   }, [previewQuote, zenSettings.quoteSource, savedItems, quotes]);
 
-  const activeQuote = candidateQuotes[quoteIndex % Math.max(1, candidateQuotes.length)] || quotes[0];
+  const activeQuote = useZenQuote(candidateQuotes, zenSettings.quoteSource, isOpen, zenSettings.displayDurationSeconds, previewQuote);
 
   // Update clock every second
   useEffect(() => {
@@ -90,17 +97,6 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
     };
   }, [isOpen, zenSettings.keepAwake]);
 
-  // Cycle through quotes if displayDuration is set (e.g. 10s, 60s)
-  useEffect(() => {
-    if (!isOpen || zenSettings.displayDurationSeconds === 0) return;
-
-    const cycleInterval = setInterval(() => {
-      setQuoteIndex((prev) => (prev + 1) % candidateQuotes.length);
-    }, zenSettings.displayDurationSeconds * 1000);
-
-    return () => clearInterval(cycleInterval);
-  }, [isOpen, zenSettings.displayDurationSeconds, candidateQuotes.length]);
-
   // Dismiss on any keyboard stroke or tap
   useEffect(() => {
     if (!isOpen) return;
@@ -147,6 +143,8 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
   return (
     <div 
       onClick={onClose}
+      onMouseMove={onClose}
+      onWheel={onClose}
       className="keep-tone fixed inset-0 z-50 bg-[#0a0a0c] text-stone-200 flex flex-col justify-between items-center p-6 sm:p-12 cursor-pointer select-none overflow-hidden"
     >
       {/* Background radial ambient glow */}
@@ -171,12 +169,12 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
       <div className={`relative max-w-3xl text-center px-4 my-auto z-10 transition-all ${animClass}`}>
         <div className="text-amber-500/30 text-2xl mb-6">❦</div>
         
-        <QuoteText
+        {activeQuote ? <QuoteText
           quote={activeQuote}
           style={{ ...customStyle, themeId: 'dark' }}
           fontSize={Math.max(30, customStyle.fontSize + 4)}
           className="text-white drop-shadow-sm"
-        />
+        /> : <p>لا توجد حكم في هذه المجموعة بعد.</p>}
 
         <div className="mt-8 flex items-center justify-center gap-3 text-amber-500/40">
           <span className="w-16 h-[1px] bg-amber-500/20" />
@@ -184,7 +182,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
           <span className="w-16 h-[1px] bg-amber-500/20" />
         </div>
 
-        {quoteByline(activeQuote) && (
+        {activeQuote && quoteByline(activeQuote) && (
           <div className="mt-5 text-sm sm:text-base text-stone-300 font-cairo font-medium tracking-normal">{quoteByline(activeQuote)}</div>
         )}
       </div>

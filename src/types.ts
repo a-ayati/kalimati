@@ -1,4 +1,4 @@
-export type Language = 'fusha' | 'darja';
+export type Language = 'fusha' | 'darja' | 'en' | 'fr';
 
 export type QuoteStatus = 'draft' | 'review' | 'scheduled' | 'published';
 
@@ -7,6 +7,7 @@ export interface QuoteRevision {
   timestamp: string;
   note: string;
   textSnippet: string;
+  text?: string;
 }
 
 export type DialectId = 'dz' | 'ma' | 'tn' | 'eg' | 'gulf' | 'sham';
@@ -23,6 +24,10 @@ export interface Quote {
   plainText: string; // Plain search text without Tashkeel
   language: Language;
   author: string;
+  sourceUrl?: string;
+  sourceNote?: string;
+  featuredDate?: string;
+  aiAssisted?: boolean;
   createdAt: string;
   publishedAt: string;
   status: QuoteStatus;
@@ -78,7 +83,7 @@ export interface ZenSettings {
   enabled: boolean;
   idleSeconds: 10 | 30 | 60;
   displayDurationSeconds: 10 | 60 | 0; // 0 = until interaction
-  quoteSource: 'today' | 'saved' | 'short';
+  quoteSource: 'today' | 'all' | 'saved' | 'short';
   animation: 'fade' | 'drift' | 'static';
   showClock: boolean;
   showDate: boolean;

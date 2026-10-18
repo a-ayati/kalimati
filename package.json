@@ -7,6 +7,7 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "npm run build && wrangler dev",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
     "lint": "tsc --noEmit && tsc --noEmit -p worker",
     "deploy": "npm run build && wrangler deploy"
   },

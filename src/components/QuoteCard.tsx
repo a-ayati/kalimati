@@ -197,6 +197,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
             <QuoteText quote={currentQuote} style={customStyle} className="py-3 sm:py-4 transition-all duration-300" />
 
+            {(currentQuote.sourceNote || currentQuote.sourceUrl) && <div className="text-xs text-stone-400 mt-3 space-y-1"><p>{currentQuote.sourceNote}</p>{currentQuote.sourceUrl && <a href={currentQuote.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-amber-300 underline">مصدر الاقتباس</a>}</div>}
             {/* اختيار اللهجة: يظهر عند توفّر أكثر من صيغة، والاختيار يُحفظ لكل المقولات */}
             {dialects.length > 0 && (
               <div className="flex items-center justify-center gap-1.5 flex-wrap mt-4" role="group" aria-label="لهجة الصيغة المرافقة">
@@ -221,18 +222,14 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             {/* ختم الشمع باسم الكاتب يختم المقولة */}
             <div className="flex items-center justify-center gap-3 mt-6 select-none">
               <span className="w-12 h-[1px] bg-amber-500/30" />
-              {isFolk(currentQuote) ? (
-                <span className="text-xs">✦ ✧ ✦</span>
-              ) : (
-                <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
-              )}
+              <WaxSeal size={64} light={customStyle.themeId !== 'dark'} />
               <span className="w-12 h-[1px] bg-amber-500/30" />
             </div>
           </div>
 
           {/* Author Signature & Publication Meta */}
           <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-6 text-xs text-stone-400">
-            {isFolk(currentQuote) ? (
+            {quoteByline(currentQuote) ? (
               <span className="flex items-center gap-1.5 font-medium font-cairo">
                 <User className="w-3.5 h-3.5 text-amber-500" />
                 <strong className="text-stone-200 font-semibold font-cairo">{quoteByline(currentQuote)}</strong>

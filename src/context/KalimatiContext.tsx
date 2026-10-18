@@ -140,7 +140,7 @@ const DEFAULT_ZEN: ZenSettings = {
   enabled: true,
   idleSeconds: 30,
   displayDurationSeconds: 0, // stay until interaction
-  quoteSource: 'today',
+  quoteSource: 'all',
   animation: 'fade',
   showClock: true,
   showDate: true,

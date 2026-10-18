@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+const base=process.env.LOCAL_TEST_URL;
+test('local Worker: owner protection, quote sources, scheduling conflicts, hidden drafts', {skip:!base}, async()=>{
+  const call=(path:string,method='GET',body?:unknown,cookie?:string,origin=base!)=>fetch(`${base}${path}`,{method,headers:{'content-type':'application/json',origin,...(cookie?{cookie}:{})},body:body===undefined?undefined:JSON.stringify(body)});
+  assert.equal((await call('/api/admin/studio')).status,401);
+  const login=await call('/api/admin/login','POST',{password:'local-test-only'});
+  assert.equal(login.status,200);
+  const cookie=login.headers.get('set-cookie')!.split(';')[0];
+  assert.equal((await call('/api/admin/studio','GET',undefined,cookie)).status,200);
+  assert.equal((await call('/api/admin/studio','POST',{},cookie,'https://other.example')).status,403);
+  assert.equal((await call('/api/admin/studio','POST',{},cookie)).status,503);
+  const quote={slug:`local-test-${Date.now()}`,text:'Local integration test quote.',plainText:'Local integration test quote.',author:'Test Author',language:'en',topics:['الأمل'],status:'draft',publishedAt:new Date().toISOString(),sourceNote:'Local test fixture'};
+  const invalid=await call('/api/admin/quotes','POST',{...quote,sourceNote:''},cookie); assert.equal(invalid.status,400);
+  const made=await call('/api/admin/quotes','POST',quote,cookie); assert.equal(made.status,201);
+  const q=(await made.json() as any).quote;
+  assert.equal(q.author,'Test Author');
+  const pub=await call('/api/quotes');
+  assert.ok(!(await pub.json() as any).quotes.some((a:any)=>a.id===q.id));
+  const featured={...quote,status:'scheduled',featuredDate:'2099-01-01',publishedAt:'2099-01-01T10:00:00.000Z'};
+  assert.equal((await call(`/api/admin/quotes/${q.id}`,'PUT',featured,cookie)).status,200);
+  assert.equal((await call('/api/admin/quotes','POST',featured,cookie)).status,409);
+  assert.equal((await call('/api/admin/quotes','POST',{...quote,featuredDate:'2099-13-99'},cookie)).status,400);
+  const list=await call('/api/admin/quotes','GET',undefined,cookie);
+  assert.equal((await list.json() as any).quotes.find((a:any)=>a.id===q.id).author,'Test Author');
+  assert.equal((await call(`/api/admin/quotes/${q.id}`,'DELETE',undefined,cookie)).status,200);
+});

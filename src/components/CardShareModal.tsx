@@ -202,7 +202,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     const marksFamily = `"KQM-${qf.fam}", ${qf.fallback}`;
     const darjaMarksFamily = `"KQM-${qd.fam}", ${qd.fallback}`;
 
-    const fushaText = quote.language === 'fusha' ? quote.text : null;
+    const world = quote.language === 'en' || quote.language === 'fr';
+    const fushaText = quote.language === 'fusha' || world ? quote.text : null;
     const darjaText = quote.language === 'darja' ? quote.text : pickDialect(quote, preferredDialect)?.variant.text || null;
     const maxWidth = config.width - 240;
 
@@ -231,7 +232,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     if (baseLen > 140) fushaSize -= 10;
     const darjaSize = fushaText ? Math.round(fushaSize * dialectRatio(customStyle)) : fushaSize;
 
-    const fushaFont = `${qf.fusha} ${fushaSize}px ${fushaFamily}`;
+    const fushaFont = world ? `italic ${fushaSize}px Georgia, serif` : `${qf.fusha} ${fushaSize}px ${fushaFamily}`;
     const darjaFont = `${qd.dialect} ${darjaSize}px ${darjaFamily}`;
     const fushaLines = fushaText ? wrap(fushaText, fushaFont) : [];
     const darjaLines = darjaText ? wrap(darjaText, darjaFont) : [];
@@ -263,7 +264,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     fushaLines.forEach((line) => {
       ctx.font = fushaFont;
-      drawTwoTone(line, palette.fushaLetters, palette.fushaMarks, y, fushaFont, fushaMarksFont);
+      if (world) { ctx.fillStyle = palette.fushaLetters; ctx.fillText(line, config.width / 2, y); }
+      else drawTwoTone(line, palette.fushaLetters, palette.fushaMarks, y, fushaFont, fushaMarksFont);
       y += fushaLH;
     });
 
@@ -295,6 +297,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
       ctx.fillText('♥ وَصَلَتْنِي فِي وَقْتِهَا', config.width / 2, stampY);
     }
 
+    ctx.direction = 'rtl';
     // Bottom Footer: Author attribution & web link
     const footerY = config.height - margin - 80;
     // الأمثال تُنسب إلى التراث؛ خواطر الكاتب بلا اسم: الختم في الوسط مكان التوقيع
@@ -316,7 +319,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
 
     // ختم الشمع باسم الكاتب في الزاوية السفلية كرسالة مختومة
-    if (!isFolk(quote)) drawWaxSeal(ctx, config.width / 2, footerY - 52, 64, { light: selectedTheme !== 'dark' });
+    drawWaxSeal(ctx, config.width / 2, footerY - 52, 64, { light: selectedTheme !== 'dark' });
   }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize]);
 
   useEffect(() => {

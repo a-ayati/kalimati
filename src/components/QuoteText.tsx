@@ -28,7 +28,7 @@ export function quoteColors(style: Pick<CustomStyle, 'themeId' | 'tashkeelColor'
   return {
     fushaLetters,
     fushaMarks: style.tashkeelColor === 'inherit' ? fushaLetters : accents[style.tashkeelColor] || accents.red,
-    dialectLetters: light ? '#6b645c' : '#aaa49c',
+    dialectLetters: fushaLetters,
     dialectMarks: light ? '#a87f12' : '#d4a72c',
   };
 }
@@ -89,6 +89,9 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
 
   return (
     <div className={`text-center ${className}`} dir="rtl">
+      {(quote.language === 'en' || quote.language === 'fr') && (
+        <p lang={quote.language} dir="ltr" className="m-0" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: size, lineHeight: 1.65, color: colors.fushaLetters }}>{quote.text}</p>
+      )}
       {fushaText && (
         <p lang="ar" style={fushaStyle} className="m-0">
           <TwoLayerText text={fushaText} letters={colors.fushaLetters} marks={colors.fushaMarks} lettersFont={lettersFont} marksFont={marksFont} showMarks={style.showTashkeel} />
