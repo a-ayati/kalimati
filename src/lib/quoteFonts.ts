@@ -1,4 +1,4 @@
-import { FontId } from '../types';
+import { CustomStyle, FontId } from '../types';
 
 /**
  * خطوط المقولات المستضافة (مولّدة بواسطة scripts/build-fonts.py)، لكل خط نسختان متطابقتا القياسات:
@@ -36,4 +36,15 @@ export async function ensureCardFonts(id: FontId): Promise<void> {
     for (const layer of ['L', 'M'] as const) jobs.push(document.fonts.load(`${w} 40px 'KQ${layer}-${f.fam}'`, 'كَلِمَة').catch(() => []));
   }
   await Promise.all(jobs);
+}
+
+/** خط اللهجة المختار (أو خط الفصحى إن لم يُختر) */
+export function dialectFontOf(style: Pick<CustomStyle, 'fontId' | 'dialectFontId'>): FontId {
+  return style.dialectFontId ?? style.fontId;
+}
+
+/** نسبة حجم اللهجة إلى حجم الفصحى، لتبقى ثابتة حين يُكبَّر النص (شاشة السكون، البطاقة) */
+export function dialectRatio(style: Pick<CustomStyle, 'fontSize' | 'dialectFontSize'>): number {
+  if (!style.dialectFontSize || !style.fontSize) return 0.72;
+  return Math.min(1.2, Math.max(0.4, style.dialectFontSize / style.fontSize));
 }

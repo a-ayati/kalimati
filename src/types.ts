@@ -61,7 +61,11 @@ export type TashkeelColor = 'red' | 'yellow' | 'gold' | 'inherit';
 export interface CustomStyle {
   themeId: ThemeId;
   fontId: FontId;
-  fontSize: number; // in rem or px (e.g., 24 - 36)
+  fontSize: number; // حجم خط الفصحى بالبكسل
+  /** خط اللهجة (إن لم يُحدَّد فهو خط الفصحى) */
+  dialectFontId?: FontId;
+  /** حجم خط اللهجة بالبكسل (إن لم يُحدَّد فهو 72% من الفصحى) */
+  dialectFontSize?: number;
   lineHeight: number; // 1.6 - 2.4
   tashkeelColor: TashkeelColor;
   showTashkeel: boolean;

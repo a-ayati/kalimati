@@ -5,7 +5,7 @@ import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
 import { pickDialect } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
-import { ensureCardFonts, quoteFont } from '../lib/quoteFonts';
+import { dialectFontOf, dialectRatio, ensureCardFonts, quoteFont } from '../lib/quoteFonts';
 import { 
   X, 
   Download, 
@@ -17,6 +17,16 @@ import {
   Maximize2,
   CheckCircle2
 } from 'lucide-react';
+
+/** الخطوط المتاحة في بطاقة المشاركة */
+const CARD_FONTS: { id: FontId; label: string }[] = [
+  { id: 'ruqaa-ink', label: 'حبر الرقعة' },
+  { id: 'ruqaa', label: 'الرقعة الفني' },
+  { id: 'amiri', label: 'النسخ الأميري' },
+  { id: 'kufi', label: 'الكوفي الحديث' },
+  { id: 'naskh', label: 'النسخ المعاصر' },
+  { id: 'cairo', label: 'الخط العصري' },
+];
 
 interface CardShareModalProps {
   quote: Quote;
@@ -65,6 +75,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
   const [selectedFormat, setSelectedFormat] = useState<CardFormat>('story');
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>(customStyle.themeId);
   const [selectedFont, setSelectedFont] = useState<FontId>(customStyle.fontId);
+  const [selectedDialectFont, setSelectedDialectFont] = useState<FontId>(dialectFontOf(customStyle));
   const [showSavedStamp, setShowSavedStamp] = useState(true);
   const [isGiftMode, setIsGiftMode] = useState(false);
   const [giftRecipient, setGiftRecipient] = useState('');
@@ -184,9 +195,11 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // طبقتان متطابقتا القياسات: خط الحروف ثم خط التشكيل، كلٌّ بلونه
     const qf = quoteFont(selectedFont);
+    const qd = quoteFont(selectedDialectFont);
     const fushaFamily = `"KQL-${qf.fam}", ${qf.fallback}`;
-    const darjaFamily = `"KQL-${qf.fam}", ${qf.fallback}`;
+    const darjaFamily = `"KQL-${qd.fam}", ${qd.fallback}`;
     const marksFamily = `"KQM-${qf.fam}", ${qf.fallback}`;
+    const darjaMarksFamily = `"KQM-${qd.fam}", ${qd.fallback}`;
 
     const fushaText = quote.language === 'fusha' ? quote.text : null;
     const darjaText = quote.language === 'darja' ? quote.text : pickDialect(quote, preferredDialect)?.variant.text || null;
@@ -215,10 +228,10 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     let fushaSize = config.height > 1500 ? 64 : 56;
     if (baseLen > 80) fushaSize -= 8;
     if (baseLen > 140) fushaSize -= 10;
-    const darjaSize = fushaText ? Math.round(fushaSize * 0.7) : fushaSize;
+    const darjaSize = fushaText ? Math.round(fushaSize * dialectRatio(customStyle)) : fushaSize;
 
     const fushaFont = `${qf.fusha} ${fushaSize}px ${fushaFamily}`;
-    const darjaFont = `${qf.dialect} ${darjaSize}px ${darjaFamily}`;
+    const darjaFont = `${qd.dialect} ${darjaSize}px ${darjaFamily}`;
     const fushaLines = fushaText ? wrap(fushaText, fushaFont) : [];
     const darjaLines = darjaText ? wrap(darjaText, darjaFont) : [];
     const fushaLH = fushaSize * 1.9;
@@ -234,11 +247,11 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // نفس ألوان المقولة في الصفحة: تتبع المظهر وحده، أياً كان الخط
     const palette = quoteColors({ themeId: selectedTheme, tashkeelColor: customStyle.tashkeelColor });
-    const drawTwoTone = (line: string, letters: string, marks: string, atY: number) => {
+    const drawTwoTone = (line: string, letters: string, marks: string, atY: number, marksFam = marksFamily) => {
       const lettersFont = ctx.font;
       ctx.fillStyle = letters;
       ctx.fillText(line, config.width / 2, atY);
-      ctx.font = lettersFont.replace(/"KQL-[^"]+"/, marksFamily);
+      ctx.font = lettersFont.replace(/"KQL-[^"]+", [a-z-]+/, marksFam);
       ctx.fillStyle = marks;
       ctx.fillText(line, config.width / 2, atY);
       ctx.font = lettersFont;
@@ -265,7 +278,7 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     darjaLines.forEach((line) => {
       ctx.font = darjaFont;
-      drawTwoTone(line, palette.dialectLetters, palette.dialectMarks, y);
+      drawTwoTone(line, palette.dialectLetters, palette.dialectMarks, y, darjaMarksFamily);
       y += darjaLH;
     });
     const textBottom = y;
@@ -294,20 +307,20 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
     ctx.fillStyle = subtleColor;
     ctx.font = '18px "Cairo", sans-serif';
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
-  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor]);
+  }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize]);
 
   useEffect(() => {
     renderCanvas();
     // الرسم على اللوحة لا ينتظر الخطوط؛ نحمّلها ثم نعيد الرسم حتى لا تظهر البطاقة بخط بديل
     let cancelled = false;
     const sample = 'مَا لِي أُبَالِي';
-    Promise.all([ensureCardFonts(selectedFont), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
+    Promise.all([ensureCardFonts(selectedFont), ensureCardFonts(selectedDialectFont), document.fonts.load('bold 26px "Cairo"', sample).catch(() => [])]).then(() => {
       if (!cancelled) renderCanvas();
     });
     return () => {
       cancelled = true;
     };
-  }, [renderCanvas, selectedFont]);
+  }, [renderCanvas, selectedFont, selectedDialectFont]);
 
   // Handle Download PNG
   const handleDownload = () => {
@@ -469,30 +482,30 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
               </div>
             </div>
 
-            {/* Font selection */}
-            <div>
-              <label className="block text-xs font-semibold text-amber-400 mb-2">أسلوب الخط العربي:</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {[
-                  { id: 'ruqaa', label: 'الرقعة الفني' },
-                  { id: 'amiri', label: 'النسخ الأميري' },
-                  { id: 'kufi', label: 'الكوفي الحديث' },
-                  { id: 'cairo', label: 'الخط العصري' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedFont(item.id as FontId)}
-                    className={`py-1.5 px-2 rounded-lg border text-xs transition-all cursor-pointer ${
-                      selectedFont === item.id
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-semibold'
-                        : 'bg-white/5 text-stone-400 border-white/10 hover:border-white/20'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+            {/* Font selection: الفصحى واللهجة كلٌّ بخطه */}
+            {([
+              { label: 'خط الفصحى:', value: selectedFont, set: setSelectedFont },
+              { label: 'خط اللهجة:', value: selectedDialectFont, set: setSelectedDialectFont },
+            ] as const).map((row) => (
+              <div key={row.label}>
+                <label className="block text-xs font-semibold text-amber-400 mb-2">{row.label}</label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {CARD_FONTS.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => row.set(item.id)}
+                      className={`py-1.5 px-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                        row.value === item.id
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-semibold'
+                          : 'bg-white/5 text-stone-400 border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
 
             {/* Stamp toggle */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">

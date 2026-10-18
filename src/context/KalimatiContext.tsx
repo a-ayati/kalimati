@@ -127,6 +127,8 @@ const DEFAULT_STYLE: CustomStyle = {
   themeId: 'dark',
   fontId: 'ruqaa-ink',
   fontSize: 29,
+  dialectFontId: 'ruqaa-ink',
+  dialectFontSize: 21,
   lineHeight: 2.3,
   tashkeelColor: 'red',
   showTashkeel: true,

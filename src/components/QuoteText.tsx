@@ -3,7 +3,7 @@ import { CustomStyle, DialectId, FontId, Quote, ThemeId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
 import { dialectInfo, pickDialect } from '../utils/dialects';
 import { stripTashkeel } from '../utils/tashkeel';
-import { QUOTE_FONTS, fontFamilyCss, quoteFont } from '../lib/quoteFonts';
+import { QUOTE_FONTS, dialectFontOf, dialectRatio, fontFamilyCss, quoteFont } from '../lib/quoteFonts';
 import { TwoLayerText } from './InkText';
 
 /** اسم الخط لكل اختيار (للمعاينات في صفحة التخصيص) */
@@ -59,6 +59,11 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
   const colors = quoteColors(style);
   const lettersFont = fontFamilyCss(style.fontId, 'L');
   const marksFont = fontFamilyCss(style.fontId, 'M');
+  // اللهجة بخطها وحجمها الخاصين
+  const dFontId = dialectFontOf(style);
+  const dFont = quoteFont(dFontId);
+  const dLettersFont = fontFamilyCss(dFontId, 'L');
+  const dMarksFont = fontFamilyCss(dFontId, 'M');
 
   // إن كان القول بالدارجة وحدها نعرضه بأسلوب الدارجة وبالحجم الكامل
   const fushaText = quote.language === 'fusha' ? quote.text : null;
@@ -75,9 +80,9 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
   };
 
   const darjaStyle: React.CSSProperties = {
-    fontFamily: family,
-    fontWeight: font.dialect,
-    fontSize: `${fushaText ? Math.round(size * 0.72) : size}px`,
+    fontFamily: dLettersFont,
+    fontWeight: dFont.dialect,
+    fontSize: `${fushaText ? Math.round(size * dialectRatio(style)) : size}px`,
     lineHeight: Math.max(1.9, lineHeight - 0.2),
     letterSpacing: 0,
   };
@@ -100,7 +105,7 @@ export const QuoteText: React.FC<Props> = ({ quote, style, fontSize, dialect, sh
 
       {darjaText && (
         <p lang={darjaLang} style={darjaStyle} className="m-0">
-          <TwoLayerText text={darjaText} letters={colors.dialectLetters} marks={colors.dialectMarks} lettersFont={lettersFont} marksFont={marksFont} showMarks={style.showTashkeel} />
+          <TwoLayerText text={darjaText} letters={colors.dialectLetters} marks={colors.dialectMarks} lettersFont={dLettersFont} marksFont={dMarksFont} showMarks={style.showTashkeel} />
         </p>
       )}
     </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useKalimati } from '../context/KalimatiContext';
 import { FontId, ThemeId, TashkeelColor, BorderStyle } from '../types';
 import { QuoteText, FONT_FAMILIES } from '../components/QuoteText';
@@ -14,9 +14,20 @@ import {
   Languages
 } from 'lucide-react';
 import { DIALECTS } from '../utils/dialects';
+import { dialectFontOf } from '../lib/quoteFonts';
 
 export const CustomizeView: React.FC = () => {
   const { customStyle, setCustomStyle, resetToOfficialStyle, quotes, preferredDialect, setPreferredDialect } = useKalimati();
+
+  // التحكم في خط الفصحى وخط اللهجة كلٌّ على حدة
+  const [fontTarget, setFontTarget] = useState<'fusha' | 'dialect'>('fusha');
+  const isDialect = fontTarget === 'dialect';
+  const currentFontId = isDialect ? dialectFontOf(customStyle) : customStyle.fontId;
+  const currentSize = isDialect ? customStyle.dialectFontSize ?? Math.round(customStyle.fontSize * 0.72) : customStyle.fontSize;
+  const setFontFor = (id: FontId) =>
+    setCustomStyle((prev) => (isDialect ? { ...prev, dialectFontId: id } : { ...prev, fontId: id }));
+  const setSizeFor = (n: number) =>
+    setCustomStyle((prev) => (isDialect ? { ...prev, dialectFontSize: n } : { ...prev, fontSize: n }));
 
   // Sample quote for live preview
   const previewQuote = quotes.find((q) => q.dialects || q.darja) || quotes[0];
@@ -198,27 +209,40 @@ export const CustomizeView: React.FC = () => {
           </div>
         </div>
 
-        {/* 2. Arabic Font Family */}
-        <div className="bg-[#141518] p-5 rounded-3xl border border-white/10 space-y-3.5">
+        {/* 2. الخطوط: الفصحى واللهجة كلٌّ بخطه وحجمه */}
+        <div className="bg-[#141518] p-5 rounded-3xl border border-white/10 space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-white">
             <Type className="w-4 h-4 text-amber-400" />
-            <span>أنماط الخط العربي المرخّصة</span>
+            <span>الخط والحجم</span>
           </div>
-          <p className="text-stone-400 text-[11px]">خطوط ويب عربية أصلية تضمن اتصال الحروف دون قص:</p>
+          <p className="text-stone-400 text-[11px]">اختر ما تريد ضبطه، ثم اختر خطه وحجمه:</p>
+
+          <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-white/5 border border-white/10" role="tablist">
+            {([
+              { id: 'fusha', label: 'خط الفصحى' },
+              { id: 'dialect', label: 'خط اللهجة' },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={fontTarget === t.id}
+                onClick={() => setFontTarget(t.id)}
+                className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  fontTarget === t.id ? 'bg-amber-500 text-stone-950 shadow-xs' : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
           <div className="space-y-2">
             {FONTS.map((font) => {
-              const active = customStyle.fontId === font.id;
-              const fClass = 
-                font.id === 'ruqaa' ? 'font-ruqaa' :
-                font.id === 'amiri' ? 'font-amiri' :
-                font.id === 'kufi' ? 'font-kufi' :
-                font.id === 'naskh' ? 'font-naskh' : 'font-cairo';
-
+              const active = currentFontId === font.id;
               return (
                 <button
                   key={font.id}
-                  onClick={() => setCustomStyle((prev) => ({ ...prev, fontId: font.id }))}
+                  onClick={() => setFontFor(font.id)}
                   className={`w-full p-2.5 rounded-2xl border text-right transition-all flex items-center justify-between cursor-pointer ${
                     active
                       ? 'border-amber-400 bg-amber-500/10 shadow-xs'
@@ -237,29 +261,29 @@ export const CustomizeView: React.FC = () => {
               );
             })}
           </div>
-        </div>
 
-        {/* 3. Font Size & Line Height */}
-        <div className="bg-[#141518] p-5 rounded-3xl border border-white/10 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-white">
-            <Sliders className="w-4 h-4 text-amber-400" />
-            <span>المقاس والمسافات</span>
-          </div>
-
-          {/* Size slider */}
-          <div>
+          <div className="pt-1">
             <div className="flex justify-between text-stone-300 mb-1.5 font-medium">
-              <span>حجم الخط:</span>
-              <span className="text-amber-400 font-bold">{customStyle.fontSize} بكسل</span>
+              <span>{isDialect ? 'حجم خط اللهجة:' : 'حجم خط الفصحى:'}</span>
+              <span className="text-amber-400 font-bold">{currentSize} بكسل</span>
             </div>
             <input
               type="range"
-              min="20"
-              max="42"
-              value={customStyle.fontSize}
-              onChange={(e) => setCustomStyle((prev) => ({ ...prev, fontSize: Number(e.target.value) }))}
+              min={isDialect ? 14 : 20}
+              max={isDialect ? 36 : 42}
+              value={currentSize}
+              onChange={(e) => setSizeFor(Number(e.target.value))}
               className="w-full accent-amber-500 cursor-pointer"
+              aria-label={isDialect ? 'حجم خط اللهجة' : 'حجم خط الفصحى'}
             />
+          </div>
+        </div>
+
+        {/* 3. المسافات */}
+        <div className="bg-[#141518] p-5 rounded-3xl border border-white/10 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-white">
+            <Sliders className="w-4 h-4 text-amber-400" />
+            <span>المسافات</span>
           </div>
 
           {/* Line height slider */}
