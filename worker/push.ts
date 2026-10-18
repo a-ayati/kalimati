@@ -6,7 +6,7 @@
  */
 import { validatePushSubscription } from './pushValidation';
 import { dailyQuote } from '../shared/daily';
-import { buildPushHTTPRequest } from '@pushforge/builder';
+import { buildWebPushRequest } from './webPush';
 
 export interface PushEnv {
   DB: D1Database;
@@ -94,16 +94,15 @@ async function send(
   sub: { endpoint: string; p256dh: string; auth: string },
   payload: Record<string, unknown>
 ): Promise<number> {
-  const { endpoint, headers, body } = await buildPushHTTPRequest({
-    privateJWK: keys.privateJWK as any,
-    subscription: { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-    message: {
-      payload,
-      adminContact: 'mailto:abdelouahedayati@gmail.com',
-      options: { ttl: 6 * 3600, urgency: 'normal', topic: 'daily' },
-    } as any,
-  });
+  const { endpoint, headers, body } = await buildWebPushRequest(keys.privateJWK, sub, payload);
   const res = await fetch(endpoint, { method: 'POST', headers, body });
+  if (!res.ok) {
+    // Only a short provider error code is retained; never log endpoints or keys.
+    const detail = await res.text().catch(() => '');
+    let reason = 'provider_rejected';
+    try { const parsed = JSON.parse(detail); if (typeof parsed.reason === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(parsed.reason)) reason = parsed.reason; } catch { /* no untrusted response text in logs */ }
+    console.warn('web_push_rejected', {provider:new URL(endpoint).hostname,status:res.status,reason});
+  }
   // اشتراك منتهٍ: نحذفه
   if (res.status === 404 || res.status === 410) {
     await env.DB.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
