@@ -41,6 +41,6 @@ export async function buildWebPushRequest(privateJWK: JsonWebKey, sub: {endpoint
   const signingKey=await crypto.subtle.importKey('jwk',privateJWK,{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
   const signature=new Uint8Array(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},signingKey,bytes(unsigned)));
   const publicKey=base64url(concat(new Uint8Array([4]),decode(privateJWK.x!),decode(privateJWK.y!)));
-  const headers=new Headers({'content-type':'application/octet-stream','content-encoding':'aes128gcm',TTL:'21600',Urgency:'normal',Topic:'daily',Authorization:`vapid t=${unsigned}.${base64url(signature)}, k=${publicKey}`});
+  const headers=new Headers({'content-type':'application/octet-stream','content-encoding':'aes128gcm',TTL:'21600',Urgency:'normal',Authorization:`vapid t=${unsigned}.${base64url(signature)}, k=${publicKey}`});
   return {endpoint:sub.endpoint,headers,body};
 }

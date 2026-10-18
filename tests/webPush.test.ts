@@ -12,6 +12,7 @@ test('RFC8291 aes128gcm decrypts independently using Node crypto, including Arab
   const {jwk,user,auth,sub}=await fixture();const payload={title:'كلمة اليوم',body:'حِكْمَةٌ لَكَ',url:'https://example.com/q/test'};
   const out=await buildWebPushRequest(jwk,sub,payload);
   assert.equal(out.headers.get('content-encoding'),'aes128gcm');
+  assert.equal(out.headers.has('Topic'),false,'Omit optional Topic: Apple rejects nonconforming values with BadWebPushTopic');
   assert.equal(out.headers.has('Encryption'),false);assert.equal(out.headers.has('Crypto-Key'),false);
   const body=Buffer.from(out.body); assert.ok(body.length<=4096);assert.equal(body.readUInt32BE(16),4096);assert.equal(body[20],65);
   const salt=body.subarray(0,16),server=body.subarray(21,86),cipher=body.subarray(86);
