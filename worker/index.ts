@@ -658,8 +658,8 @@ function ensureSchema(env: Env): Promise<void> {
         );
       }
       await fillDialects(env);
-      // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع
-      await env.DB.prepare('UPDATE quotes SET author = ?1 WHERE author <> ?1').bind(SOLE_AUTHOR).run();
+      // كاتب واحد: أي قول قديم باسم آخر يُنسب إلى شعيب المطوع (الاسم محفوظ داخل بيانات القول)
+      await env.DB.prepare("UPDATE quotes SET data = json_set(data, '$.author', ?1) WHERE json_extract(data, '$.author') NOT IN (?1, 'تراث شعبي')").bind(SOLE_AUTHOR).run();
     })().catch((e) => {
       schemaReady = null; // نعيد المحاولة في الطلب التالي
       throw e;
