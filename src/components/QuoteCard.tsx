@@ -5,7 +5,7 @@ import { useKalimati } from '../context/KalimatiContext';
 import { stripTashkeel } from '../utils/tashkeel';
 import { WaxSeal } from './WaxSeal';
 import { QuoteText } from './QuoteText';
-import { availableDialects, dialectInfo, isFolk, pickDialect, quoteByline, quoteLabel } from '../utils/dialects';
+import { availableDialects, bylineSuffix, dialectInfo, isFolk, pickDialect, quoteByline, quoteLabel } from '../utils/dialects';
 import { 
   Heart, 
   Share2, 
@@ -88,7 +88,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
     try {
       const picked = pickDialect(currentQuote, preferredDialect);
       const darjaLine = picked ? `\n${stripTashkeel(picked.variant.text)}` : '';
-      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}\n\n— ${quoteByline(currentQuote)}\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
+      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}${bylineSuffix(currentQuote)}\n\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -232,21 +232,14 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
           {/* Author Signature & Publication Meta */}
           <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-6 text-xs text-stone-400">
-            <button
-              onClick={() => {
-                if (!isFolk(currentQuote)) setActiveTab('author');
-              }}
-              className="flex items-center gap-1.5 hover:text-amber-400 transition-colors font-medium font-cairo cursor-pointer"
-            >
-              <User className="w-3.5 h-3.5 text-amber-500" />
-              <span className="font-cairo">
-                {isFolk(currentQuote) ? (
-                  <strong className="text-stone-200 font-semibold font-cairo">{quoteByline(currentQuote)}</strong>
-                ) : (
-                  <>بقلم: <strong className="text-stone-200 font-semibold font-cairo">{currentQuote.author}</strong></>
-                )}
+            {isFolk(currentQuote) ? (
+              <span className="flex items-center gap-1.5 font-medium font-cairo">
+                <User className="w-3.5 h-3.5 text-amber-500" />
+                <strong className="text-stone-200 font-semibold font-cairo">{quoteByline(currentQuote)}</strong>
               </span>
-            </button>
+            ) : (
+              <span />
+            )}
 
             <div className="flex items-center gap-1.5 text-stone-400 text-[11px]">
               <Calendar className="w-3.5 h-3.5 opacity-60" />

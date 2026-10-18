@@ -3,7 +3,7 @@ import { Quote, ThemeId, FontId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
 import { quoteUrl, siteHost } from '../lib/links';
 import { stripTashkeel } from '../utils/tashkeel';
-import { isFolk, pickDialect, quoteByline } from '../utils/dialects';
+import { bylineSuffix, isFolk, pickDialect, quoteByline } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
 import { drawWaxSeal, loadSealImage } from '../lib/waxSeal';
 import { dialectFontOf, dialectRatio, ensureCardFonts, quoteFont } from '../lib/quoteFonts';
@@ -297,23 +297,26 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
 
     // Bottom Footer: Author attribution & web link
     const footerY = config.height - margin - 80;
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(config.width / 2 - 100, footerY - 40);
-    ctx.lineTo(config.width / 2 + 100, footerY - 40);
-    ctx.stroke();
-
-    ctx.fillStyle = textColor;
-    ctx.font = 'bold 26px "Cairo", sans-serif';
-    ctx.fillText(quote.author ? quoteByline(quote) : `بقلم: ${author.name}`, config.width / 2, footerY);
+    // الأمثال تُنسب إلى التراث؛ خواطر الكاتب بلا اسم: الختم في الوسط مكان التوقيع
+    const byline = quoteByline(quote);
+    if (byline) {
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(config.width / 2 - 100, footerY - 40);
+      ctx.lineTo(config.width / 2 + 100, footerY - 40);
+      ctx.stroke();
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 26px "Cairo", sans-serif';
+      ctx.fillText(byline, config.width / 2, footerY);
+    }
 
     ctx.fillStyle = subtleColor;
     ctx.font = '18px "Cairo", sans-serif';
     ctx.fillText(siteHost(), config.width / 2, footerY + 36);
 
     // ختم الشمع باسم الكاتب في الزاوية السفلية كرسالة مختومة
-    if (!isFolk(quote)) drawWaxSeal(ctx, margin + 150, footerY - 14, 62, { light: selectedTheme !== 'dark' });
+    if (!isFolk(quote)) drawWaxSeal(ctx, config.width / 2, footerY - 52, 64, { light: selectedTheme !== 'dark' });
   }, [quote, selectedFormat, selectedTheme, selectedFont, showSavedStamp, isGiftMode, giftRecipient, giftPersonalMessage, author, preferredDialect, customStyle.tashkeelColor, selectedDialectFont, customStyle.fontSize, customStyle.dialectFontSize]);
 
   useEffect(() => {
@@ -354,13 +357,13 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
                 title: 'كلماتي — كلمة تصل في وقتها',
-                text: `${stripTashkeel(quote.text)}${pickDialect(quote, preferredDialect) ? '\n' + stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text) : ''}\n\n— ${quoteByline(quote)}\nمنصة كلماتي: ${quoteUrl(quote)}`,
+                text: `${stripTashkeel(quote.text)}${pickDialect(quote, preferredDialect) ? '\n' + stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text) : ''}${bylineSuffix(quote)}\n\nمنصة كلماتي: ${quoteUrl(quote)}`,
                 files: [file],
               });
             } else {
               await navigator.share({
                 title: 'كلماتي — كلمة تصل في وقتها',
-                text: `${stripTashkeel(quote.text)}\n\n— ${quoteByline(quote)}`,
+                text: `${stripTashkeel(quote.text)}${bylineSuffix(quote)}`,
                 url: quoteUrl(quote),
               });
             }

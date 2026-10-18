@@ -184,9 +184,9 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
           <span className="w-16 h-[1px] bg-amber-500/20" />
         </div>
 
-        <div className="mt-5 text-sm sm:text-base text-stone-300 font-cairo font-medium tracking-normal">
-          {activeQuote.author ? quoteByline(activeQuote) : `بقلم: ${author.name}`}
-        </div>
+        {quoteByline(activeQuote) && (
+          <div className="mt-5 text-sm sm:text-base text-stone-300 font-cairo font-medium tracking-normal">{quoteByline(activeQuote)}</div>
+        )}
       </div>
 
       {/* Bottom Footer: Minimal brand watermark */}

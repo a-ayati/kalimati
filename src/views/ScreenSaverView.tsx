@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteText } from '../components/QuoteText';
 import { InkText } from '../components/InkText';
-import { isDialectId } from '../utils/dialects';
+import { isDialectId, quoteByline } from '../utils/dialects';
 import { DialectId, Quote } from '../types';
 
 /**
@@ -179,11 +179,13 @@ export const ScreenSaverView: React.FC = () => {
               transition={{ duration: 1.6, ease: [0.33, 0, 0.2, 1] }}
             >
               <QuoteText quote={shownQuote} style={style} fontSize={fontSize} dialect={dialect} />
-              <div className="mt-[3vh] flex items-center justify-center gap-3 text-[#c9a227]/75 font-cairo" style={{ fontSize: Math.max(13, fontSize * 0.32) }}>
-                <span className="h-px w-10 bg-[#c9a227]/40" />
-                <span>{shownQuote.author}</span>
-                <span className="h-px w-10 bg-[#c9a227]/40" />
-              </div>
+              {quoteByline(shownQuote) && (
+                <div className="mt-[3vh] flex items-center justify-center gap-3 text-[#c9a227]/75 font-cairo" style={{ fontSize: Math.max(13, fontSize * 0.32) }}>
+                  <span className="h-px w-10 bg-[#c9a227]/40" />
+                  <span>{quoteByline(shownQuote)}</span>
+                  <span className="h-px w-10 bg-[#c9a227]/40" />
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

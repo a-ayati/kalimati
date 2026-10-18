@@ -65,7 +65,13 @@ export function quoteLabel(q: Pick<Quote, 'language' | 'dialect' | 'author'>): s
   return isFolk(q) ? `مثل شعبي ${name.replace(/ة$/, '')}` : `دارجة ${name}`;
 }
 
-/** نسبة القول: «بقلم: …» للكاتب، و«من التراث الشعبي …» للأمثال */
+/** نسبة القول: «من التراث الشعبي …» للأمثال فقط؛ خواطر الكاتب بلا اسم (يكفيها الختم) */
 export function quoteByline(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
-  return isFolk(q) ? `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}` : `بقلم: ${q.author}`;
+  return isFolk(q) ? `من التراث الشعبي ${dialectInfo(quoteDialectId(q)).name.replace(/ة$/, '')}` : '';
+}
+
+/** سطر النسبة في النص المنسوخ أو المشارَك (فارغ لخواطر الكاتب) */
+export function bylineSuffix(q: Pick<Quote, 'language' | 'dialect' | 'author'>): string {
+  const b = quoteByline(q);
+  return b ? `\n\n— ${b}` : '';
 }

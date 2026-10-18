@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { quoteUrl as quoteLink } from '../lib/links';
-import { dialectInfo, isFolk, pickDialect, quoteByline, quoteDialectId, quoteLabel } from '../utils/dialects';
+import { bylineSuffix, dialectInfo, isFolk, pickDialect, quoteByline, quoteDialectId, quoteLabel } from '../utils/dialects';
 import { useKalimati } from '../context/KalimatiContext';
 import { QuoteCard } from '../components/QuoteCard';
 import { stripTashkeel } from '../utils/tashkeel';
@@ -80,7 +80,7 @@ export const QuoteDetailView: React.FC = () => {
     try {
       const picked = pickDialect(quote, preferredDialect);
       const darjaLine = picked ? `\n"${stripTashkeel(picked.variant.text)}"` : '';
-      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}\n\n— ${quoteByline(quote)}\nالمصدر: منصة كلماتي (${quoteUrl})`;
+      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}${bylineSuffix(quote)}\n\nالمصدر: منصة كلماتي (${quoteUrl})`;
       await navigator.clipboard.writeText(fullCitation);
       setCopiedText(true);
       setTimeout(() => setCopiedText(false), 2000);
@@ -98,11 +98,7 @@ export const QuoteDetailView: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'Quotation',
             'text': stripTashkeel(quote.text),
-            'creator': {
-              '@type': 'Person',
-              'name': quote.author,
-              'url': `${window.location.origin}/author`,
-            },
+            ...(isFolk(quote) ? { 'creator': { '@type': 'Organization', 'name': quoteByline(quote) } } : {}),
             'datePublished': quote.publishedAt,
             'inLanguage': quote.language === 'darja' ? dialectInfo(quoteDialectId(quote)).lang : 'ar',
             'isPartOf': {
@@ -176,22 +172,15 @@ export const QuoteDetailView: React.FC = () => {
 
         {/* Metadata Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
-            <div className="text-stone-400 flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-amber-400" />
-              <span>الكاتب والمؤلف:</span>
-            </div>
-            {isFolk(quote) ? (
+          {isFolk(quote) && (
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
+              <div className="text-stone-400 flex items-center gap-1">
+                <User className="w-3.5 h-3.5 text-amber-400" />
+                <span>المصدر:</span>
+              </div>
               <div className="font-bold text-stone-200 text-sm">{quoteByline(quote)}</div>
-            ) : (
-              <button
-                onClick={() => setActiveTab('author')}
-                className="font-bold text-stone-200 hover:text-amber-300 transition-colors text-sm underline cursor-pointer"
-              >
-                {quote.author}
-              </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
             <div className="text-stone-400 flex items-center gap-1">
@@ -219,7 +208,7 @@ export const QuoteDetailView: React.FC = () => {
             <span>حول الفهرسة وحماية الحقوق الأدبية:</span>
           </div>
           <p>
-            تحتفظ المنصة بسجل التعديلات والمسودات وتواريخ الإنشاء الداخلية كتوثيق لمسار الكتابة وتسهيل نسبة النصوص لصاحبها الأصلي شعيب المطوع.
+            تحتفظ المنصة بسجل التعديلات والمسودات وتواريخ الإنشاء الداخلية كتوثيق لمسار الكتابة وتسهيل نسبة النصوص إلى المنصة.
             يُرجى العلم أن فهرسة جوجل لمحركات البحث هي أداة لاكتشاف المصدر وليست تسجيلًا قانونيًا رسميًا لحقوق التأليف. أهلية العبارات القصيرة للحماية تخضع لمدى أصالتها وقوانين الملكية الفكرية المعمول بها.
           </p>
         </div>
@@ -247,7 +236,7 @@ export const QuoteDetailView: React.FC = () => {
                   {stripTashkeel(rel.text)}
                 </p>
                 <div className="flex items-center justify-between text-[10px] text-stone-500 pt-2 border-t border-white/5">
-                  <span>{rel.author}</span>
+                  <span>{quoteLabel(rel)}</span>
                   <span className="text-amber-400 hover:underline">قراءة الاقتباس ←</span>
                 </div>
               </div>

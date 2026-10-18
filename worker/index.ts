@@ -481,7 +481,7 @@ async function handleSitemap(req: Request, env: Env): Promise<Response> {
   const { results } = await env.DB.prepare(`SELECT slug, updated_at FROM quotes WHERE ${VISIBLE_WHERE} ORDER BY published_at DESC`)
     .bind(new Date().toISOString())
     .all<{ slug: string; updated_at: string }>();
-  const pages = ['/', '/library', '/author', '/about', '/contact', '/privacy'];
+  const pages = ['/', '/library', '/about', '/contact', '/privacy'];
   const urls = [
     ...pages.map((p) => `<url><loc>${origin}${p}</loc></url>`),
     ...results.map(
@@ -548,7 +548,7 @@ async function handleQuotePage(req: Request, env: Env, slug: string): Promise<Re
   const plain: string = q.plainText || '';
   return serveShell(req, env, `/q/${encodeURIComponent(row.slug)}`, {
     title: `«${plain.length > 70 ? plain.slice(0, 70) + '…' : plain}» — كلماتي`,
-    description: `${plain.slice(0, 180)} — ${q.author}`,
+    description: q.author === FOLK_AUTHOR ? `${plain.slice(0, 180)} — مثل من التراث الشعبي` : plain.slice(0, 200),
   });
 }
 

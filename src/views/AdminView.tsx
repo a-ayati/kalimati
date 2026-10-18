@@ -666,9 +666,9 @@ export const AdminView: React.FC = () => {
                     }}
                     className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-stone-200 focus:outline-none focus:border-amber-500"
                   >
-                    <option value="fusha">خاطرة بالفصحى — بقلم {INITIAL_AUTHOR.name}</option>
+                    <option value="fusha">خاطرة بالفصحى — بالختم</option>
                     <option value="folk">مثل شعبي باللهجة — من التراث</option>
-                    <option value="own">قول باللهجة — بقلم {INITIAL_AUTHOR.name}</option>
+                    <option value="own">قول باللهجة — بالختم</option>
                   </select>
                 </div>
 

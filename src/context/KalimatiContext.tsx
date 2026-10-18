@@ -27,7 +27,7 @@ const TAB_PATHS: Record<Exclude<ActiveTab, 'quote-detail'>, string> = {
   saved: '/saved',
   customize: '/customize',
   account: '/account',
-  author: '/author',
+  author: '/', // صفحة الكاتب حُذفت: رابطها القديم يفتح الرئيسية
   about: '/about',
   'privacy-terms': '/privacy',
   contact: '/contact',

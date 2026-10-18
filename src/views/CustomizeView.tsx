@@ -134,7 +134,6 @@ export const CustomizeView: React.FC = () => {
           <div className="border border-white/10 p-5 sm:p-8 rounded-2xl text-center">
             <div className="text-amber-500/40 text-xs mb-3">❦ ✦ ❦</div>
             <QuoteText quote={previewQuote} style={customStyle} className="transition-all" />
-            <div className="mt-2 text-xs opacity-75">بقلم: {previewQuote.author}</div>
             {previewDialect && (
               <div className="mt-5 pt-4 border-t border-white/10">
                 <QuoteText quote={previewDialect} style={customStyle} className="transition-all" />

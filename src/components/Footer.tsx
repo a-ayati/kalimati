@@ -25,12 +25,6 @@ export const Footer: React.FC = () => {
           {/* Links */}
           <div className="flex items-center gap-4 flex-wrap text-xs text-stone-400">
             <button
-              onClick={() => setActiveTab('author')}
-              className="hover:text-amber-400 transition-colors cursor-pointer"
-            >
-              صفحة الكاتب
-            </button>
-            <button
               onClick={() => setActiveTab('about')}
               className="hover:text-amber-400 transition-colors cursor-pointer"
             >
@@ -54,7 +48,7 @@ export const Footer: React.FC = () => {
         {/* Bottom footer row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] text-stone-500">
           <div>
-            جميع الخواطر المنشورة كتابات أصلية بقلم الكاتب <strong>{author.name}</strong>، أما الأمثال الشعبية فمن تراث أهلها.
+            الخواطر المنشورة كتابات أصلية خاصة بالمنصة، أما الأمثال الشعبية فمن تراث أهلها.
           </div>
           <div className="flex items-center gap-1">
             <span>صُمِّمت بحب ورعاية للحرف العربي</span>

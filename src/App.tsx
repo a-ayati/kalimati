@@ -8,7 +8,6 @@ import { SavedView } from './views/SavedView';
 import { CustomizeView } from './views/CustomizeView';
 import { AccountSettingsView } from './views/AccountSettingsView';
 import { QuoteDetailView } from './views/QuoteDetailView';
-import { AuthorView } from './views/AuthorView';
 import { AboutView } from './views/AboutView';
 import { PrivacyTermsView } from './views/PrivacyTermsView';
 import { ContactView } from './views/ContactView';
@@ -62,7 +61,6 @@ const AppContent: React.FC = () => {
         {activeTab === 'customize' && <CustomizeView />}
         {activeTab === 'account' && <AccountSettingsView />}
         {activeTab === 'quote-detail' && <QuoteDetailView />}
-        {activeTab === 'author' && <AuthorView />}
         {activeTab === 'about' && <AboutView />}
         {activeTab === 'privacy-terms' && <PrivacyTermsView />}
         {activeTab === 'contact' && <ContactView />}
