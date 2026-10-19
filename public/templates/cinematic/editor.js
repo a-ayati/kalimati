@@ -99,7 +99,7 @@ function libraryOptions() {
   $('post-preset').replaceChildren(new Option('اختر بوستًا من المجموعة', ''));
   for (const post of posts) $('post-preset').append(new Option(`${post.category} · ${post.title}`, post.id));
   if (posts.some(post => post.id === current)) $('post-preset').value = current;
-  $('post-count').textContent = `${posts.length} بوستًا متاحًا من أصل ${POST_PRESETS.length}`;
+  $('post-count').textContent = `${posts.length} / ${POST_PRESETS.length}`;
   $('apply-post').disabled = !$('post-preset').value;
 }
 for (const category of POST_CATEGORIES) $('post-category').append(new Option(category, category));
@@ -142,3 +142,20 @@ Promise.all([document.fonts.load(`900 ${FONT_SIZE}px Thmanyah`, 'كلمة ثما
     if (!fonts.length) throw new Error('لم يُحمّل خط ثمانية؛ أعد تحميل الصفحة.');
     fontReady = true; if (!photo) photo = image; draw();
   }).catch(error => { status(error.message || 'تعذّر تحميل القالب. أعد تحميل الصفحة.'); $('download').disabled = true; });
+
+// Background changes keep the current copy, accent and caption intact.
+document.addEventListener('studio:background', async event => {
+  const key = event.detail;
+  if (!POST_PRESETS.some(post => post.background === key)) return;
+  const sequence = ++uploadSequence;
+  $('preset-photo').checked = false;
+  $('background-status').textContent = 'جارٍ تطبيق الخلفية…';
+  try {
+    const image = await loadPhoto(`./backgrounds/${key}.jpg`);
+    if (sequence !== uploadSequence) return;
+    photo = image; draw(); $('background-status').textContent = 'تم تطبيق الخلفية.';
+    document.dispatchEvent(new CustomEvent('studio:background-ready', { detail: key }));
+  } catch (error) {
+    if (sequence === uploadSequence) $('background-status').textContent = error.message;
+  }
+});
