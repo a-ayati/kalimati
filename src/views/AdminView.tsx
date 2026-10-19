@@ -500,6 +500,16 @@ export const AdminView: React.FC = () => {
         </div>
       )}
 
+      <a
+        href="/templates/cinematic/index.html"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 w-full rounded-2xl bg-amber-400 px-5 py-4 font-bold text-black shadow-lg shadow-amber-500/10 hover:bg-amber-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
+      >
+        <Sparkles className="w-5 h-5" aria-hidden="true" />
+        القالب السينمائي — صمّم منشورًا
+      </a>
+
       {section === 'home' && (
         <>
           {/* الرأس */}
