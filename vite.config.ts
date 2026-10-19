@@ -54,12 +54,12 @@ export default defineConfig(() => {
           cleanupOutdatedCaches: true,
           // استقبال الإشعار اليومي وفتح المقولة عند النقر عليه
           importScripts: ['push-sw.js'],
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
+          globPatterns: ['**/*.{js,mjs,css,html,ico,png,jpg,svg,webp,woff,woff2}'],
           // نسخ بطاقة المشاركة تُحمَّل عند الحاجة فقط
           globIgnores: ['**/*-gold.woff2'],
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
           // الخادم يتولى هذه المسارات — لا يجب أن يجيب عنها التطبيق المخزّن
-          navigateFallbackDenylist: [/^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
+          navigateFallbackDenylist: [/^\/templates\//, /^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
           runtimeCaching: [
             {
               // أحدث الأقوال من الشبكة أولاً، وآخر نسخة عند انقطاع الاتصال

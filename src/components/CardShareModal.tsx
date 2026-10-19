@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Quote, ThemeId, FontId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
 import { quoteUrl, siteHost } from '../lib/links';
+import { cinematicTemplateUrl } from '../lib/cinematicTemplate';
 import { stripTashkeel } from '../utils/tashkeel';
 import { bylineSuffix, isFolk, isWriterQuote, pickDialect, quoteByline } from '../utils/dialects';
 import { quoteColors } from './QuoteText';
@@ -456,6 +457,15 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
           {/* Controls Column (7 cols) */}
           <div className="lg:col-span-7 space-y-5 order-2 lg:order-1 text-xs">
             
+            <div className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-4 space-y-2">
+              <h3 className="font-bold text-amber-300">قالب سينمائي — ثمانية</h3>
+              <p className="text-stone-300 leading-relaxed">صورة من اختيارك، عنوان من سطرين وكلمة بلون قوي. تنتقل العبارة ونسبتها إلى محرّر مستقل بمقاس 4:5.</p>
+              <a href={cinematicTemplateUrl(quote)} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-amber-400 px-4 py-2 font-bold text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+                فتح القالب السينمائي ↗
+              </a>
+            </div>
+
             {/* Format selection (Story, Square, Portrait) */}
             <div>
               <label className="block text-xs font-semibold text-amber-400 mb-2">مقاس البطاقة (Aspect Ratio):</label>

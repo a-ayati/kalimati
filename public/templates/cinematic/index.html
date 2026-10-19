@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="same-origin">
+  <title>القالب السينمائي — ثمانية</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./editor.js"></script>
+</head>
+<body>
+<main>
+  <section aria-labelledby="title">
+    <a class="back" href="/">← العودة إلى المنصة</a>
+    <h1 id="title">القالب السينمائي — ثمانية</h1>
+    <p>صورة، وعبارة من سطرين، وكلمة بلون قوي. حمّل منشورك بمقاس 4:5 مع الحفاظ على شكل الحروف.</p>
+    <label>الصورة<input id="photo" type="file" accept="image/*" aria-describedby="photo-help"></label>
+    <small id="photo-help">اختر صورة بلا كتابة، حتى 20 ميغابايت. تُقص إلى 4:5 وتُعالج على جهازك.</small>
+    <label>السطر الأول<input id="line1" value="ابدَأ الآن" maxlength="300"></label>
+    <label>السطر الثاني<input id="line2" value="بما لَدَيك." maxlength="300"></label>
+    <label>الكلمة الملوّنة<input id="keyword" value="لديك" maxlength="100"></label>
+    <label>اللون المميّز<input id="color" type="color" value="#ff982f"></label>
+    <label>الترجمة الإنجليزية (اختياري)<input id="translation" dir="ltr" value="START NOW WITH WHAT YOU HAVE." maxlength="300"></label>
+    <details><summary>التفاصيل الصغيرة والنسبة</summary>
+      <label>السطر الصغير الأول<input id="note1" dir="auto" value="Do your part." maxlength="80"></label>
+      <label>السطر الصغير الثاني<input id="note2" dir="auto" value="Stay true to your purpose." maxlength="80"></label>
+      <label>التاريخ<input id="date" dir="auto" maxlength="40"></label>
+      <label>قائل العبارة (عند الاقتباس)<input id="author" dir="auto" maxlength="200"></label>
+      <label>المصدر (عند الاقتباس)<input id="source" dir="auto" maxlength="500"></label>
+    </details>
+    <button id="download" type="button" disabled>تحميل PNG — 1080 × 1350</button>
+    <p id="status" role="status" aria-live="polite">جارٍ تحميل القالب…</p>
+    <small>حجم خط ثمانية ثابت. تتساوى حدود السطرين بالكشيدة والمسافات فقط، دون ضغط الحروف أو تغيير نسبها. لا نشر تلقائي من هذا المحرّر.</small>
+  </section>
+  <section class="preview" aria-label="معاينة التصميم">
+    <canvas id="canvas" width="1080" height="1350" role="img" aria-label="معاينة المنشور السينمائي"></canvas>
+  </section>
+</main>
+</body>
+</html>
