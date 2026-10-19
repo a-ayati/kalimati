@@ -1,3 +1,4 @@
+import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs';
 import { FONT_SIZE, normalize, splitQuote, layoutTitle, parseSeed } from './layout.mjs';
 const $ = id => document.getElementById(id);
 const canvas = $('canvas'), ctx = canvas.getContext('2d');
@@ -77,6 +78,7 @@ $('photo').addEventListener('change', async event => {
   const file = event.target.files[0]; if (!file) return;
   if (!file.type.startsWith('image/') || file.size > 20 * 1024 * 1024) { status('اختر صورة بحجم أقل من 20 ميغابايت.'); return; }
   const sequence = ++uploadSequence, url = URL.createObjectURL(file);
+  $('preset-photo').checked = false;
   $('download').disabled = true; status('جارٍ فتح الصورة…');
   try { const next = await loadPhoto(url); if (sequence === uploadSequence) { photo = next; draw(); } }
   catch (error) { if (sequence === uploadSequence) status(error.message); }
@@ -92,6 +94,39 @@ $('download').addEventListener('click', () => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, 'image/png');
 });
+function libraryOptions() {
+  const current = $('post-preset').value, posts = postsForCategory($('post-category').value);
+  $('post-preset').replaceChildren(new Option('اختر بوستًا من المجموعة', ''));
+  for (const post of posts) $('post-preset').append(new Option(`${post.category} · ${post.title}`, post.id));
+  if (posts.some(post => post.id === current)) $('post-preset').value = current;
+  $('post-count').textContent = `${posts.length} بوستًا متاحًا من أصل ${POST_PRESETS.length}`;
+  $('apply-post').disabled = !$('post-preset').value;
+}
+for (const category of POST_CATEGORIES) $('post-category').append(new Option(category, category));
+$('post-category').addEventListener('change', libraryOptions);
+$('post-preset').addEventListener('change', () => { $('apply-post').disabled = !$('post-preset').value; });
+$('caption').addEventListener('input', () => { $('copy-caption').disabled = !$('caption').value.trim(); });
+$('copy-caption').addEventListener('click', async () => {
+  const value = $('caption').value.trim(); if (!value) return;
+  try { await navigator.clipboard.writeText(value); $('caption-status').textContent = 'تم نسخ الكابشن.'; }
+  catch { $('caption').focus(); $('caption').select(); $('caption-status').textContent = 'تعذّر النسخ التلقائي؛ النص محدّد لنسخه يدويًا.'; }
+});
+$('apply-post').addEventListener('click', async () => {
+  const post = POST_PRESETS.find(item => item.id === $('post-preset').value); if (!post) return;
+  const sequence = ++uploadSequence;
+  $('line1').value = post.lines[0]; $('line2').value = post.lines[1]; $('keyword').value = post.keyword;
+  $('color').value = post.color; $('translation').value = post.translation;
+  $('author').value = ''; $('source').value = ''; // These editable suggestions are not attributed quotations.
+  $('caption').value = post.caption; $('copy-caption').disabled = false; $('caption-status').textContent = '';
+  $('caption-details').open = true;
+  $('library-status').textContent = `تم تطبيق «${post.title}». النص والكابشن قابلان للتعديل.`;
+  scheduleDraw();
+  if ($('preset-photo').checked) {
+    try { const image = await loadPhoto(`./backgrounds/${post.background}.jpg`); if (sequence === uploadSequence) { photo = image; draw(); } }
+    catch { if (sequence === uploadSequence) $('library-status').textContent = 'تم تطبيق النص؛ تعذّر فتح الخلفية المقترحة. يمكنك رفع صورتك أو إعادة التطبيق.'; }
+  }
+});
+libraryOptions();
 const seed = parseSeed(location.hash);
 if (seed.text) {
   const lines = splitQuote(seed.text); $('line1').value = lines[0]; $('line2').value = lines[1];
