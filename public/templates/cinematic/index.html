@@ -14,6 +14,16 @@
     <a class="back" href="/">← العودة إلى المنصة</a>
     <h1 id="title">القالب السينمائي — ثمانية</h1>
     <p>صورة، وعبارة من سطرين، وكلمة بلون قوي. حمّل منشورك بمقاس 4:5 مع الحفاظ على شكل الحروف.</p>
+    <section class="post-library" aria-labelledby="library-title">
+      <h2 id="library-title">30 بوستًا جاهزًا</h2>
+      <p>اختر الموضوع ثم البوست. التطبيق يملأ النص واللون والكابشن؛ ويمكنك تعديلها جميعًا.</p>
+      <label>موضوع البوست<select id="post-category"><option value="">كل الموضوعات</option></select></label>
+      <label>البوست الجاهز<select id="post-preset"><option value="">اختر بوستًا من المجموعة</option></select></label>
+      <small id="post-count"></small>
+      <label class="check-label"><input id="preset-photo" type="checkbox" checked>استخدام الخلفية المقترحة مع البوست</label>
+      <button id="apply-post" type="button" disabled>تطبيق البوست المختار</button>
+      <p id="library-status" role="status" aria-live="polite"></p>
+    </section>
     <label>الصورة<input id="photo" type="file" accept="image/*" aria-describedby="photo-help"></label>
     <small id="photo-help">اختر صورة بلا كتابة، حتى 20 ميغابايت. تُقص إلى 4:5 وتُعالج على جهازك.</small>
     <label>السطر الأول<input id="line1" value="ابدَأ الآن" maxlength="300"></label>
@@ -21,6 +31,11 @@
     <label>الكلمة الملوّنة<input id="keyword" value="لديك" maxlength="100"></label>
     <label>اللون المميّز<input id="color" type="color" value="#ff982f"></label>
     <label>الترجمة الإنجليزية (اختياري)<input id="translation" dir="ltr" value="START NOW WITH WHAT YOU HAVE." maxlength="300"></label>
+    <details id="caption-details"><summary>كابشن البوست</summary>
+      <label>الكابشن (قابل للتعديل)<textarea id="caption" rows="5" maxlength="3000" placeholder="يظهر هنا كابشن البوست عند اختياره من المجموعة"></textarea></label>
+      <button id="copy-caption" type="button" class="secondary" disabled>نسخ الكابشن</button>
+      <p id="caption-status" role="status" aria-live="polite"></p>
+    </details>
     <details><summary>التفاصيل الصغيرة والنسبة</summary>
       <label>السطر الصغير الأول<input id="note1" dir="auto" value="Do your part." maxlength="80"></label>
       <label>السطر الصغير الثاني<input id="note2" dir="auto" value="Stay true to your purpose." maxlength="80"></label>
