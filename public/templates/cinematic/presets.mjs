@@ -1,4 +1,4 @@
-/* مقترحات تحريرية جاهزة، غير منسوبة إلى قائل، وقابلة للتعديل. */
+/* لكل عبارة خلفية مستقلة تعكس معناها. مقترحات تحريرية قابلة للتعديل وغير منسوبة لقائل. */
 export const POST_PRESETS = [
   {
     "id": "hope-01",
@@ -12,7 +12,7 @@ export const POST_PRESETS = [
     "color": "#FFB52E",
     "translation": "THERE IS STILL TIME AHEAD.",
     "caption": "لا تقِس بدايتك بمنتصف طريق شخص آخر. ما تستطيع فعله اليوم يستحق أن تبدأ به، حتى لو جاء بعد تردد طويل. ما الخطوة التي تريد أن تمنحها فرصة؟",
-    "background": "hope"
+    "background": "hope-01"
   },
   {
     "id": "hope-02",
@@ -26,7 +26,7 @@ export const POST_PRESETS = [
     "color": "#FF982F",
     "translation": "START SMALL. LET THE PATH UNFOLD.",
     "caption": "ليس مطلوبًا أن ترى الطريق كله قبل أن تتحرك. اختر خطوة تستطيع تنفيذها اليوم، ثم انظر إلى ما تعلّمته منها. ما بدا صغيرًا قد يكون بداية مهمة.",
-    "background": "hope"
+    "background": "hope-02"
   },
   {
     "id": "hope-03",
@@ -40,7 +40,7 @@ export const POST_PRESETS = [
     "color": "#FFC53D",
     "translation": "A HARD DAY IS NOT YOUR WHOLE LIFE.",
     "caption": "حين يثقل يوم واحد، يسهل أن نراه حكمًا على كل شيء. امنحه حجمه، وخذ منه ما يمكن تعلّمه، واترك للغد فرصة مختلفة. ماذا خفّف عنك في يوم صعب؟",
-    "background": "hope"
+    "background": "hope-03"
   },
   {
     "id": "hope-04",
@@ -54,7 +54,7 @@ export const POST_PRESETS = [
     "color": "#FF8B38",
     "translation": "A NEW PLAN CAN STILL SERVE THE DREAM.",
     "caption": "تغيير الطريقة لا يعني دائمًا التخلي عن الهدف. أحيانًا نحتاج إلى خطة تناسب ما عرفناه الآن، بدل التمسك بخطة وُضعت حين كنا نعرف أقل. ما الذي يحتاج تعديلًا في خطتك؟",
-    "background": "hope"
+    "background": "hope-04"
   },
   {
     "id": "hope-05",
@@ -68,7 +68,7 @@ export const POST_PRESETS = [
     "color": "#FFB83E",
     "translation": "NOT EVERY DELAY CLOSES THE DOOR.",
     "caption": "قد يتأخر ما تنتظره لأسباب لا تملكها، لكن ذلك لا يمنعك من الاستعداد وتجربة خيارات أخرى. لا تجعل الانتظار عملك الوحيد. ما الذي تستطيع تجهيزه في هذه الفترة؟",
-    "background": "hope"
+    "background": "hope-05"
   },
   {
     "id": "social-01",
@@ -82,7 +82,7 @@ export const POST_PRESETS = [
     "color": "#54CBFF",
     "translation": "LISTEN TO UNDERSTAND, NOT TO REPLY.",
     "caption": "بعض الحوارات تتعب لأن كل طرف ينتظر دوره في الكلام. جرّب أن تسأل عما لم تفهمه، ثم أعد المعنى بكلماتك قبل الرد. الإنصات يمنح الخلاف فرصة أهدأ.",
-    "background": "social"
+    "background": "social-01"
   },
   {
     "id": "social-02",
@@ -96,7 +96,7 @@ export const POST_PRESETS = [
     "color": "#4DDAE8",
     "translation": "RESPECT MATTERS MOST IN DISAGREEMENT.",
     "caption": "الاختلاف لا يلغي ما بين الناس من احترام. انتقد التصرف دون إهانة الشخص، ولا تستخدم ما ائتمنك عليه سلاحًا في النقاش. ما القاعدة التي تحرص عليها وقت الخلاف؟",
-    "background": "social"
+    "background": "social-02"
   },
   {
     "id": "social-03",
@@ -110,7 +110,7 @@ export const POST_PRESETS = [
     "color": "#61C7FF",
     "translation": "SPEAK BEFORE HURT BECOMES DISTANCE.",
     "caption": "في العلاقة التي تسمح بحوار آمن، قد يصنع الكلام الواضح فرقًا. اشرح الموقف وأثره عليك، بدل انتظار أن يُفهم صمتك وحده. الوضوح لا يضمن الاتفاق، لكنه يقلل التخمين.",
-    "background": "social"
+    "background": "social-03"
   },
   {
     "id": "social-04",
@@ -124,7 +124,7 @@ export const POST_PRESETS = [
     "color": "#6DE0C5",
     "translation": "A LITTLE APPRECIATION CAN CHANGE A DAY.",
     "caption": "لا تؤجّل التقدير إلى المناسبات الكبيرة. رسالة قصيرة، أو شكر محدد على مجهود لاحظته، قد يصل إلى شخص في الوقت الذي يحتاجه. من يستحق منك كلمة اليوم؟",
-    "background": "social"
+    "background": "social-04"
   },
   {
     "id": "social-05",
@@ -138,7 +138,7 @@ export const POST_PRESETS = [
     "color": "#61BFFF",
     "translation": "LOVE NEEDS RESPECT IN EVERYDAY ACTIONS.",
     "caption": "تظهر المحبة في طريقة الكلام، وفي احترام الاختلاف والوقت والحدود. الكلمات الجميلة مهمة، والتصرفات اليومية هي ما يمنحها معنى. أي تصرف يجعلك تشعر بالتقدير؟",
-    "background": "social"
+    "background": "social-05"
   },
   {
     "id": "awareness-01",
@@ -152,7 +152,7 @@ export const POST_PRESETS = [
     "color": "#FF9142",
     "translation": "CHECK BEFORE YOU SHARE.",
     "caption": "عنوان مثير لا يكفي لفهم خبر. افتح المصدر، وانتبه إلى التاريخ والسياق، وابحث عن أصل المعلومة قبل إعادة نشرها. التمهّل هنا مسؤولية تجاه من يثق بما تشاركه.",
-    "background": "awareness"
+    "background": "awareness-01"
   },
   {
     "id": "awareness-02",
@@ -166,7 +166,7 @@ export const POST_PRESETS = [
     "color": "#FFB52E",
     "translation": "A PICTURE IS A MOMENT, NOT A WHOLE LIFE.",
     "caption": "ما نراه على الشاشة جزء اختاره صاحبه، لا سجلّ يومه كله. استمتع بما يلهمك، لكن لا تستخدم لقطة منتقاة للحكم على حياتك كاملة. تذكّر ما لا يظهر في الكادر.",
-    "background": "awareness"
+    "background": "awareness-02"
   },
   {
     "id": "awareness-03",
@@ -180,7 +180,7 @@ export const POST_PRESETS = [
     "color": "#FF8A3D",
     "translation": "SILENCE DOES NOT ALWAYS MEAN AGREEMENT.",
     "caption": "قد يصمت شخص لأنه يفكر، أو لا يرغب في النقاش، أو لم يجد مساحة للكلام. لا تبنِ استنتاجًا كاملًا على صمته وحده. اسأل بوضوح، واترك له حق الرد أو الامتناع.",
-    "background": "awareness"
+    "background": "awareness-03"
   },
   {
     "id": "awareness-04",
@@ -194,7 +194,7 @@ export const POST_PRESETS = [
     "color": "#FFA43B",
     "translation": "A REVISED OPINION CAN MEAN NEW UNDERSTANDING.",
     "caption": "التمسك برأي قديم ليس فضيلة في كل مرة. إذا ظهرت لك معلومة أو حجة أقوى، يمكنك المراجعة دون أن تعتبرها خسارة. ما الرأي الذي غيّرته بعد أن فهمت أكثر؟",
-    "background": "awareness"
+    "background": "awareness-04"
   },
   {
     "id": "awareness-05",
@@ -208,7 +208,7 @@ export const POST_PRESETS = [
     "color": "#FFBC42",
     "translation": "A FIRST IMPRESSION IS NOT THE WHOLE TRUTH.",
     "caption": "من السهل أن نختصر شخصًا في موقف أو مظهر. خذ وقتك، وميّز بين ما رأيته وما افترضته. فهم الناس يحتاج إلى أكثر من لقطة واحدة.",
-    "background": "awareness"
+    "background": "awareness-05"
   },
   {
     "id": "boundaries-01",
@@ -222,7 +222,7 @@ export const POST_PRESETS = [
     "color": "#FF5362",
     "translation": "A CLEAR NO DOES NOT NEED A FIGHT.",
     "caption": "يمكنك رفض طلب لا يناسب وقتك أو قدرتك بكلمات هادئة ومباشرة. ليس كل رفض بحاجة إلى تبرير طويل، وليس كل اختلاف معركة. ما الطلب الذي تحتاج أن تجيب عنه بوضوح؟",
-    "background": "boundaries"
+    "background": "boundaries-01"
   },
   {
     "id": "boundaries-02",
@@ -236,7 +236,7 @@ export const POST_PRESETS = [
     "color": "#FF6657",
     "translation": "BE KIND WITHOUT NEGLECTING YOURSELF.",
     "caption": "مساعدة الآخرين لا تلزمك بتجاهل طاقتك والتزاماتك. العطاء الذي تستطيع الاستمرار فيه يبدأ بمعرفة حدودك. أين تحتاج إلى مساحة لنفسك هذا الأسبوع؟",
-    "background": "boundaries"
+    "background": "boundaries-02"
   },
   {
     "id": "boundaries-03",
@@ -250,7 +250,7 @@ export const POST_PRESETS = [
     "color": "#FF4F7B",
     "translation": "YOUR TIME AND YOUR REST BOTH MATTER.",
     "caption": "اترك في يومك مساحة لا تملؤها بطلبات الآخرين أو المهام المتراكمة. ليس كل وقت متاح موعدًا يجب أن تمنحه لأحد. ما المساحة التي تريد حمايتها في جدولك؟",
-    "background": "boundaries"
+    "background": "boundaries-03"
   },
   {
     "id": "boundaries-04",
@@ -264,7 +264,7 @@ export const POST_PRESETS = [
     "color": "#FF6551",
     "translation": "YOU DO NOT HAVE TO ENTER EVERY ARGUMENT.",
     "caption": "قبل أن ترد، اسأل نفسك: هل نبحث عن فهم، أم ندور في الحلقة نفسها؟ يمكنك إنهاء نقاش لا يتقدم دون إهانة أو استعراض. اختيار الهدوء أحيانًا يحفظ وقتك واحترامك.",
-    "background": "boundaries"
+    "background": "boundaries-04"
   },
   {
     "id": "boundaries-05",
@@ -278,7 +278,7 @@ export const POST_PRESETS = [
     "color": "#FF5C67",
     "translation": "DO NOT MAKE EVERYONE'S APPROVAL YOUR CONDITION.",
     "caption": "من الطبيعي أن يهمنا رأي من نحب، لكن إرضاء الجميع ليس معيارًا ثابتًا لاتخاذ القرار. استمع، ثم ارجع إلى قيمك وما تتحمل مسؤوليته. أي قرار تؤجله انتظارًا لموافقة الجميع؟",
-    "background": "boundaries"
+    "background": "boundaries-05"
   },
   {
     "id": "growth-01",
@@ -292,7 +292,7 @@ export const POST_PRESETS = [
     "color": "#FFC23D",
     "translation": "KEEP YOUR PROMISE WHEN MOTIVATION FADES.",
     "caption": "الحماس يساعد على البداية، لكنه لا يحضر في كل يوم. اختر التزامًا واقعيًا تستطيع العودة إليه حتى في الأيام العادية. ما الوعد الصغير الذي ستفي به اليوم؟",
-    "background": "growth"
+    "background": "growth-01"
   },
   {
     "id": "growth-02",
@@ -306,7 +306,7 @@ export const POST_PRESETS = [
     "color": "#FFAC39",
     "translation": "ASK TO LEARN, NOT TO LOOK INFORMED.",
     "caption": "ليس مطلوبًا أن تعرف كل شيء في كل مجلس. سؤال صادق قد يفتح فهمًا لا تمنحك إياه إجابة متسرعة. متى كانت آخر مرة قلت فيها: لا أعرف، اشرح لي؟",
-    "background": "growth"
+    "background": "growth-02"
   },
   {
     "id": "growth-03",
@@ -320,7 +320,7 @@ export const POST_PRESETS = [
     "color": "#FFBE4D",
     "translation": "EXPERIENCE TEACHES. REFLECTION HELPS YOU GROW.",
     "caption": "بعد كل محاولة، خصّص دقائق لسؤالين: ما الذي نجح؟ وما الذي سأغيّره؟ تكرار العمل وحده لا يكشف دائمًا ما يحتاج إلى تحسين. ما الدرس الذي أخذته من تجربتك الأخيرة؟",
-    "background": "growth"
+    "background": "growth-03"
   },
   {
     "id": "growth-04",
@@ -334,7 +334,7 @@ export const POST_PRESETS = [
     "color": "#FFA937",
     "translation": "CHOOSE A PACE YOU CAN KEEP.",
     "caption": "اختر وتيرة تناسب حياتك بدل خطة مثالية لا تعيش معها أكثر من أيام. يمكنك زيادة الجهد لاحقًا، بعد أن تجد إيقاعًا تستطيع الحفاظ عليه. ما العادة التي تريد تبسيطها؟",
-    "background": "growth"
+    "background": "growth-04"
   },
   {
     "id": "growth-05",
@@ -348,7 +348,7 @@ export const POST_PRESETS = [
     "color": "#FFAF45",
     "translation": "LET THE QUALITY OF YOUR WORK SPEAK.",
     "caption": "بدل الانشغال الدائم بإثبات ما تستطيع فعله، اختر جزءًا من عملك وحسّنه بوضوح. الدقة والاهتمام بالتفاصيل يمنحان الآخرين سببًا للثقة. ما التفصيل الذي سترفع مستواه؟",
-    "background": "growth"
+    "background": "growth-05"
   },
   {
     "id": "care-01",
@@ -362,7 +362,7 @@ export const POST_PRESETS = [
     "color": "#BFEA46",
     "translation": "MAKE ROOM TO REST BEFORE YOU RUN EMPTY.",
     "caption": "لا تنتظر حتى يصبح كل طلب عبئًا كي تراجع إيقاع يومك. قد تحتاج إلى استراحة قصيرة أو إلى تقليل ما تحاول إنجازه دفعة واحدة. ما الذي يمكنك تأجيله دون أن يتضرر شيء مهم؟",
-    "background": "care"
+    "background": "care-01"
   },
   {
     "id": "care-02",
@@ -376,7 +376,7 @@ export const POST_PRESETS = [
     "color": "#6DE38D",
     "translation": "PUT THE PHONE DOWN. BE PRESENT.",
     "caption": "قد نكون في المكان نفسه ونفوت تفاصيل بعضنا. جرّب أن تمنح حديثًا واحدًا انتباهك كاملًا، بلا تنقل بين الشاشة والكلام. مع من تريد أن تقضي وقتًا أكثر حضورًا؟",
-    "background": "care"
+    "background": "care-02"
   },
   {
     "id": "care-03",
@@ -390,7 +390,7 @@ export const POST_PRESETS = [
     "color": "#B4EE50",
     "translation": "NOTICE YOUR STEP, NOT EVERYONE ELSE'S SPEED.",
     "caption": "قد تختلف ظروفك وأولوياتك عمن تقارن نفسك به. انظر إلى ما تحسّن في طريقتك وما يحتاج إلى عمل، لا إلى الترتيب وحده. ما التقدم الذي لم تمنح نفسك وقتًا لملاحظته؟",
-    "background": "care"
+    "background": "care-03"
   },
   {
     "id": "care-04",
@@ -404,7 +404,7 @@ export const POST_PRESETS = [
     "color": "#65E4B2",
     "translation": "PLAN YOUR DAY. LEAVE ROOM TO LIVE.",
     "caption": "لا يحتاج كل يوم إلى أن يكون سباقًا مع قائمة طويلة. حدّد ما يستحق الأولوية، واترك مساحة لوجبة هادئة أو حديث أو مشي. ما الشيء البسيط الذي تريد ألا يغيب عن يومك؟",
-    "background": "care"
+    "background": "care-04"
   },
   {
     "id": "care-05",
@@ -418,7 +418,7 @@ export const POST_PRESETS = [
     "color": "#CBEF54",
     "translation": "YOU DO NOT HAVE TO PRETEND EVERY DAY.",
     "caption": "يمكنك الاعتراف بأن يومك ثقيل دون شرح كل التفاصيل. اختر من تثق به إن رغبت في الكلام، وخفّف التزاماتك حين تستطيع. الصدق مع نفسك بداية لفهم ما تحتاجه اليوم.",
-    "background": "care"
+    "background": "care-05"
   }
 ];
 export const POST_CATEGORIES = [...new Set(POST_PRESETS.map(post => post.category))];

@@ -1,4 +1,4 @@
-import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs';
+import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs?v=unique-1';
 const $ = id => document.getElementById(id);
 const tabs = [...document.querySelectorAll('[data-panel]')];
 function openPanel(tab, focus = false) {
@@ -56,7 +56,7 @@ $('apply-post').addEventListener('click', () => {
   syncColor(); syncSelection();
   const post = POST_PRESETS.find(p => p.id === $('post-preset').value);
   if (post && $('preset-photo').checked) {
-    $('photo-name').textContent = 'الخلفية المقترحة · ' + post.category;
+    $('photo-name').textContent = 'الخلفية المقترحة · ' + post.title;
     syncBackground(post.background);
   }
 });
@@ -65,19 +65,19 @@ $('photo').addEventListener('change', () => {
   $('photo-name').textContent = $('photo').files[0].name;
   syncBackground('');
 });
-const backgrounds = POST_CATEGORIES.map(category => POST_PRESETS.find(post => post.category === category));
+const backgrounds = POST_PRESETS;
 function syncBackground(key) {
   for (const card of document.querySelectorAll('[data-background]')) card.setAttribute('aria-pressed', String(card.dataset.background === key));
 }
 for (const post of backgrounds) {
   const card = document.createElement('button'); card.type = 'button'; card.className = 'background-card'; card.dataset.background = post.background;
-  card.setAttribute('aria-label', 'خلفية ' + post.category); card.setAttribute('aria-pressed', 'false');
+  card.setAttribute('aria-label', 'خلفية ' + post.title); card.setAttribute('aria-pressed', 'false');
   const image = document.createElement('img'); image.src = `./backgrounds/${post.background}.jpg`; image.alt = ''; image.loading = 'lazy';
-  const title = document.createElement('span'); title.textContent = post.category; card.append(image, title);
+  const title = document.createElement('span'); title.textContent = post.title; card.append(image, title);
   card.addEventListener('click', () => document.dispatchEvent(new CustomEvent('studio:background', { detail: post.background })));
   $('background-grid').append(card);
 }
 document.addEventListener('studio:background-ready', event => {
-  syncBackground(event.detail); $('photo-name').textContent = 'خلفية جاهزة · ' + backgrounds.find(p => p.background === event.detail)?.category;
+  syncBackground(event.detail); $('photo-name').textContent = 'خلفية جاهزة · ' + backgrounds.find(p => p.background === event.detail)?.title;
 });
 renderCards(); syncColor();

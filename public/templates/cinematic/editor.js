@@ -1,4 +1,4 @@
-import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs';
+import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs?v=unique-1';
 import { FONT_SIZE, normalize, splitQuote, layoutTitle, parseSeed } from './layout.mjs';
 const $ = id => document.getElementById(id);
 const canvas = $('canvas'), ctx = canvas.getContext('2d');

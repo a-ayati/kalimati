@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from '../public/templates/cinematic/presets.mjs';
 import { normalize, layoutTitle } from '../public/templates/cinematic/layout.mjs';
 function measure(text) { const width=[...text.replace(/\p{M}/gu,'')].length*10; return {width,actualBoundingBoxLeft:Math.max(0,width-2),actualBoundingBoxRight:text?2:0}; }
@@ -19,9 +20,15 @@ test('every preset has two renderable lines and one complete highlight keyword',
   assert.equal(words.filter(w=>w===normalize(post.keyword)).length,1,post.id);
   assert.match(post.color,/^#[0-9A-F]{6}$/i);
   assert.ok(post.caption.length>60 && post.translation.length>8);
-  assert.ok(/^[a-z]+$/.test(post.background));
+  assert.ok(/^[a-z]+-[0-9]{2}$/.test(post.background));
   assert.ok(existsSync(new URL('../public/templates/cinematic/backgrounds/'+post.background+'.jpg',import.meta.url)));
   const layout=layoutTitle(post.lines,measure);assert.equal(layout.length,2);
   assert.equal(layout[0].width,layout[1].width);
  }
+});
+
+test("each post has its own distinct background asset", () => {
+  assert.equal(new Set(POST_PRESETS.map(p=>p.background)).size,30);
+  const hashes=POST_PRESETS.map(post=>createHash("sha256").update(readFileSync(new URL("../public/templates/cinematic/backgrounds/"+post.background+".jpg",import.meta.url))).digest("hex"));
+  assert.equal(new Set(hashes).size,30);
 });
