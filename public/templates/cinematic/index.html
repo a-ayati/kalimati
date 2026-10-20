@@ -6,9 +6,9 @@
   <meta name="referrer" content="same-origin">
   <meta name="theme-color" content="#111313">
   <title>استوديو المنشورات — القالب السينمائي</title>
-  <link rel="stylesheet" href="./style.css?v=safe-1">
-  <script type="module" src="./editor.js?v=safe-1"></script>
-  <script type="module" src="./studio.js?v=safe-1"></script>
+  <link rel="stylesheet" href="./style.css?v=fixed-1">
+  <script type="module" src="./editor.js?v=fixed-1"></script>
+  <script type="module" src="./studio.js?v=fixed-1"></script>
 </head>
 <body>
 <a class="skip-link" href="#workspace">انتقل إلى المحرّر</a>
@@ -34,13 +34,13 @@
         <div class="accent-section"><label for="keyword">الكلمة المميّزة<input id="keyword" value="لديك" maxlength="100" autocomplete="off"></label><div class="color-heading"><label for="color">لون الكلمة</label><span id="color-value" dir="ltr">#FF982F</span></div><div class="color-palette" aria-label="ألوان الكلمة"><button type="button" class="swatch" data-color="#ff982f" style="--swatch:#ff982f" aria-label="برتقالي" aria-pressed="true"></button><button type="button" class="swatch" data-color="#ffb52e" style="--swatch:#ffb52e" aria-label="ذهبي" aria-pressed="false"></button><button type="button" class="swatch" data-color="#ff5362" style="--swatch:#ff5362" aria-label="مرجاني" aria-pressed="false"></button><button type="button" class="swatch" data-color="#61c7ff" style="--swatch:#61c7ff" aria-label="أزرق" aria-pressed="false"></button><button type="button" class="swatch" data-color="#65e4b2" style="--swatch:#65e4b2" aria-label="نعناعي" aria-pressed="false"></button><div class="custom-color"><input id="color" type="color" value="#ff982f" aria-label="لون مخصص"><span aria-hidden="true">+</span></div></div></div>
         <label for="translation">الترجمة الإنجليزية <span class="optional">اختياري</span><input id="translation" dir="ltr" value="START NOW WITH WHAT YOU HAVE." maxlength="300"></label>
         <details id="caption-details"><summary>كابشن المنشور <span aria-hidden="true">+</span></summary><div class="details-body"><label for="caption" class="sr-only">الكابشن</label><textarea id="caption" rows="5" maxlength="3000" placeholder="اختر بوستًا من المكتبة أو اكتب الكابشن هنا…"></textarea><button id="copy-caption" type="button" class="secondary" disabled>نسخ الكابشن</button><p id="caption-status" class="feedback" role="status" aria-live="polite"></p></div></details>
-        <details><summary>التفاصيل الصغيرة <span aria-hidden="true">+</span></summary><div class="details-body"><label for="note1">سطر التذييل الأول<input id="note1" dir="auto" value="Do your part." maxlength="80"></label><label for="note2">سطر التذييل الثاني<input id="note2" dir="auto" value="Stay true to your purpose." maxlength="80"></label><label for="date">التاريخ<input id="date" dir="auto" maxlength="40"></label><label for="author">قائل العبارة <span class="optional">عند الاقتباس</span><input id="author" dir="auto" maxlength="200"></label><label for="source">المصدر<input id="source" dir="auto" maxlength="500"></label></div></details>
+        <details><summary>التفاصيل الصغيرة <span aria-hidden="true">+</span></summary><div class="details-body"><label for="note1">السطر الجانبي الأول<input id="note1" dir="auto" value="Do your part." maxlength="80"></label><label for="note2">السطر الجانبي الثاني<input id="note2" dir="auto" value="Stay true to your purpose." maxlength="80"></label><label for="date">التاريخ<input id="date" dir="auto" maxlength="40"></label><label for="author">قائل العبارة <span class="optional">عند الاقتباس</span><input id="author" dir="auto" maxlength="200"></label><label for="source">المصدر<input id="source" dir="auto" maxlength="500"></label></div></details>
         <p class="footnote">خط ثمانية بمقاس ثابت، ومحاذاة تحافظ على الشكل الطبيعي للحروف.</p>
       </section>
       <section id="panel-photo" role="tabpanel" aria-labelledby="tab-photo" class="panel" hidden>
         <div class="section-heading"><h3>المشهد يصنع الفرق</h3><span class="pill" dir="ltr">4:5</span></div><p class="hint">صورة واحدة، تحكي بقية القصة.</p>
         <label class="upload-zone" for="photo"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 16l5-5 5 5 3-3 5 5M16 8h.01"/></svg><strong>اختر صورة من جهازك</strong><span id="photo-name">JPG، PNG أو WebP</span><input id="photo" type="file" accept="image/*" aria-describedby="photo-help"></label>
-        <p id="photo-help" class="hint">حتى 20 ميغابايت. تُقص الصورة تلقائيًا إلى مقاس المنشور؛ اختر صورة بلا كتابة.</p>
+        <p id="photo-help" class="hint">حتى 20 ميغابايت. تظهر الصورة كاملة بأبعادها الأصلية، دون قص أو شد. الأفضل صورة عمودية بنسبة 4:5؛ تُملأ المساحة المتبقية بلون داكن.</p>
         <div class="section-heading background-heading"><h3>مشهد مختلف لكل عبارة</h3><span class="muted">30 مشهدًا</span></div><div id="background-grid" class="background-grid" aria-label="خلفيات جاهزة"></div><p id="background-status" class="feedback" role="status" aria-live="polite"></p><p class="footnote">تُعالج صورتك على جهازك، ولا تُرفع إلى خادم.</p>
       </section>
     </div>

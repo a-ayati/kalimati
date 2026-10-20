@@ -1,29 +1,27 @@
-/** Reserved copy bands are outside the photo, never over a face or scene detail. */
-export const PHOTO_WINDOW = Object.freeze({ x: 0, y: 112, width: 1080, height: 1096 });
-export const HEADER_BAND = Object.freeze({ x: 0, y: 0, width: 1080, height: 112 });
-export const FOOTER_BAND = Object.freeze({ x: 0, y: 1214, width: 1080, height: 136 });
+/** Text coordinates are the user's original layout. Adapt scene assets, never these anchors. */
+export const PHOTO_WINDOW = Object.freeze({ x: 0, y: 0, width: 1080, height: 1350 });
+export const COPY_SAFE_ZONES = Object.freeze([
+  { x: 260, y: 190, width: 560, height: 125 },
+  { x: 275, y: 658, width: 500, height: 95 },
+  { x: 65, y: 820, width: 950, height: 270 }
+]);
 export function drawScene(ctx, photo) {
   ctx.fillStyle = '#080a09'; ctx.fillRect(0, 0, 1080, 1350);
-  let sw = photo.naturalWidth, sh = photo.naturalHeight;
-  if (sw / sh > .8) sw = sh * .8; else sh = sw / .8;
-  ctx.save(); ctx.beginPath();
-  ctx.rect(PHOTO_WINDOW.x, PHOTO_WINDOW.y, PHOTO_WINDOW.width, PHOTO_WINDOW.height); ctx.clip();
-  // Keep the complete upper scene; crop only the quiet lower tail after shifting below the header.
-  ctx.drawImage(photo, (photo.naturalWidth - sw) / 2, (photo.naturalHeight - sh) / 2, sw, sh, 0, PHOTO_WINDOW.y, 1080, 1350);
-  ctx.restore();
+  const scale = Math.min(1080 / photo.naturalWidth, 1350 / photo.naturalHeight);
+  const width = photo.naturalWidth * scale, height = photo.naturalHeight * scale;
+  ctx.drawImage(photo, 0, 0, photo.naturalWidth, photo.naturalHeight,
+    (1080 - width) / 2, (1350 - height) / 2, width, height);
 }
 export function headerLabels(year) {
   return [
-    ['PERSONAL', 80, 43], ['VISUAL', 80, 64], ['STRIVE', 340, 43], ['TRUST', 500, 43],
-    ['PURPOSE', 340, 80], ['HOPE', 500, 80],
-    ['ALL RIGHTS', 1000, 43, 15, 'right'], [`RESERVED ©${year}`, 1000, 64, 15, 'right']
+    ['PERSONAL', 285, 220], ['VISUAL', 285, 238], ['STRIVE', 440, 220], ['TRUST', 546, 220],
+    ['ALL RIGHTS', 795, 220, 15, 'right'], [`RESERVED ©${year}`, 795, 238, 15, 'right'],
+    ['PURPOSE', 285, 292], ['HOPE', 795, 292, 15, 'right']
   ];
 }
 export function footerLabels(notes, author, source, measure) {
-  const runs = notes.map((value, i) => ({ text: value.trim(), x: 80, y: 1238 + i * 22, align: 'left' }));
-  runs.push({ text: author.trim(), x: 1000, y: 1238, align: 'right' }, { text: source.trim(), x: 1000, y: 1264, align: 'right' });
-  for (const run of runs) {
-    if (measure(run.text).width > 420) throw new Error('اختصر الملاحظة أو النسبة أو المصدر لتبقى داخل المساحة المخصصة لها.');
-  }
+  const runs = notes.map((value, i) => ({ text: value.trim(), x: 297, y: [687,707,730][i], align: 'left', limit: 460 }));
+  runs.push({ text: author.trim(), x: 540, y: 1260, align: 'center', limit: 930 }, { text: source.trim(), x: 540, y: 1287, align: 'center', limit: 930 });
+  for (const run of runs) if (measure(run.text).width > run.limit) throw new Error('اختصر الملاحظة أو النسبة أو المصدر لتظهر كاملة في مكانها الأصلي.');
   return runs.filter(run => run.text);
 }
