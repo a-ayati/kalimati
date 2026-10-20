@@ -1,4 +1,4 @@
-import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs?v=unique-1';
+import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs?v=safe-1';
 const $ = id => document.getElementById(id);
 const tabs = [...document.querySelectorAll('[data-panel]')];
 function openPanel(tab, focus = false) {

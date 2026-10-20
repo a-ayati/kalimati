@@ -1,4 +1,4 @@
-/* لكل عبارة خلفية مستقلة تعكس معناها. مقترحات تحريرية قابلة للتعديل وغير منسوبة لقائل. */
+/* مزيج من شخصيات قطرية ومشاهد معاصرة متنوعة؛ الخلفية تخدم معنى العبارة. */
 export const POST_PRESETS = [
   {
     "id": "hope-01",
@@ -96,7 +96,7 @@ export const POST_PRESETS = [
     "color": "#4DDAE8",
     "translation": "RESPECT MATTERS MOST IN DISAGREEMENT.",
     "caption": "الاختلاف لا يلغي ما بين الناس من احترام. انتقد التصرف دون إهانة الشخص، ولا تستخدم ما ائتمنك عليه سلاحًا في النقاش. ما القاعدة التي تحرص عليها وقت الخلاف؟",
-    "background": "social-02"
+    "background": "social-02-v2"
   },
   {
     "id": "social-03",
@@ -110,7 +110,7 @@ export const POST_PRESETS = [
     "color": "#61C7FF",
     "translation": "SPEAK BEFORE HURT BECOMES DISTANCE.",
     "caption": "في العلاقة التي تسمح بحوار آمن، قد يصنع الكلام الواضح فرقًا. اشرح الموقف وأثره عليك، بدل انتظار أن يُفهم صمتك وحده. الوضوح لا يضمن الاتفاق، لكنه يقلل التخمين.",
-    "background": "social-03"
+    "background": "social-03-v2"
   },
   {
     "id": "social-04",
@@ -138,7 +138,7 @@ export const POST_PRESETS = [
     "color": "#61BFFF",
     "translation": "LOVE NEEDS RESPECT IN EVERYDAY ACTIONS.",
     "caption": "تظهر المحبة في طريقة الكلام، وفي احترام الاختلاف والوقت والحدود. الكلمات الجميلة مهمة، والتصرفات اليومية هي ما يمنحها معنى. أي تصرف يجعلك تشعر بالتقدير؟",
-    "background": "social-05"
+    "background": "social-05-v2"
   },
   {
     "id": "awareness-01",
@@ -180,7 +180,7 @@ export const POST_PRESETS = [
     "color": "#FF8A3D",
     "translation": "SILENCE DOES NOT ALWAYS MEAN AGREEMENT.",
     "caption": "قد يصمت شخص لأنه يفكر، أو لا يرغب في النقاش، أو لم يجد مساحة للكلام. لا تبنِ استنتاجًا كاملًا على صمته وحده. اسأل بوضوح، واترك له حق الرد أو الامتناع.",
-    "background": "awareness-03"
+    "background": "awareness-03-v2"
   },
   {
     "id": "awareness-04",
@@ -236,7 +236,7 @@ export const POST_PRESETS = [
     "color": "#FF6657",
     "translation": "BE KIND WITHOUT NEGLECTING YOURSELF.",
     "caption": "مساعدة الآخرين لا تلزمك بتجاهل طاقتك والتزاماتك. العطاء الذي تستطيع الاستمرار فيه يبدأ بمعرفة حدودك. أين تحتاج إلى مساحة لنفسك هذا الأسبوع؟",
-    "background": "boundaries-02"
+    "background": "boundaries-02-v2"
   },
   {
     "id": "boundaries-03",
@@ -264,7 +264,7 @@ export const POST_PRESETS = [
     "color": "#FF6551",
     "translation": "YOU DO NOT HAVE TO ENTER EVERY ARGUMENT.",
     "caption": "قبل أن ترد، اسأل نفسك: هل نبحث عن فهم، أم ندور في الحلقة نفسها؟ يمكنك إنهاء نقاش لا يتقدم دون إهانة أو استعراض. اختيار الهدوء أحيانًا يحفظ وقتك واحترامك.",
-    "background": "boundaries-04"
+    "background": "boundaries-04-v2"
   },
   {
     "id": "boundaries-05",
@@ -292,7 +292,7 @@ export const POST_PRESETS = [
     "color": "#FFC23D",
     "translation": "KEEP YOUR PROMISE WHEN MOTIVATION FADES.",
     "caption": "الحماس يساعد على البداية، لكنه لا يحضر في كل يوم. اختر التزامًا واقعيًا تستطيع العودة إليه حتى في الأيام العادية. ما الوعد الصغير الذي ستفي به اليوم؟",
-    "background": "growth-01"
+    "background": "growth-01-v2"
   },
   {
     "id": "growth-02",
@@ -376,7 +376,7 @@ export const POST_PRESETS = [
     "color": "#6DE38D",
     "translation": "PUT THE PHONE DOWN. BE PRESENT.",
     "caption": "قد نكون في المكان نفسه ونفوت تفاصيل بعضنا. جرّب أن تمنح حديثًا واحدًا انتباهك كاملًا، بلا تنقل بين الشاشة والكلام. مع من تريد أن تقضي وقتًا أكثر حضورًا؟",
-    "background": "care-02"
+    "background": "care-02-v2"
   },
   {
     "id": "care-03",
@@ -423,5 +423,5 @@ export const POST_PRESETS = [
 ];
 export const POST_CATEGORIES = [...new Set(POST_PRESETS.map(post => post.category))];
 export function postsForCategory(category) {
-  return !category ? POST_PRESETS : POST_PRESETS.filter(post => post.category === category);
+ return !category ? POST_PRESETS : POST_PRESETS.filter(post => post.category === category);
 }

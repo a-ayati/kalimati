@@ -20,7 +20,7 @@ test('every preset has two renderable lines and one complete highlight keyword',
   assert.equal(words.filter(w=>w===normalize(post.keyword)).length,1,post.id);
   assert.match(post.color,/^#[0-9A-F]{6}$/i);
   assert.ok(post.caption.length>60 && post.translation.length>8);
-  assert.ok(/^[a-z]+-[0-9]{2}$/.test(post.background));
+  assert.ok(/^[a-z]+-[0-9]{2}(?:-v[0-9]+)?$/.test(post.background));
   assert.ok(existsSync(new URL('../public/templates/cinematic/backgrounds/'+post.background+'.jpg',import.meta.url)));
   const layout=layoutTitle(post.lines,measure);assert.equal(layout.length,2);
   assert.equal(layout[0].width,layout[1].width);

@@ -1,4 +1,5 @@
-import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs?v=unique-1';
+import { drawScene, headerLabels, footerLabels } from './composition.mjs?v=safe-1';
+import { POST_PRESETS, POST_CATEGORIES, postsForCategory } from './presets.mjs?v=safe-1';
 import { FONT_SIZE, normalize, splitQuote, layoutTitle, parseSeed } from './layout.mjs';
 const $ = id => document.getElementById(id);
 const canvas = $('canvas'), ctx = canvas.getContext('2d');
@@ -22,17 +23,14 @@ function draw() {
   $('download').disabled = true;
   if (!photo || !fontReady) return;
   ctx.clearRect(0, 0, 1080, 1350);
-  let sw = photo.naturalWidth, sh = photo.naturalHeight;
-  if (sw / sh > .8) sw = sh * .8; else sh = sw / .8;
-  ctx.drawImage(photo, (photo.naturalWidth - sw) / 2, (photo.naturalHeight - sh) / 2, sw, sh, 0, 0, 1080, 1350);
+  drawScene(ctx, photo);
   const burn = ctx.createRadialGradient(540, 950, 40, 540, 950, 530);
   burn.addColorStop(0, 'rgba(0,0,0,.66)'); burn.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = burn; ctx.fillRect(0, 550, 1080, 800);
-  label('PERSONAL', 285, 220); label('VISUAL', 285, 238); label('STRIVE', 440, 220); label('TRUST', 546, 220);
-  label('ALL RIGHTS', 795, 220, 15, 'right'); label(`RESERVED ©${new Date().getFullYear()}`, 795, 238, 15, 'right');
-  label('PURPOSE', 285, 292); label('HOPE', 795, 292, 15, 'right');
-  label($('note1').value, 297, 687, 16); label($('note2').value, 297, 707, 16); label($('date').value, 297, 730, 16);
+  ctx.fillStyle = burn; ctx.fillRect(0, 0, 1080, 1350);
   try {
+    for (const args of headerLabels(new Date().getFullYear())) label(...args);
+    ctx.font = '16px Arial';
+    for (const run of footerLabels([$('note1').value, $('note2').value, $('date').value], $('author').value, $('source').value, text => ctx.measureText(text))) label(run.text, run.x, run.y, 16, run.align);
     ctx.font = `900 ${FONT_SIZE}px Thmanyah`; ctx.direction = 'rtl'; ctx.textAlign = 'right';
     const lines = layoutTitle([$('line1').value.trim(), $('line2').value.trim()], t => ctx.measureText(t));
     const key = normalize($('keyword').value.trim()), accent = $('color').value;
@@ -53,12 +51,6 @@ function draw() {
     const translated = translation ? wrap('“' + translation + '”') : [];
     if (translated.length > 3) throw new Error('اختصر الترجمة إلى ثلاثة أسطر كحد أقصى.');
     translated.forEach((t, i) => label(t, 540, 1150 + i * 25, 22, 'center', 'Georgia'));
-    ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.fillStyle = '#f3eee5'; ctx.font = '16px Arial';
-    const attribution = $('author').value.trim(), source = $('source').value.trim();
-    for (const [i, value] of [attribution, source].entries()) {
-      if (ctx.measureText(value).width > 930) throw new Error('اختصر سطر النسبة أو المصدر ليظهر كاملًا.');
-      ctx.fillText(value, 540, 1260 + i * 27);
-    }
     status('المعاينة جاهزة — 1080 × 1350'); $('download').disabled = false;
   } catch (error) { status(error.message || 'تعذّر تجهيز النص.'); }
 }
