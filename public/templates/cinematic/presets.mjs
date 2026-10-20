@@ -124,7 +124,7 @@ export const POST_PRESETS = [
     "color": "#6DE0C5",
     "translation": "A LITTLE APPRECIATION CAN CHANGE A DAY.",
     "caption": "لا تؤجّل التقدير إلى المناسبات الكبيرة. رسالة قصيرة، أو شكر محدد على مجهود لاحظته، قد يصل إلى شخص في الوقت الذي يحتاجه. من يستحق منك كلمة اليوم؟",
-    "background": "social-04"
+    "background": "social-04-natural-v3"
   },
   {
     "id": "social-05",
