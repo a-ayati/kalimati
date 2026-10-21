@@ -47,6 +47,7 @@ export function trackEvent(quoteId: string, kind: StatKind): void {
 
 export type QuoteInput = Omit<Quote, 'id' | 'createdAt' | 'stats' | 'revisions' | 'darja' | 'dialects'> & {
   revisionNote?: string;
+  clientRequestId?: string;
   /** الصيغ باللهجات المرافقة للفصحى: معرّف اللهجة ← النص بالتشكيل */
   dialectTexts?: Partial<Record<DialectId, string>>;
 };

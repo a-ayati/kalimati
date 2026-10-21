@@ -1,3 +1,4 @@
+import { validateReadyDesign, readyRequestQuoteId, type ReadyDesign } from '../shared/readyDesign';
 /**
  * خادم «كلماتي» على Cloudflare Workers
  *
@@ -210,6 +211,7 @@ async function handleLogin(req: Request, env: Env): Promise<Response> {
 // ---------------------------------------------------------------------------
 
 interface QuoteInput {
+  design?: ReadyDesign;
   text: string;
   plainText: string;
   language: 'fusha' | 'darja' | 'en' | 'fr';
@@ -268,6 +270,9 @@ function validateQuote(body: any): QuoteInput | string {
   const topics = Array.isArray(body.topics)
     ? body.topics.filter((t: unknown) => typeof t === 'string' && t.trim()).map((t: string) => t.trim().slice(0, 60)).slice(0, 12)
     : [];
+  const design = validateReadyDesign(body.design, text);
+  if (typeof design === 'string') return design;
+  if (design && body.status === 'scheduled' && date.getTime() <= Date.now()) return 'اختر موعدًا مستقبليًا لنشر التصميم.';
   // الصيغ باللهجات (اختيارية): { dz: "…", eg: "…" } — مع دعم الحقل القديم darjaText
   const rawDialects: Record<string, unknown> = {};
   // من النسخة الاحتياطية: { dialects: { dz: { text } } }
@@ -284,6 +289,7 @@ function validateQuote(body: any): QuoteInput | string {
   }
   void dialects; // الفصحى تُعرض وحدها: لا صيغ لهجات مرافقة بعد اليوم
   return {
+    design,
     dialects: undefined,
     dialect,
     text,
@@ -372,18 +378,25 @@ async function handleAdmin(req: Request, env: Env, path: string): Promise<Respon
   }
 
   if (path === '/api/admin/quotes' && method === 'POST') {
-    const parsed = validateQuote(await req.json().catch(() => null));
+    const body = await req.json().catch(() => null) as any;
+    const parsed = validateQuote(body);
     if (typeof parsed === 'string') return error(parsed, 400);
+    const requestId = parsed.design ? readyRequestQuoteId(body?.clientRequestId) : undefined;
+    if (parsed.design && !requestId) return error('أعد فتح المصمم ثم حاول الإضافة مجددًا.', 400);
+    if (requestId) {
+      const prior = await env.DB.prepare('SELECT * FROM quotes WHERE id = ?').bind(requestId).first<QuoteRow>();
+      if (prior) return json({ quote: rowToQuote(prior, true) });
+    }
     if (await featuredConflict(env, parsed)) return error('توجد بطاقة أخرى مخصصة لهذا اليوم. عدّل تخصيصها أولًا.', 409);
     const { status, publishedAt, slug, data } = splitInput(parsed);
     const now = new Date().toISOString();
-    const id = `quote-${crypto.randomUUID()}`;
+    const id = requestId || `quote-${crypto.randomUUID()}`;
     const revisions: Revision[] = [
       { id: `rev-${crypto.randomUUID()}`, timestamp: now, note: 'إنشاء النص الأولي', textSnippet: snippet(data.text), text: data.text },
     ];
     const finalSlug = await uniqueSlug(env, slug || data.plainText);
     await env.DB.prepare(
-      'INSERT INTO quotes (id, slug, status, published_at, created_at, updated_at, data) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      requestId ? 'INSERT OR IGNORE INTO quotes (id, slug, status, published_at, created_at, updated_at, data) VALUES (?, ?, ?, ?, ?, ?, ?)' : 'INSERT INTO quotes (id, slug, status, published_at, created_at, updated_at, data) VALUES (?, ?, ?, ?, ?, ?, ?)'
     )
       .bind(id, finalSlug, status, publishedAt, now, now, JSON.stringify({ ...data, revisions }))
       .run();
