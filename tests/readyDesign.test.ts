@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateReadyDesign, readyRequestQuoteId } from '../shared/readyDesign.ts';
+const text='لم يتأخر عُمرك، ما زال أمامك وقت.';
+const valid={templateId:'hope-01',style:'cinematic',caption:'كابشن المنشور',lines:['لم يتأخر عُمرك،','ما زال أمامك وقت.'],keyword:'وقت',color:'#FFB52E',translation:'THERE IS STILL TIME AHEAD.',background:'hope-01-hidden-v5'};
+test('design recipe survives JSON storage with caption and exact image settings',()=>{const result=validateReadyDesign(valid,text);assert.deepEqual(JSON.parse(JSON.stringify(result)),valid);});
+test('existing ordinary quotes remain valid without a design',()=>{assert.equal(validateReadyDesign(undefined,text),undefined);});
+test('unknown template, wrong style, external background and malformed color are rejected',()=>{for(const patch of [{templateId:'../../secret'},{style:'art'},{background:'https://example.org/image.jpg'},{color:'url(javascript:x)'},{templateId:'__proto__'}])assert.equal(typeof validateReadyDesign({...valid,...patch},text),'string');});
+test('changed quote cannot silently keep a conflicting design',()=>{assert.equal(typeof validateReadyDesign(valid,'عبارة مختلفة تمامًا'),'string');});
+test('invalid or duplicate keyword and oversized content are rejected',()=>{for(const patch of [{keyword:'مفقودة'},{caption:'x'.repeat(4001)},{lines:['','سطر']},{translation:'x'.repeat(121)}])assert.equal(typeof validateReadyDesign({...valid,...patch},text),'string');});
+test('art template persists only the known identity and caption, never arbitrary URLs or HTML',()=>{assert.deepEqual(validateReadyDesign({templateId:'art-patience',style:'art',caption:'تمهّل',url:'javascript:bad',unexpected:'x'},'تمهّل، ما ينمو بصدق يحتاج وقتًا'),{templateId:'art-patience',style:'art',caption:'تمهّل'});});
+test('request identity is stable and rejects path injection',()=>{const id='6562e8a5-689d-4de3-b39f-544897a2c449';assert.equal(readyRequestQuoteId(id),'design-'+id);for(const bad of ['../../quotes','',123,'existing-id'])assert.equal(readyRequestQuoteId(bad),undefined);});

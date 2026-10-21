@@ -1,3 +1,4 @@
+import { ReadyDesigner, type DesignedPostDraft } from '../components/ReadyDesigner';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthorStudio } from '../components/AuthorStudio';
 import { QuoteCard } from '../components/QuoteCard';
@@ -124,6 +125,7 @@ export const AdminView: React.FC = () => {
   // Selected quote for viewing revision history
   const [historyQuote, setHistoryQuote] = useState<Quote | null>(null);
   // معاينة المنشور كما سيراه القرّاء
+  const [showDesigner, setShowDesigner] = useState(false);
   const [previewQuote, setPreviewQuote] = useState<Quote | null>(null);
   const [showFormPreview, setShowFormPreview] = useState(true);
 
@@ -264,6 +266,7 @@ export const AdminView: React.FC = () => {
     const plainText = stripTashkeel(formText);
     const existing = editingQuoteId ? quotes.find((q) => q.id === editingQuoteId) : undefined;
     const payload: QuoteInput = {
+      design: existing?.text === formText ? existing.design : undefined,
       // الرابط يُولَّد على الخادم للقول الجديد، ويُحفظ كما هو عند التعديل حتى لا تنكسر الروابط المشاركة
       slug: existing?.slug || plainText,
       text: formText,
@@ -297,6 +300,15 @@ export const AdminView: React.FC = () => {
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const scheduleDesign = async (post: DesignedPostDraft) => {
+    const result = await adminApi.create({ clientRequestId: post.clientRequestId, text: post.text, plainText: stripTashkeel(post.text), slug: stripTashkeel(post.text), author: INITIAL_AUTHOR.name, language: 'fusha', topics: ['الإلهام'], status: 'scheduled', publishedAt: post.publishedAt, design: post.design, aiAssisted: true, sourceNote: 'نص تحريري من مكتبة المصمم، تمت مراجعته قبل الجدولة.' });
+    setQuotes(all => [result.quote, ...all.filter(q => q.id !== result.quote.id)]);
+    setShowDesigner(false);
+    setSection('schedule');
+    flash('ok', 'أُضيف التصميم والكابشن إلى المواعيد.');
+    afterChange().catch(() => flash('error', 'حُفظ المنشور، وتعذّر تحديث القائمة الآن. حدّث الصفحة لعرضه.'));
   };
 
   // Toggle topic selection
@@ -500,15 +512,9 @@ export const AdminView: React.FC = () => {
         </div>
       )}
 
-      <a
-        href="/templates/cinematic/index.html"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-center gap-2 w-full rounded-2xl bg-amber-400 px-5 py-4 font-bold text-black shadow-lg shadow-amber-500/10 hover:bg-amber-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
-      >
-        <Sparkles className="w-5 h-5" aria-hidden="true" />
-        القالب السينمائي — صمّم منشورًا
-      </a>
+      <button type="button" onClick={() => setShowDesigner(true)} className="clinic-gradient text-white font-bold px-5 py-3 rounded-2xl flex items-center justify-center gap-2 w-full cursor-pointer">
+        <Sparkles className="w-4 h-4" /> تصاميم جاهزة
+      </button>
 
       {section === 'home' && (
         <>
@@ -745,6 +751,8 @@ export const AdminView: React.FC = () => {
           </button>
         </div>
       )}
+
+      {showDesigner && <ReadyDesigner onClose={() => setShowDesigner(false)} onSchedule={scheduleDesign} />}
 
       {/* Create / Edit Quote Modal */}
       {(isCreatingNew || editingQuoteId) && (

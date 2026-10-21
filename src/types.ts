@@ -1,3 +1,4 @@
+import type { ReadyDesign } from '../shared/readyDesign';
 export type Language = 'fusha' | 'darja' | 'en' | 'fr';
 
 export type QuoteStatus = 'draft' | 'review' | 'scheduled' | 'published';
@@ -37,6 +38,7 @@ export interface Quote {
   darja?: QuoteVariant; // (قديم) الصيغة الجزائرية — صارت dialects.dz
   dialects?: Partial<Record<DialectId, QuoteVariant>>; // (قديم) صيغ باللهجات تحت الفصحى — أُلغيت: كل قول يُعرض وحده
   dialect?: DialectId; // لهجة القول حين يكون بالدارجة
+  design?: ReadyDesign;
   calligraphyManuscriptUrl?: string; // مخطوطة فنية مستقبلية
   audioRecitationUrl?: string; // تسجيل صوتي مستقبلي
   stats: {

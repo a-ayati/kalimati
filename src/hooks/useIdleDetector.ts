@@ -19,6 +19,7 @@ export function useIdleDetector() {
 
       timerRef.current = setTimeout(() => {
         // Only trigger if document is active and visible
+        if (document.querySelector('[aria-modal="true"]')) { resetTimer(); return; }
         if (document.visibilityState === 'visible') {
           setIsZenActive(true);
         }

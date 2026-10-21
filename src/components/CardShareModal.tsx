@@ -1,3 +1,4 @@
+import { DesignedQuoteShare } from './DesignedQuoteImage';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Quote, ThemeId, FontId } from '../types';
 import { useKalimati } from '../context/KalimatiContext';
@@ -427,6 +428,8 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
       // Fallback
     }
   };
+
+  if (quote.design) return <DesignedQuoteShare design={quote.design} text={quote.text} onClose={onClose} />;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-5 overflow-y-auto">

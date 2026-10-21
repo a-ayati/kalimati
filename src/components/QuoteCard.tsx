@@ -1,3 +1,4 @@
+import { DesignedQuoteImage } from './DesignedQuoteImage';
 import React, { useState } from 'react';
 import { Quote, EmotionTag } from '../types';
 import { quoteUrl } from '../lib/links';
@@ -195,7 +196,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
               <span className="w-8 h-[1px] bg-amber-500/30" />
             </div>
 
-            <QuoteText quote={currentQuote} style={customStyle} className="py-3 sm:py-4 transition-all duration-300" />
+            {currentQuote.design ? <DesignedQuoteImage design={currentQuote.design} text={currentQuote.text} /> : <QuoteText quote={currentQuote} style={customStyle} className="py-3 sm:py-4 transition-all duration-300" />}
 
             {/* المصدر يبقى محفوظاً في العيادة للمراجعة، ولا يُعرض في المنشور */}
             {/* اختيار اللهجة: يظهر عند توفّر أكثر من صيغة، والاختيار يُحفظ لكل المقولات */}
