@@ -12,7 +12,7 @@ export const POST_PRESETS = [
     "color": "#FFB52E",
     "translation": "THERE IS STILL TIME AHEAD.",
     "caption": "لا تقِس بدايتك بمنتصف طريق شخص آخر. ما تستطيع فعله اليوم يستحق أن تبدأ به، حتى لو جاء بعد تردد طويل. ما الخطوة التي تريد أن تمنحها فرصة؟",
-    "background": "hope-01"
+    "background": "hope-01-hidden-v5"
   },
   {
     "id": "hope-02",
@@ -26,7 +26,7 @@ export const POST_PRESETS = [
     "color": "#FF982F",
     "translation": "START SMALL. LET THE PATH UNFOLD.",
     "caption": "ليس مطلوبًا أن ترى الطريق كله قبل أن تتحرك. اختر خطوة تستطيع تنفيذها اليوم، ثم انظر إلى ما تعلّمته منها. ما بدا صغيرًا قد يكون بداية مهمة.",
-    "background": "hope-02"
+    "background": "hope-02-hidden-v5"
   },
   {
     "id": "hope-03",
@@ -82,7 +82,7 @@ export const POST_PRESETS = [
     "color": "#54CBFF",
     "translation": "LISTEN TO UNDERSTAND, NOT TO REPLY.",
     "caption": "بعض الحوارات تتعب لأن كل طرف ينتظر دوره في الكلام. جرّب أن تسأل عما لم تفهمه، ثم أعد المعنى بكلماتك قبل الرد. الإنصات يمنح الخلاف فرصة أهدأ.",
-    "background": "social-01"
+    "background": "social-01-hidden-v5"
   },
   {
     "id": "social-02",
@@ -96,7 +96,7 @@ export const POST_PRESETS = [
     "color": "#4DDAE8",
     "translation": "RESPECT MATTERS MOST IN DISAGREEMENT.",
     "caption": "الاختلاف لا يلغي ما بين الناس من احترام. انتقد التصرف دون إهانة الشخص، ولا تستخدم ما ائتمنك عليه سلاحًا في النقاش. ما القاعدة التي تحرص عليها وقت الخلاف؟",
-    "background": "social-02-v2"
+    "background": "social-02-hidden-v5"
   },
   {
     "id": "social-03",
@@ -110,7 +110,7 @@ export const POST_PRESETS = [
     "color": "#61C7FF",
     "translation": "SPEAK BEFORE HURT BECOMES DISTANCE.",
     "caption": "في العلاقة التي تسمح بحوار آمن، قد يصنع الكلام الواضح فرقًا. اشرح الموقف وأثره عليك، بدل انتظار أن يُفهم صمتك وحده. الوضوح لا يضمن الاتفاق، لكنه يقلل التخمين.",
-    "background": "social-03-v2"
+    "background": "social-03-hidden-v5"
   },
   {
     "id": "social-04",
@@ -124,7 +124,7 @@ export const POST_PRESETS = [
     "color": "#6DE0C5",
     "translation": "A LITTLE APPRECIATION CAN CHANGE A DAY.",
     "caption": "لا تؤجّل التقدير إلى المناسبات الكبيرة. رسالة قصيرة، أو شكر محدد على مجهود لاحظته، قد يصل إلى شخص في الوقت الذي يحتاجه. من يستحق منك كلمة اليوم؟",
-    "background": "social-04-natural-v3"
+    "background": "social-04-hidden-v5"
   },
   {
     "id": "social-05",
@@ -138,7 +138,7 @@ export const POST_PRESETS = [
     "color": "#61BFFF",
     "translation": "LOVE NEEDS RESPECT IN EVERYDAY ACTIONS.",
     "caption": "تظهر المحبة في طريقة الكلام، وفي احترام الاختلاف والوقت والحدود. الكلمات الجميلة مهمة، والتصرفات اليومية هي ما يمنحها معنى. أي تصرف يجعلك تشعر بالتقدير؟",
-    "background": "social-05-v2"
+    "background": "social-05-hidden-v5"
   },
   {
     "id": "awareness-01",
@@ -152,7 +152,7 @@ export const POST_PRESETS = [
     "color": "#FF9142",
     "translation": "CHECK BEFORE YOU SHARE.",
     "caption": "عنوان مثير لا يكفي لفهم خبر. افتح المصدر، وانتبه إلى التاريخ والسياق، وابحث عن أصل المعلومة قبل إعادة نشرها. التمهّل هنا مسؤولية تجاه من يثق بما تشاركه.",
-    "background": "awareness-01"
+    "background": "awareness-01-hidden-v5"
   },
   {
     "id": "awareness-02",
@@ -180,7 +180,7 @@ export const POST_PRESETS = [
     "color": "#FF8A3D",
     "translation": "SILENCE DOES NOT ALWAYS MEAN AGREEMENT.",
     "caption": "قد يصمت شخص لأنه يفكر، أو لا يرغب في النقاش، أو لم يجد مساحة للكلام. لا تبنِ استنتاجًا كاملًا على صمته وحده. اسأل بوضوح، واترك له حق الرد أو الامتناع.",
-    "background": "awareness-03-v2"
+    "background": "awareness-03-hidden-v5"
   },
   {
     "id": "awareness-04",
@@ -222,7 +222,7 @@ export const POST_PRESETS = [
     "color": "#FF5362",
     "translation": "A CLEAR NO DOES NOT NEED A FIGHT.",
     "caption": "يمكنك رفض طلب لا يناسب وقتك أو قدرتك بكلمات هادئة ومباشرة. ليس كل رفض بحاجة إلى تبرير طويل، وليس كل اختلاف معركة. ما الطلب الذي تحتاج أن تجيب عنه بوضوح؟",
-    "background": "boundaries-01"
+    "background": "boundaries-01-hidden-v5"
   },
   {
     "id": "boundaries-02",
@@ -236,7 +236,7 @@ export const POST_PRESETS = [
     "color": "#FF6657",
     "translation": "BE KIND WITHOUT NEGLECTING YOURSELF.",
     "caption": "مساعدة الآخرين لا تلزمك بتجاهل طاقتك والتزاماتك. العطاء الذي تستطيع الاستمرار فيه يبدأ بمعرفة حدودك. أين تحتاج إلى مساحة لنفسك هذا الأسبوع؟",
-    "background": "boundaries-02-v2"
+    "background": "boundaries-02-hidden-v5"
   },
   {
     "id": "boundaries-03",
@@ -264,7 +264,7 @@ export const POST_PRESETS = [
     "color": "#FF6551",
     "translation": "YOU DO NOT HAVE TO ENTER EVERY ARGUMENT.",
     "caption": "قبل أن ترد، اسأل نفسك: هل نبحث عن فهم، أم ندور في الحلقة نفسها؟ يمكنك إنهاء نقاش لا يتقدم دون إهانة أو استعراض. اختيار الهدوء أحيانًا يحفظ وقتك واحترامك.",
-    "background": "boundaries-04-v2"
+    "background": "boundaries-04-hidden-v5"
   },
   {
     "id": "boundaries-05",
@@ -292,7 +292,7 @@ export const POST_PRESETS = [
     "color": "#FFC23D",
     "translation": "KEEP YOUR PROMISE WHEN MOTIVATION FADES.",
     "caption": "الحماس يساعد على البداية، لكنه لا يحضر في كل يوم. اختر التزامًا واقعيًا تستطيع العودة إليه حتى في الأيام العادية. ما الوعد الصغير الذي ستفي به اليوم؟",
-    "background": "growth-01-v2"
+    "background": "growth-01-hidden-v5"
   },
   {
     "id": "growth-02",
@@ -306,7 +306,7 @@ export const POST_PRESETS = [
     "color": "#FFAC39",
     "translation": "ASK TO LEARN, NOT TO LOOK INFORMED.",
     "caption": "ليس مطلوبًا أن تعرف كل شيء في كل مجلس. سؤال صادق قد يفتح فهمًا لا تمنحك إياه إجابة متسرعة. متى كانت آخر مرة قلت فيها: لا أعرف، اشرح لي؟",
-    "background": "growth-02"
+    "background": "growth-02-hidden-v5"
   },
   {
     "id": "growth-03",
@@ -320,7 +320,7 @@ export const POST_PRESETS = [
     "color": "#FFBE4D",
     "translation": "EXPERIENCE TEACHES. REFLECTION HELPS YOU GROW.",
     "caption": "بعد كل محاولة، خصّص دقائق لسؤالين: ما الذي نجح؟ وما الذي سأغيّره؟ تكرار العمل وحده لا يكشف دائمًا ما يحتاج إلى تحسين. ما الدرس الذي أخذته من تجربتك الأخيرة؟",
-    "background": "growth-03"
+    "background": "growth-03-hidden-v5"
   },
   {
     "id": "growth-04",
@@ -348,7 +348,7 @@ export const POST_PRESETS = [
     "color": "#FFAF45",
     "translation": "LET THE QUALITY OF YOUR WORK SPEAK.",
     "caption": "بدل الانشغال الدائم بإثبات ما تستطيع فعله، اختر جزءًا من عملك وحسّنه بوضوح. الدقة والاهتمام بالتفاصيل يمنحان الآخرين سببًا للثقة. ما التفصيل الذي سترفع مستواه؟",
-    "background": "growth-05"
+    "background": "growth-05-hidden-v5"
   },
   {
     "id": "care-01",
@@ -362,7 +362,7 @@ export const POST_PRESETS = [
     "color": "#BFEA46",
     "translation": "MAKE ROOM TO REST BEFORE YOU RUN EMPTY.",
     "caption": "لا تنتظر حتى يصبح كل طلب عبئًا كي تراجع إيقاع يومك. قد تحتاج إلى استراحة قصيرة أو إلى تقليل ما تحاول إنجازه دفعة واحدة. ما الذي يمكنك تأجيله دون أن يتضرر شيء مهم؟",
-    "background": "care-01"
+    "background": "care-01-hidden-v5"
   },
   {
     "id": "care-02",
@@ -376,7 +376,7 @@ export const POST_PRESETS = [
     "color": "#6DE38D",
     "translation": "PUT THE PHONE DOWN. BE PRESENT.",
     "caption": "قد نكون في المكان نفسه ونفوت تفاصيل بعضنا. جرّب أن تمنح حديثًا واحدًا انتباهك كاملًا، بلا تنقل بين الشاشة والكلام. مع من تريد أن تقضي وقتًا أكثر حضورًا؟",
-    "background": "care-02-v2"
+    "background": "care-02-hidden-v5"
   },
   {
     "id": "care-03",
@@ -390,7 +390,7 @@ export const POST_PRESETS = [
     "color": "#B4EE50",
     "translation": "NOTICE YOUR STEP, NOT EVERYONE ELSE'S SPEED.",
     "caption": "قد تختلف ظروفك وأولوياتك عمن تقارن نفسك به. انظر إلى ما تحسّن في طريقتك وما يحتاج إلى عمل، لا إلى الترتيب وحده. ما التقدم الذي لم تمنح نفسك وقتًا لملاحظته؟",
-    "background": "care-03"
+    "background": "care-03-hidden-v5"
   },
   {
     "id": "care-04",
@@ -418,7 +418,7 @@ export const POST_PRESETS = [
     "color": "#CBEF54",
     "translation": "YOU DO NOT HAVE TO PRETEND EVERY DAY.",
     "caption": "يمكنك الاعتراف بأن يومك ثقيل دون شرح كل التفاصيل. اختر من تثق به إن رغبت في الكلام، وخفّف التزاماتك حين تستطيع. الصدق مع نفسك بداية لفهم ما تحتاجه اليوم.",
-    "background": "care-05"
+    "background": "care-05-hidden-v5"
   }
 ];
 export const POST_CATEGORIES = [...new Set(POST_PRESETS.map(post => post.category))];
