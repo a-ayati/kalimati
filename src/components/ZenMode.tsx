@@ -191,7 +191,7 @@ export const ZenMode: React.FC<ZenModeProps> = ({ isOpen, onClose, previewQuote 
       <div className="w-full max-w-4xl flex items-center justify-between text-xs text-stone-400 font-cairo z-10">
         <div className="flex items-center gap-1.5 text-stone-400 font-cairo">
           <Sparkles className="w-3.5 h-3.5 text-amber-500/60" />
-          <span>كَلِمَاتِي — كَلِمَاتٌ تَبْقَى</span>
+          <span>خَلْوَة — خَلْوَةٌ لَا تَخْلُو…</span>
         </div>
 
         <div className="flex items-center gap-1 text-stone-400 font-cairo">

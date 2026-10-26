@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, ChevronLeft, Stethoscope, type LucideIcon } from 'lucide-react';
 
 /**
- * قطع «عيادة كلماتي»: نسخة مصغّرة من واجهة «دكتور المحتوى» —
+ * قطع «عيادة خَلْوَة»: نسخة مصغّرة من واجهة «دكتور المحتوى» —
  * دكتور يشخّص الحالة، أرقام تعدّ من الصفر، واختصاصيون يفتح كلٌّ منهم قسمه.
  */
 

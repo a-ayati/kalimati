@@ -35,7 +35,7 @@ export const PrivacyTermsView: React.FC = () => {
         </h2>
         <div className="space-y-2 text-stone-300 leading-relaxed font-cairo">
           <p>
-            تلتزم منصة «كلماتي» بأقصى درجات احترام الخصوصية الشخصية:
+            تلتزم منصة «خَلْوَة» بأقصى درجات احترام الخصوصية الشخصية:
           </p>
           <ul className="list-disc list-inside space-y-1.5 text-stone-400 text-xs">
             <li>
@@ -62,7 +62,7 @@ export const PrivacyTermsView: React.FC = () => {
         </h2>
         <div className="space-y-2.5 text-stone-300 leading-relaxed font-cairo">
           <p>
-            جميع الخواطر المنشورة في «كلماتي» نتاج أدبي أصيل خاص بالمنصة. أما الأمثال الشعبية باللهجات فهي من التراث، وتُنسب إليه.
+            جميع الخواطر المنشورة في «خَلْوَة» نتاج أدبي أصيل خاص بالمنصة. أما الأمثال الشعبية باللهجات فهي من التراث، وتُنسب إليه.
           </p>
           <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/20 text-xs text-stone-300 space-y-2">
             <div className="font-bold text-amber-300 flex items-center gap-1.5">
@@ -101,7 +101,7 @@ export const PrivacyTermsView: React.FC = () => {
           <span>4. شروط الاقتباس والمشاركة</span>
         </h2>
         <p className="leading-relaxed font-cairo text-xs">
-          يسعدنا ويسرنا مشاركة هذه الكلمات والخواطر لتعم الفائدة وتصل إلى كل من يحتاجها، مع الرجاء الأخلاقي والأدبي بالحفاظ على نسبة النص إلى «كلماتي» وإبقاء الختم وتوقيع المنصة على البطاقات المصممة.
+          يسعدنا ويسرنا مشاركة هذه الكلمات والخواطر لتعم الفائدة وتصل إلى كل من يحتاجها، مع الرجاء الأخلاقي والأدبي بالحفاظ على نسبة النص إلى «خَلْوَة» وإبقاء الختم وتوقيع المنصة على البطاقات المصممة.
           لا يُسمح بإعادة تجميع النصوص أو بيعها لأغراض تجارية دون إذن كتابي مسبق من الكاتب.
         </p>
       </div>

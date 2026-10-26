@@ -16,8 +16,8 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'favicon-64.png', 'apple-touch-icon.png', 'og.png'],
         manifest: {
           id: '/',
-          name: 'كلماتي — كلماتٌ تبقى',
-          short_name: 'كلماتي',
+          name: 'خَلْوَة — خَلْوَةٌ لَا تَخْلُو…',
+          short_name: 'خَلْوَة',
           description: 'منصة لنشر أقوال وخواطر أصلية بالفصحى والدارجة الجزائرية مع تخصيص فني وبطاقات مشاركة.',
           theme_color: '#0d0d0f',
           background_color: '#0d0d0f',

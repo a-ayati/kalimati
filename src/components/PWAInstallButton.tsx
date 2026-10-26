@@ -17,7 +17,7 @@ export const PWAInstallButton: React.FC = () => {
       <button
         onClick={install}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer shadow-xs active:scale-95"
-        title="تثبيت كلماتي كتطبيق على هاتفك أو حاسوبك"
+        title="تثبيت خَلْوَة كتطبيق على هاتفك أو حاسوبك"
       >
         <Download className="w-3.5 h-3.5 text-amber-400" />
         <span>تثبيت التطبيق</span>
@@ -43,7 +43,7 @@ export const PWAInstallButton: React.FC = () => {
               <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
                 <h3 className="text-base font-bold text-amber-400 flex items-center gap-2">
                   <Smartphone className="w-4 h-4" />
-                  حفظ «كلماتي» على الشاشة الرئيسية
+                  حفظ «خَلْوَة» على الشاشة الرئيسية
                 </h3>
                 <button
                   onClick={() => setShowIOSGuide(false)}

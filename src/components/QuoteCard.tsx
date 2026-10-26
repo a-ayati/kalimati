@@ -89,7 +89,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
     try {
       const picked = pickDialect(currentQuote, preferredDialect);
       const darjaLine = picked ? `\n${stripTashkeel(picked.variant.text)}` : '';
-      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}${bylineSuffix(currentQuote)}\n\nمنصة كلماتي: ${quoteUrl(currentQuote)}`;
+      const textToCopy = `${stripTashkeel(currentQuote.text)}${darjaLine}${bylineSuffix(currentQuote)}\n\nمنصة خَلْوَة: ${quoteUrl(currentQuote)}`;
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
