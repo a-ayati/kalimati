@@ -338,7 +338,7 @@ export const AdminView: React.FC = () => {
 
           <div>
             <h1 className="text-3xl font-bold text-white">
-              عيادة <span className="clinic-accent">كلماتي</span>
+              عيادة <span className="clinic-accent">خَلْوَة</span>
             </h1>
             <p className="text-xs text-stone-400 mt-2 leading-relaxed">
               أهلاً بك. أدخل كلمة المرور لأعرض عليك حالة خواطرك.
@@ -521,7 +521,7 @@ export const AdminView: React.FC = () => {
           {/* الرأس */}
           <div className="space-y-2 pt-2">
             <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
-              عيادة <span className="clinic-accent">كلماتي</span>
+              عيادة <span className="clinic-accent">خَلْوَة</span>
             </h1>
             <p className="text-sm text-stone-400 leading-relaxed">
               نسخة مصغّرة من «دكتور المحتوى» لمنصتك: دكتور يتابع حالة الخواطر، وفريق صغير معه للكتابة والمواعيد والأرقام.
@@ -535,7 +535,7 @@ export const AdminView: React.FC = () => {
           <div className="p-5 sm:p-6 rounded-3xl bg-[#141518] border border-white/10 space-y-5">
             <div className="space-y-2">
               <div className="text-sm font-semibold clinic-accent">{greeting()}</div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">أهلاً بك في عيادة كلماتي</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">أهلاً بك في عيادة خَلْوَة</h2>
               <p className="text-sm text-stone-400 leading-relaxed">أتابع خواطرك وأمثالك، وما تحتاجه أحوّله إلى الاختصاصي المناسب.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">

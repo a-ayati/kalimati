@@ -82,7 +82,7 @@ export const ScreenSaverView: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'لحظة سكون — كلماتي';
+    document.title = 'لحظة سكون — خَلْوَة';
   }, []);
 
   // لمسة على الهاتف تُظهر زر الخروج لثوانٍ
@@ -182,11 +182,11 @@ export const ScreenSaverView: React.FC = () => {
         <div className="flex items-center gap-2.5 opacity-70">
           <span className="w-8 h-8 rounded-[9px] border border-[#c9a227]/45 flex items-center justify-center">
             <span className="logo-ink text-[19px] leading-none">
-              <InkText text="كَ" />
+              <InkText text="خَ" />
             </span>
           </span>
           <span className="logo-ink text-[18px] leading-none">
-            <InkText text="كَلِمَاتِي" />
+            <InkText text="خَلْوَة" />
           </span>
         </div>
       </div>

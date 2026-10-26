@@ -51,7 +51,7 @@ export const CustomizeView: React.FC = () => {
       name: 'الأسود والخردلي',
       bgClass: 'bg-[#0d0e11] text-[#f5f5f7]',
       borderClass: 'border-amber-500',
-      desc: 'الهوية الرسمية الفاخرة لمنصة كلماتي بملمس خفيف وتشكيل ملوّن',
+      desc: 'الهوية الرسمية الفاخرة لمنصة خَلْوَة بملمس خفيف وتشكيل ملوّن',
     },
     {
       id: 'vintage',
@@ -113,10 +113,10 @@ export const CustomizeView: React.FC = () => {
         <button
           onClick={resetToOfficialStyle}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-amber-500/15 text-stone-300 hover:text-amber-300 border border-white/10 hover:border-amber-500/30 transition-all cursor-pointer shadow-xs active:scale-95"
-          title="الرجوع إلى الهوية الرسمية لمنصة كلماتي"
+          title="الرجوع إلى الهوية الرسمية لمنصة خَلْوَة"
         >
           <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
-          <span>تصميم كلماتي الأصلي</span>
+          <span>تصميم خَلْوَة الأصلي</span>
         </button>
       </div>
 

@@ -24,7 +24,7 @@ export const ContactView: React.FC = () => {
           <span className="text-xs font-semibold text-amber-400">التواصل المباشر</span>
         </div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-amiri text-white pt-2 pb-1 leading-normal tracking-wide">
-          تَوَاصَلْ مَعَ كَلِمَاتِي
+          تَوَاصَلْ مَعَ خَلْوَة
         </h1>
         <p className="text-xs sm:text-sm text-stone-400">
           تسعدنا رسائلك، انطباعاتك حول الخواطر، وملاحظاتك لتطوير المنصة.

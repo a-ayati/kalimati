@@ -63,7 +63,7 @@ export function AuthorStudio({ quotes, onEdit, onChanged, onReference }: Props) 
     finally { await onChanged().catch(()=>undefined); setBusy(false); }
   }
   return <section className="p-5 rounded-3xl border border-amber-500/30 bg-[#141518] space-y-5" aria-labelledby="studio-title">
-    <div><h2 id="studio-title" className="text-2xl font-amiri text-amber-300">استوديو كلماتي</h2><p className="text-xs text-stone-400 mt-2">من كلمة إلى مسودة، ثم تصميم واعتماد وجدولة. خاص بصاحب المنصة.</p></div>
+    <div><h2 id="studio-title" className="text-2xl font-amiri text-amber-300">استوديو خَلْوَة</h2><p className="text-xs text-stone-400 mt-2">من كلمة إلى مسودة، ثم تصميم واعتماد وجدولة. خاص بصاحب المنصة.</p></div>
     {available === false && <p role="status" className="text-sm text-amber-200">التوليد يحتاج ربط Workers AI بالخادم باسم AI. التحرير اليدوي والتصميم والمخطّط متاحة الآن.</p>}
     <div className="grid sm:grid-cols-2 gap-4 text-sm">
       <label>الكلمة أو الموضوع<input className={input} maxLength={200} placeholder="مثلًا: الغياب" value={form.word} onChange={e=>setForm({...form,word:e.target.value})}/></label>

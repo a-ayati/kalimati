@@ -2,9 +2,9 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { InkText } from './InkText';
 
-const WORD_SIZE = 76; // حجم «كلماتي» داخل المربع
+const WORD_SIZE = 76; // حجم «خَلْوَة» داخل المربع
 const ICON_SIZE = 120; // المربع النهائي
-const ICON_LETTER = 74; // حجم «كَ» النهائي
+const ICON_LETTER = 74; // حجم «خَ» النهائي
 const PAD_X = 44;
 const BOX_H = 150;
 const EASE: [number, number, number, number] = [0.65, 0, 0.35, 1];
@@ -27,8 +27,8 @@ export function shouldPlay(): boolean {
 }
 
 /**
- * مقدّمة الشعار: «كَلِمَاتِي» كاملة داخل مربع، ثم ينكمش المربع بسلاسة
- * فلا يبقى إلا حرف «كَ» كما في أيقونة المنصة. تظهر مرة واحدة في كل زيارة.
+ * مقدّمة الشعار: «خَلْوَة» كاملة داخل مربع، ثم ينكمش المربع بسلاسة
+ * فلا يبقى إلا حرف «خَ» كما في أيقونة المنصة. تظهر مرة واحدة في كل زيارة.
  */
 export const LogoIntro: React.FC = () => {
   const [play] = useState(shouldPlay);
@@ -48,7 +48,7 @@ export const LogoIntro: React.FC = () => {
         setReady(true);
       }
     };
-    document.fonts.load(`700 ${WORD_SIZE}px KQL-ruqaaink`, 'كَلِمَاتِي').then(go, go);
+    document.fonts.load(`700 ${WORD_SIZE}px KQL-ruqaaink`, 'خَلْوَة').then(go, go);
     const t = window.setTimeout(go, 1000);
     return () => window.clearTimeout(t);
   }, [play]);
@@ -74,7 +74,7 @@ export const LogoIntro: React.FC = () => {
   if (!play) return null;
 
   const boxW = m ? m.w + PAD_X * 2 : 0;
-  // «كَ» تبدأ فوق كاف الكلمة تماماً (محاذاة الحافة اليمنى) ثم تنتقل إلى المركز
+  // «خَ» تبدأ فوق كاف الكلمة تماماً (محاذاة الحافة اليمنى) ثم تنتقل إلى المركز
   const kOffset = m ? m.w / 2 - m.k / 2 : 0;
 
   return (
@@ -91,8 +91,8 @@ export const LogoIntro: React.FC = () => {
           {/* قياس الكلمة قبل الحركة */}
           {!m && (
             <span className="logo-ink absolute opacity-0 pointer-events-none whitespace-nowrap" style={{ fontSize: WORD_SIZE }} dir="rtl">
-              <span ref={wordRef}>كَلِمَاتِي</span>
-              <span ref={isoRef}>كَ</span>
+              <span ref={wordRef}>خَلْوَة</span>
+              <span ref={isoRef}>خَ</span>
             </span>
           )}
 
@@ -132,10 +132,10 @@ export const LogoIntro: React.FC = () => {
                     filter: { delay: T_SHRINK, duration: 0.28 },
                   }}
                 >
-                  <InkText text="كَلِمَاتِي" />
+                  <InkText text="خَلْوَة" />
                 </motion.span>
 
-                {/* «كَ» وحدها: تنطلق من مكانها في الكلمة وتستقر في وسط المربع */}
+                {/* «خَ» وحدها: تنطلق من مكانها في الكلمة وتستقر في وسط المربع */}
                 <motion.span
                   className="logo-ink absolute"
                   dir="rtl"
@@ -148,7 +148,7 @@ export const LogoIntro: React.FC = () => {
                     fontSize: { delay: T_SHRINK, duration: D_SHRINK, ease: EASE },
                   }}
                 >
-                  <InkText text="كَ" />
+                  <InkText text="خَ" />
                 </motion.span>
               </motion.div>
 
@@ -160,7 +160,7 @@ export const LogoIntro: React.FC = () => {
                 transition={{ duration: T_SHRINK + 0.2, times: [0, 0.45, 0.85, 1], delay: 0.3 }}
               >
                 <span className="w-10 h-px bg-[#c9a227]/70" />
-                <span className="text-sm font-cairo font-medium">كلماتٌ تبقى</span>
+                <span className="text-sm font-cairo font-medium">خَلْوَةٌ لَا تَخْلُو…</span>
                 <span className="w-10 h-px bg-[#c9a227]/70" />
               </motion.div>
             </div>

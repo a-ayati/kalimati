@@ -14,11 +14,11 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-[10px] bg-[#0d0d0f] border border-[#c9a227]/45 flex items-center justify-center">
-              <span className="logo-ink text-[22px] leading-none"><InkText text="كَ" /></span>
+              <span className="logo-ink text-[22px] leading-none"><InkText text="خَ" /></span>
             </div>
             <div>
-              <div className="logo-ink text-[19px] leading-none mb-1"><InkText text="كَلِمَاتِي" /></div>
-              <div className="text-[10px] text-amber-500/80 font-cairo">كَلِمَاتٌ تَبْقَى</div>
+              <div className="logo-ink text-[19px] leading-none mb-1"><InkText text="خَلْوَة" /></div>
+              <div className="text-[10px] text-amber-500/80 font-cairo">خَلْوَةٌ لَا تَخْلُو…</div>
             </div>
           </div>
 
@@ -28,7 +28,7 @@ export const Footer: React.FC = () => {
               onClick={() => setActiveTab('about')}
               className="hover:text-amber-400 transition-colors cursor-pointer"
             >
-              عن كلماتي
+              عن خَلْوَة
             </button>
             <button
               onClick={() => setActiveTab('contact')}
@@ -53,7 +53,7 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-1">
             <span>صُمِّمت بحب ورعاية للحرف العربي</span>
             <span className="text-amber-500">❦</span>
-            <span>© {new Date().getFullYear()} كلماتي</span>
+            <span>© {new Date().getFullYear()} خَلْوَة</span>
           </div>
         </div>
 

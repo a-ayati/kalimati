@@ -5,7 +5,7 @@ import { InkText } from './InkText';
 
 const BOX = 40; // المربع النهائي
 const WORD = 22; // حجم الكلمة داخل المربع وبجانبه
-const KAF = 25; // حجم «كَ» النهائي
+const KAF = 25; // حجم «خَ» النهائي
 const PAD = 12;
 const EASE: [number, number, number, number] = [0.65, 0, 0.35, 1];
 
@@ -24,7 +24,7 @@ function reducedMotion(): boolean {
 const sleep = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
 
 /**
- * شعار الشريط العلوي المتحرك: «كَلِمَاتِي» تُكتب داخل المربع، ثم ينكمش المربع فتبقى «كَ»
+ * شعار الشريط العلوي المتحرك: «خَلْوَة» تُكتب داخل المربع، ثم ينكمش المربع فتبقى «خَ»
  * وتُكتب الكلمة بجانبه. تتكرر الحركة عند مرور المؤشر، ويمرّ بريق ذهبي خفيف على المربع بين حين وآخر.
  */
 export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = true }) => {
@@ -46,7 +46,7 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
       if (cancelled || !wordMeasure.current || !kafMeasure.current) return;
       setM({ word: wordMeasure.current.offsetWidth, kaf: kafMeasure.current.offsetWidth });
     };
-    document.fonts.load(`700 ${WORD}px KQL-ruqaaink`, 'كَلِمَاتِي').then(measure, measure);
+    document.fonts.load(`700 ${WORD}px KQL-ruqaaink`, 'خَلْوَة').then(measure, measure);
     const t = window.setTimeout(measure, 1200);
     return () => {
       cancelled = true;
@@ -57,7 +57,7 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
   const wide = m ? m.word + PAD * 2 : BOX;
   const kafOffset = m ? m.word / 2 - m.kaf / 2 : 0; // مكان الكاف داخل الكلمة (أقصى اليمين)
 
-  /** الانكماش: المربع يضيق إلى «كَ» والكلمة تُكتب بجانبه */
+  /** الانكماش: المربع يضيق إلى «خَ» والكلمة تُكتب بجانبه */
   const contract = useCallback(async () => {
     await Promise.all([
       animate('[data-box]', { width: BOX }, { duration: 0.8, ease: EASE }),
@@ -127,8 +127,8 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
       {/* عناصر القياس (مخفية) */}
       {animating && !m && (
         <span className="logo-ink absolute opacity-0 pointer-events-none whitespace-nowrap" style={{ fontSize: WORD }} dir="rtl">
-          <span ref={wordMeasure}>كَلِمَاتِي</span>
-          <span ref={kafMeasure}>كَ</span>
+          <span ref={wordMeasure}>خَلْوَة</span>
+          <span ref={kafMeasure}>خَ</span>
         </span>
       )}
 
@@ -144,17 +144,17 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
           dir="rtl"
           style={{ fontSize: WORD, opacity: 0 }}
         >
-          <InkText text="كَلِمَاتِي" />
+          <InkText text="خَلْوَة" />
         </span>
         <span data-kaf className="logo-ink absolute leading-none" dir="rtl" style={{ fontSize: KAF }}>
-          <InkText text="كَ" />
+          <InkText text="خَ" />
         </span>
       </div>
 
       <div className="flex flex-col justify-center">
         <div className="font-cairo text-base font-bold text-white flex items-center gap-2 leading-tight">
           <span data-mark className="logo-word logo-ink text-[22px] leading-none">
-            <InkText text="كَلِمَاتِي" />
+            <InkText text="خَلْوَة" />
           </span>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-cairo hidden sm:inline-block">
             أصيلة
@@ -162,7 +162,7 @@ export const HeaderLogo: React.FC<{ showTagline?: boolean }> = ({ showTagline = 
         </div>
         {showTagline && (
           <div className="text-[11px] text-amber-500/90 font-medium tracking-normal mt-1 hidden sm:block">
-            كَلِمَاتٌ تَبْقَى
+            خَلْوَةٌ لَا تَخْلُو…
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { validateReadyDesign, readyRequestQuoteId, type ReadyDesign } from '../shared/readyDesign';
 /**
- * خادم «كلماتي» على Cloudflare Workers
+ * خادم «خَلْوَة» على Cloudflare Workers
  *
  * - يقدّم ملفات الواجهة (dist) كتطبيق صفحة واحدة.
  * - /api/quotes          الأقوال المنشورة للعامة (تظهر المجدولة تلقائياً عند حلول موعدها).
@@ -587,7 +587,7 @@ async function handleQuotePage(req: Request, env: Env, slug: string): Promise<Re
   const q = rowToQuote(row);
   const plain: string = q.plainText || '';
   return serveShell(req, env, `/q/${encodeURIComponent(row.slug)}`, {
-    title: `«${plain.length > 70 ? plain.slice(0, 70) + '…' : plain}» — كلماتي`,
+    title: `«${plain.length > 70 ? plain.slice(0, 70) + '…' : plain}» — خَلْوَة`,
     description: q.author === FOLK_AUTHOR ? `${plain.slice(0, 180)} — مثل من التراث الشعبي` : plain.slice(0, 200),
   });
 }

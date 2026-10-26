@@ -80,7 +80,7 @@ export const QuoteDetailView: React.FC = () => {
     try {
       const picked = pickDialect(quote, preferredDialect);
       const darjaLine = picked ? `\n"${stripTashkeel(picked.variant.text)}"` : '';
-      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}${bylineSuffix(quote)}\n\nالمصدر: منصة كلماتي (${quoteUrl})`;
+      const fullCitation = `"${stripTashkeel(quote.text)}"${darjaLine}${bylineSuffix(quote)}\n\nالمصدر: منصة خَلْوَة (${quoteUrl})`;
       await navigator.clipboard.writeText(fullCitation);
       setCopiedText(true);
       setTimeout(() => setCopiedText(false), 2000);
@@ -103,7 +103,7 @@ export const QuoteDetailView: React.FC = () => {
             'inLanguage': quote.language === 'darja' ? dialectInfo(quoteDialectId(quote)).lang : 'ar',
             'isPartOf': {
               '@type': 'WebSite',
-              'name': 'كلماتي',
+              'name': 'خَلْوَة',
               'url': window.location.origin,
             },
           }),

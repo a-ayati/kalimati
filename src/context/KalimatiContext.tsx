@@ -35,17 +35,17 @@ const TAB_PATHS: Record<Exclude<ActiveTab, 'quote-detail'>, string> = {
 };
 
 const TAB_TITLES: Record<ActiveTab, string> = {
-  today: 'كلماتي — كلماتٌ تبقى',
-  library: 'المكتبة — كلماتي',
-  saved: 'محفوظاتي — كلماتي',
-  customize: 'التخصيص — كلماتي',
-  account: 'الإعدادات — كلماتي',
-  author: 'عن الكاتب — كلماتي',
-  about: 'عن المنصة — كلماتي',
-  'privacy-terms': 'الخصوصية والشروط — كلماتي',
-  contact: 'تواصل — كلماتي',
-  admin: 'لوحة الكاتب — كلماتي',
-  'quote-detail': 'كلماتي',
+  today: 'خَلْوَة — خَلْوَةٌ لَا تَخْلُو…',
+  library: 'المكتبة — خَلْوَة',
+  saved: 'محفوظاتي — خَلْوَة',
+  customize: 'التخصيص — خَلْوَة',
+  account: 'الإعدادات — خَلْوَة',
+  author: 'عن الكاتب — خَلْوَة',
+  about: 'عن المنصة — خَلْوَة',
+  'privacy-terms': 'الخصوصية والشروط — خَلْوَة',
+  contact: 'تواصل — خَلْوَة',
+  admin: 'لوحة الكاتب — خَلْوَة',
+  'quote-detail': 'خَلْوَة',
 };
 
 interface Route {
@@ -377,7 +377,7 @@ export const KalimatiProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const q = quotes.find((x) => x.id === selectedQuoteId);
       if (q) {
         const plain = q.plainText.length > 60 ? q.plainText.slice(0, 60) + '…' : q.plainText;
-        document.title = `«${plain}» — كلماتي`;
+        document.title = `«${plain}» — خَلْوَة`;
       }
     } else {
       document.title = TAB_TITLES[route.tab];

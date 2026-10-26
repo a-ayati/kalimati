@@ -158,21 +158,21 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
       ctx.fill();
     });
 
-    // Top Header: Brand Name «كلماتي»
-    // «كلماتي» بمخطوطة الشعار: حروف حبر الرقعة وتشكيل أحمر فوقها
+    // Top Header: Brand Name «خَلْوَة»
+    // «خَلْوَة» بمخطوطة الشعار: حروف حبر الرقعة وتشكيل أحمر فوقها
     ctx.textAlign = 'center';
     ctx.direction = 'rtl';
     const logoLight = selectedTheme !== 'dark';
     ctx.font = `700 72px "KQL-ruqaaink", serif`;
     ctx.fillStyle = logoLight ? '#1a1410' : '#f3ead8';
-    ctx.fillText('كَلِمَاتِي', config.width / 2, margin + 102);
+    ctx.fillText('خَلْوَة', config.width / 2, margin + 102);
     ctx.font = `700 72px "KQM-ruqaaink", serif`;
     ctx.fillStyle = logoLight ? '#c62828' : '#e5483b';
-    ctx.fillText('كَلِمَاتِي', config.width / 2, margin + 102);
+    ctx.fillText('خَلْوَة', config.width / 2, margin + 102);
 
     ctx.font = '500 20px "Cairo", sans-serif';
     ctx.fillStyle = subtleColor;
-    ctx.fillText('«كَلِمَاتٌ تَبْقَى»', config.width / 2, margin + 140);
+    ctx.fillText('«خَلْوَةٌ لَا تَخْلُو…»', config.width / 2, margin + 140);
 
     // Divider
     ctx.strokeStyle = borderColor;
@@ -377,13 +377,13 @@ export const CardShareModal: React.FC<CardShareModalProps> = ({ quote, onClose }
           try {
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
-                title: 'كلماتي — كلماتٌ تبقى',
-                text: `${stripTashkeel(quote.text)}${pickDialect(quote, preferredDialect) ? '\n' + stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text) : ''}${bylineSuffix(quote)}\n\nمنصة كلماتي: ${quoteUrl(quote)}`,
+                title: 'خَلْوَة — خَلْوَةٌ لَا تَخْلُو…',
+                text: `${stripTashkeel(quote.text)}${pickDialect(quote, preferredDialect) ? '\n' + stripTashkeel(pickDialect(quote, preferredDialect)!.variant.text) : ''}${bylineSuffix(quote)}\n\nمنصة خَلْوَة: ${quoteUrl(quote)}`,
                 files: [file],
               });
             } else {
               await navigator.share({
-                title: 'كلماتي — كلماتٌ تبقى',
+                title: 'خَلْوَة — خَلْوَةٌ لَا تَخْلُو…',
                 text: `${stripTashkeel(quote.text)}${bylineSuffix(quote)}`,
                 url: quoteUrl(quote),
               });

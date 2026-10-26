@@ -56,7 +56,7 @@ export const AccountSettingsView: React.FC = () => {
   const handleToggleNotification = async () => {
     if (busy || checkingPush) return;
     if (support === 'install-first') {
-      flashNote('على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»، وافتح كلماتي من أيقونتها ثم فعّل الإشعار.');
+      flashNote('على الآيفون: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»، وافتح خَلْوَة من أيقونتها ثم فعّل الإشعار.');
       return;
     }
     if (support === 'unsupported') {
@@ -136,7 +136,7 @@ export const AccountSettingsView: React.FC = () => {
       if (success) {
         setDataMsg('تم استيراد بياناتك بنجاح.');
       } else {
-        alert('الملف غير صالح كنسخة احتياطية لمنصة كلماتي.');
+        alert('الملف غير صالح كنسخة احتياطية لمنصة خَلْوَة.');
       }
       setTimeout(() => setDataMsg(null), 3000);
     };
@@ -215,7 +215,7 @@ export const AccountSettingsView: React.FC = () => {
           <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-[11px] text-stone-400 leading-relaxed space-y-2">
             <p>بعد التفعيل تُرسل الكلمة بتوقيتك المحلي حتى والمنصة مغلقة على الأجهزة المدعومة. قد يتأخر وصولها بحسب الاتصال والنظام. الموعد الذي مضى يبدأ من الغد.</p>
             {support === 'install-first' && (
-              <p className="text-amber-300">على الآيفون: أضف كلماتي إلى الشاشة الرئيسية أولاً، ثم فعّل الإشعار من داخلها.</p>
+              <p className="text-amber-300">على الآيفون: أضف خَلْوَة إلى الشاشة الرئيسية أولاً، ثم فعّل الإشعار من داخلها.</p>
             )}
             {notificationSettings.enabled && (
               <button

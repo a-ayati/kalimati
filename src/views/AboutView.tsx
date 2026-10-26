@@ -20,10 +20,10 @@ export const AboutView: React.FC = () => {
           <Feather className="w-8 h-8" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold font-amiri text-white tracking-wide">
-          عَنْ مَنَصَّةِ «كَلِمَاتِي»
+          عَنْ مَنَصَّةِ «خَلْوَة»
         </h1>
         <p className="text-base text-amber-400 font-cairo">
-          «كَلِمَاتٌ تَبْقَى»
+          «خَلْوَةٌ لَا تَخْلُو…»
         </p>
         <p className="text-xs sm:text-sm text-stone-400 max-w-xl mx-auto leading-relaxed">
           فضاء أدبي أصيل مكرّس لجمال الكلمة المكتوبة باللغة العربية الفصحى والدارجة الجزائرية، في ثوب بصري يحتفي بالخط والزخرفة والسكينة.
@@ -37,7 +37,7 @@ export const AboutView: React.FC = () => {
           <span>1. فكرة المشروع ورسالته</span>
         </h2>
         <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-cairo">
-          تنطلق منصة «كلماتي» من إيمان عميق بأن الكلمة الصادقة رزق يسوقه الله للقلوب في أوانه.
+          تنطلق منصة «خَلْوَة» من إيمان عميق بأن الكلمة الصادقة رزق يسوقه الله للقلوب في أوانه.
           خواطرها بالفصحى نتاج تجربة كتابية حقيقية، لا اقتباسات منسوخة ولا حشوًا عابرًا، وإلى جانبها أمثال شعبية معروفة من لهجات عربية مختلفة تُنسب إلى تراث أهلها.
           ويمكن قراءة كل ذلك وحفظه وتخصيص طريقة ظهوره بدقة متناهية.
         </p>
@@ -51,7 +51,7 @@ export const AboutView: React.FC = () => {
         </h2>
         <div className="space-y-3 text-xs sm:text-sm text-stone-300 leading-relaxed">
           <p>
-            تعتمد الهوية الرسمية لبطاقات «كلماتي» على:
+            تعتمد الهوية الرسمية لبطاقات «خَلْوَة» على:
           </p>
           <ul className="list-disc list-inside space-y-2 text-stone-400 mr-2 text-xs">
             <li>
